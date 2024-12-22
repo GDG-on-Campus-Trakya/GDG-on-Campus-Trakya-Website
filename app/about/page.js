@@ -1,29 +1,29 @@
 "use client";
-// pages/about.js
+// about/page.js
 import { useState, useEffect } from "react";
 import { db } from "../../firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 export default function AboutPage() {
   const [members, setMembers] = useState([]);
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchMembers = async () => {
-      try {
-        const membersSnapshot = await getDocs(collection(db, "members"));
-        const membersData = membersSnapshot.docs.map((doc) => doc.data());
-        setMembers(membersData);
-      } catch (err) {
-        console.error("Error fetching members:", err);
-        setError("Failed to load members. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMembers();
-  }, []);
+  // useEffect(() => {
+  //   const fetchMembers = async () => {
+  //     try {
+  //       const membersSnapshot = await getDocs(collection(db, "members"));
+  //       const membersData = membersSnapshot.docs.map((doc) => doc.data());
+  //       setMembers(membersData);
+  //     } catch (err) {
+  //       console.error("Error fetching members:", err);
+  //       setError("Failed to load members. Please try again later.");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchMembers();
+  // }, []);
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-gradient-to-b from-[#1a1a2e] to-[#000000] text-white">

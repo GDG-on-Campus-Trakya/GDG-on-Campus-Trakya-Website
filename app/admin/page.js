@@ -1,48 +1,38 @@
 "use client";
-
+// admin/page.js
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { auth, db } from "../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import {
   collection,
   getDocs,
-  getDoc,
-  addDoc,
-  deleteDoc,
   doc,
+  getDoc,
+  setDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
 export default function AdminPage() {
   const [user, loading] = useAuthState(auth);
-  const [events, setEvents] = useState([]);
-  const [members, setMembers] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [formData, setFormData] = useState({
-    id: "",
-    name: "",
-    description: "",
-    date: "",
-    time: "",
-    imageUrl: "",
-    location: "",
-  });
+
+  // Admins
+  const [admins, setAdmins] = useState([]);
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+
   const router = useRouter();
 
-  useEffect(() => {
-    if (user) {
-      console.log("User UID:", user.uid);
-    }
-  }, [user]);
-
+  // Check if the current user is admin
   useEffect(() => {
     const checkAdminPrivileges = async () => {
       if (!user) return;
       try {
-        const userDocRef = doc(db, "members", user.uid);
-        const userDoc = await getDoc(userDocRef);
+        const adminRef = doc(db, "admins", user.email);
+        const adminSnap = await getDoc(adminRef);
 
-        if (userDoc.exists() && userDoc.data().isAdmin) {
+        if (adminSnap.exists()) {
           setIsAdmin(true);
         } else {
           router.push("/");
@@ -58,77 +48,52 @@ export default function AdminPage() {
     }
   }, [user, loading, router]);
 
+  // Fetch existing admins
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAdmins = async () => {
       try {
-        const eventsSnapshot = await getDocs(collection(db, "events"));
-        const membersSnapshot = await getDocs(collection(db, "members"));
-
-        setEvents(
-          eventsSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
-        );
-        setMembers(
-          membersSnapshot.docs.map((doc) => ({
+        const adminSnapshot = await getDocs(collection(db, "admins"));
+        setAdmins(
+          adminSnapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
           }))
         );
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching admins:", error);
       }
     };
 
     if (isAdmin) {
-      fetchData();
+      fetchAdmins();
     }
   }, [isAdmin]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleAddEvent = async (e) => {
+  // Add a new admin
+  const handleAddAdmin = async (e) => {
     e.preventDefault();
+    if (!newAdminEmail) return;
+
     try {
-      const newEvent = {
-        ...formData,
-        id: events.length + 1, // Generate a new ID
-      };
-      const docRef = await addDoc(collection(db, "events"), newEvent);
-      setEvents((prev) => [...prev, { id: docRef.id, ...newEvent }]);
-      setFormData({
-        id: "",
-        name: "",
-        description: "",
-        date: "",
-        time: "",
-        imageUrl: "",
-        location: "",
-      });
+      const adminRef = doc(db, "admins", newAdminEmail);
+      await setDoc(adminRef, { email: newAdminEmail });
+      setAdmins((prev) => [
+        ...prev,
+        { id: newAdminEmail, email: newAdminEmail },
+      ]);
+      setNewAdminEmail("");
     } catch (error) {
-      console.error("Error adding event:", error);
+      console.error("Error adding admin:", error);
     }
   };
 
-  const handleDeleteEvent = async (id) => {
+  // Remove an admin
+  const handleRemoveAdmin = async (id) => {
     try {
-      await deleteDoc(doc(db, "events", id));
-      setEvents((prev) => prev.filter((event) => event.id !== id));
+      await deleteDoc(doc(db, "admins", id));
+      setAdmins((prev) => prev.filter((admin) => admin.id !== id));
     } catch (error) {
-      console.error("Error deleting event:", error);
-    }
-  };
-
-  const handleDeleteMember = async (id) => {
-    try {
-      await deleteDoc(doc(db, "members", id));
-      setMembers((prev) => prev.filter((member) => member.id !== id));
-    } catch (error) {
-      console.error("Error deleting member:", error);
+      console.error("Error removing admin:", error);
     }
   };
 
@@ -154,61 +119,17 @@ export default function AdminPage() {
         Admin Panel
       </h1>
 
-      {/* Add Event Form */}
+      {/* Manage Admins */}
       <section className="bg-white shadow-md rounded-lg p-6 mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-700">Add Event</h2>
-        <form onSubmit={handleAddEvent} className="space-y-4">
+        <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+          Manage Admins
+        </h2>
+        <form onSubmit={handleAddAdmin} className="space-y-4 mb-6">
           <input
-            type="text"
-            name="name"
-            placeholder="Event Name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="text"
-            name="description"
-            placeholder="Event Description"
-            value={formData.description}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="date"
-            name="date"
-            placeholder="Event Date"
-            value={formData.date}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="time"
-            name="time"
-            placeholder="Event Time"
-            value={formData.time}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="url"
-            name="imageUrl"
-            placeholder="Image URL"
-            value={formData.imageUrl}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="text"
-            name="location"
-            placeholder="Location"
-            value={formData.location}
-            onChange={handleChange}
+            type="email"
+            placeholder="Admin Email"
+            value={newAdminEmail}
+            onChange={(e) => setNewAdminEmail(e.target.value)}
             required
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -216,73 +137,62 @@ export default function AdminPage() {
             type="submit"
             className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition-colors"
           >
-            Add Event
+            Add Admin
           </button>
         </form>
-      </section>
-
-      {/* Manage Events */}
-      <section className="bg-white shadow-md rounded-lg p-6 mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-700">
-          Manage Events
-        </h2>
-        {events.length === 0 ? (
-          <p className="text-gray-500">No events found.</p>
-        ) : (
-          <ul className="space-y-4">
-            {events.map((event) => (
-              <li
-                key={event.id}
-                className="flex justify-between items-center bg-gray-50 p-4 rounded-md shadow-sm"
+        <ul className="space-y-4">
+          {admins.map((admin) => (
+            <li
+              key={admin.id}
+              className="flex justify-between items-center bg-gray-50 p-4 rounded-md shadow-sm"
+            >
+              <div>
+                <p className="text-lg font-medium text-gray-800">
+                  {admin.email}
+                </p>
+              </div>
+              <button
+                onClick={() => handleRemoveAdmin(admin.id)}
+                className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
               >
-                <div>
-                  <p className="text-lg font-medium text-gray-800">
-                    {event.name}
-                  </p>
-                  <p className="text-sm text-gray-600">{event.description}</p>
-                </div>
-                <button
-                  onClick={() => handleDeleteEvent(event.id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      {/* Manage Members */}
+      {/* Links to other Admin Pages */}
       <section className="bg-white shadow-md rounded-lg p-6">
         <h2 className="text-2xl font-semibold mb-4 text-gray-700">
-          Manage Members
+          Other Admin Pages
         </h2>
-        {members.length === 0 ? (
-          <p className="text-gray-500">No members found.</p>
-        ) : (
-          <ul className="space-y-4">
-            {members.map((member) => (
-              <li
-                key={member.id}
-                className="flex justify-between items-center bg-gray-50 p-4 rounded-md shadow-sm"
-              >
-                <div>
-                  <p className="text-lg font-medium text-gray-800">
-                    {member.name}
-                  </p>
-                  <p className="text-sm text-gray-600">{member.email}</p>
-                </div>
-                <button
-                  onClick={() => handleDeleteMember(member.id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="flex flex-col md:flex-row gap-4">
+          <Link
+            href="/admin/events"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md text-center hover:bg-blue-600 transition-colors"
+          >
+            Manage Events
+          </Link>
+          <Link
+            href="/admin/sponsors"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md text-center hover:bg-blue-600 transition-colors"
+          >
+            Manage Sponsors
+          </Link>
+          <Link
+            href="/admin/registrations"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md text-center hover:bg-blue-600 transition-colors"
+          >
+            Manage Registrations
+          </Link>
+          <Link
+            href="/admin/users"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md text-center hover:bg-blue-600 transition-colors"
+          >
+            Manage Users
+          </Link>
+        </div>
       </section>
     </div>
   );

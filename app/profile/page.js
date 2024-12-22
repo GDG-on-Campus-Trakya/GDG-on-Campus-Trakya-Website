@@ -1,14 +1,22 @@
 "use client";
-
+// profile/page.js
 import React, { useState, useEffect, useRef } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import UserInfo from "../../components/UserInfo";
 import EventList from "../../components/EventList";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-// Helper function to format dates
 const formatDate = (date) => {
   const d = new Date(date);
   const month = d.toLocaleString("tr-TR", { month: "long" });
@@ -46,7 +54,7 @@ const Profile = () => {
         }));
         setRegistrations(registrationsData);
 
-        const eventIds = registrationsData.map((reg) => Number(reg.eventId));
+        const eventIds = registrationsData.map((reg) => reg.eventId);
         const uniqueEventIds = [...new Set(eventIds)];
 
         if (uniqueEventIds.length === 0) {
@@ -69,6 +77,7 @@ const Profile = () => {
         setEvents(eventsData);
         setLoadingData(false);
       } catch (error) {
+        console.error("Error fetching profile data:", error);
         setErrorData("Failed to load profile data. Please try again later.");
         setLoadingData(false);
       }
@@ -82,6 +91,32 @@ const Profile = () => {
       router.push("/");
     }
   }, [loadingAuth, user, router]);
+
+  // Function to remove a registration
+  const removeRegistration = async (registrationId) => {
+    try {
+      await deleteDoc(doc(db, "registrations", registrationId));
+
+      setRegistrations((prevRegistrations) =>
+        prevRegistrations.filter((reg) => reg.id !== registrationId)
+      );
+
+      const updatedRegistrations = registrations.filter(
+        (reg) => reg.id !== registrationId
+      );
+      const remainingEventIds = updatedRegistrations.map((reg) => reg.eventId);
+      const uniqueRemainingEventIds = [...new Set(remainingEventIds)];
+
+      setEvents((prevEvents) =>
+        prevEvents.filter((event) => uniqueRemainingEventIds.includes(event.id))
+      );
+
+      toast.success("Kayıt başarıyla silindi.");
+    } catch (error) {
+      console.error("Error removing registration:", error);
+      toast.error("Kayıt silinirken bir hata oluştu. Lütfen tekrar deneyin.");
+    }
+  };
 
   if (loadingAuth || loadingData) {
     return (
@@ -122,8 +157,15 @@ const Profile = () => {
         <h2 className="text-2xl border-b-2 border-blue-400 pb-2 mb-5 inline-block">
           Kayıt Olunmuş Etkinlikler
         </h2>
-        <EventList registrations={registrations} events={events} />
+        <EventList
+          registrations={registrations}
+          events={events}
+          removeRegistration={removeRegistration}
+        />
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer />
     </div>
   );
 };

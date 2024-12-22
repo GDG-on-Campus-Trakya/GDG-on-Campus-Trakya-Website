@@ -1,8 +1,9 @@
 "use client";
-
+// components/Navbar.jsx
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, googleProvider } from "../firebase";
+import { auth, googleProvider, db } from "../firebase";
 import { signInWithPopup, signOut } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -16,7 +17,22 @@ export default function Navbar() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      const { uid, email, name } = result.user;
+
+      const userRef = doc(db, "users", uid);
+
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          email: email,
+          createdAt: new Date().toISOString(),
+          name: name,
+          wantsToGetEmails: true,
+        });
+        console.log("New user saved to Firestore");
+      }
     } catch (error) {
       console.error("Error during sign-in:", error);
     }

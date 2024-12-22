@@ -1,18 +1,19 @@
 "use client";
-
+// events/page.js
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, db } from "../../firebase"; // Adjust the path as necessary
+import { auth, db } from "../../firebase";
 import { addDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Calendar from "../../components/Calendar"; // Adjust the import path based on your project structure
+import Calendar from "../../components/Calendar";
 
 export default function EventsPage() {
   const [events, setEvents] = useState([]);
-  const [selectedEvent, setSelectedEvent] = useState(null); // Selected event object
+  const [sponsors, setSponsors] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [filterStatus, setFilterStatus] = useState("upcoming"); // Default to 'upcoming'
+  const [filterStatus, setFilterStatus] = useState("upcoming");
   const [user, loading, error] = useAuthState(auth);
   const [signupMessage, setSignupMessage] = useState(null);
   const [signupError, setSignupError] = useState(null);
@@ -20,9 +21,8 @@ export default function EventsPage() {
   const [hasSignedUp, setHasSignedUp] = useState(false);
   const router = useRouter();
 
-  const drawerRef = useRef(null); // Reference to the drawer
+  const drawerRef = useRef(null);
 
-  // Function to format date to YYYY-MM-DD for consistent comparison
   const formatDate = (date) => {
     const d = new Date(date);
     const year = d.getFullYear();
@@ -31,7 +31,8 @@ export default function EventsPage() {
     return `${year}-${month}-${day}`;
   };
 
-  // Effect to check if the user has already signed up for the selected event
+  const isExpired = (eventDate) => new Date(eventDate) < new Date();
+
   useEffect(() => {
     const checkSignupStatus = async () => {
       if (!user || !selectedEvent) {
@@ -93,42 +94,45 @@ export default function EventsPage() {
     }
   };
 
-  // Effect to fetch events
+  // Effect to fetch events and sponsors
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchData = async () => {
       try {
         const eventsSnapshot = await getDocs(collection(db, "events"));
         const eventsData = eventsSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        // Sort events by date (oldest to newest)
         eventsData.sort((a, b) => new Date(a.date) - new Date(b.date));
         setEvents(eventsData);
+
+        const sponsorsSnapshot = await getDocs(collection(db, "sponsors"));
+        const sponsorsData = sponsorsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setSponsors(sponsorsData);
       } catch (error) {
-        console.error("Error fetching events:", error);
+        console.error("Error fetching events or sponsors:", error);
       }
     };
-    fetchEvents();
+    fetchData();
   }, []);
 
-  // Prevent scrolling when drawer is open
+  // Prevent scrolling when drawer is open (çokomelli)
   useEffect(() => {
     if (selectedEvent) {
-      // Prevent scrolling
       document.body.classList.add("overflow-hidden");
     } else {
-      // Re-enable scrolling
       document.body.classList.remove("overflow-hidden");
     }
 
-    // Cleanup on unmount
     return () => {
       document.body.classList.remove("overflow-hidden");
     };
   }, [selectedEvent]);
 
-  // Memoize event dates for performance
+  // Memoize event dates for performance (ilk defa memo kullandım)
   const eventDates = useMemo(() => {
     return new Set(events.map((event) => formatDate(event.date)));
   }, [events]);
@@ -136,7 +140,7 @@ export default function EventsPage() {
   const getDayLabel = (date) => {
     const eventDate = new Date(date);
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize to midnight
+    today.setHours(0, 0, 0, 0);
     if (eventDate.toDateString() === today.toDateString()) {
       return "Bugün";
     }
@@ -179,9 +183,6 @@ export default function EventsPage() {
     setSelectedEvent(filteredEvents[nextIndex]);
   };
 
-  const isExpired = (eventDate) => new Date(eventDate) < new Date();
-
-  // Handle date selection
   const handleDateClick = (day) => {
     const clickedDate = new Date(
       currentMonth.getFullYear(),
@@ -192,21 +193,19 @@ export default function EventsPage() {
       selectedDate &&
       clickedDate.toDateString() === selectedDate.toDateString()
     ) {
-      setSelectedDate(null); // Deselect if already selected
-      setFilterStatus("upcoming"); // Reset filter to 'upcoming'
+      setSelectedDate(null);
+      setFilterStatus("upcoming");
     } else {
       setSelectedDate(clickedDate);
-      setFilterStatus(null); // Clear filterStatus when date is selected
+      setFilterStatus(null);
     }
   };
 
-  // Handle Upcoming | Past filter
   const handleFilterChange = (status) => {
     setFilterStatus(status);
-    setSelectedDate(null); // Clear selectedDate when changing filter
+    setSelectedDate(null);
   };
 
-  // Filter events based on selectedDate and filterStatus
   const filteredEvents = useMemo(() => {
     let filtered = events;
 
@@ -217,11 +216,11 @@ export default function EventsPage() {
       );
     } else if (filterStatus === "upcoming") {
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // Normalize to midnight
+      today.setHours(0, 0, 0, 0);
       filtered = filtered.filter((event) => new Date(event.date) >= today);
     } else if (filterStatus === "past") {
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // Normalize to midnight
+      today.setHours(0, 0, 0, 0);
       filtered = filtered.filter((event) => new Date(event.date) < today);
     }
 
@@ -230,23 +229,24 @@ export default function EventsPage() {
 
   // Effect to handle clicks outside the drawer
   useEffect(() => {
-    // Function to handle click events
     const handleClickOutside = (event) => {
       if (drawerRef.current && !drawerRef.current.contains(event.target)) {
-        setSelectedEvent(null); // Close the drawer
+        setSelectedEvent(null);
       }
     };
 
-    // If the drawer is open, add the event listener
     if (selectedEvent) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
-    // Cleanup the event listener when the drawer is closed
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [selectedEvent]);
+
+  const getSponsorsDetails = (sponsorIds) => {
+    return sponsors.filter((sponsor) => sponsorIds.includes(sponsor.id));
+  };
 
   return (
     <div className="font-sans bg-gradient-to-b from-[#0a0a19] to-black text-white min-h-screen flex flex-col items-center p-6">
@@ -295,38 +295,75 @@ export default function EventsPage() {
         <div className="relative flex-1 max-w-[900px] lg:order-1 order-2">
           <div className="absolute left-10 top-0 bottom-0 w-px bg-gray-600"></div>
           <div className="flex flex-col gap-6 ml-14">
-            {filteredEvents.map((event) => (
-              <div
-                key={event.id}
-                className="flex items-start bg-gray-800 rounded-lg p-5 shadow-lg cursor-pointer relative hover:bg-gray-700 transition-colors"
-                onClick={() => handleEventClick(event)}
-              >
-                {/* Timeline Marker */}
-                <div className="absolute left-[-60px] top-6 flex flex-col items-center">
-                  <div className="w-5 h-5 bg-blue-500 rounded-full z-10"></div>
-                  {event !== filteredEvents[filteredEvents.length - 1] && (
-                    <div className="w-px flex-1 bg-gray-600 mt-1"></div>
-                  )}
-                </div>
+            {filteredEvents.length > 0 ? (
+              filteredEvents.map((event) => {
+                const status = isExpired(event.date) ? "Geçmiş" : "Yaklaşan";
+                const statusColor =
+                  status === "Yaklaşan" ? "bg-green-600" : "bg-red-600";
 
-                {/* Event Content */}
-                <div className="mr-6">
-                  <img
-                    src={event.imageUrl}
-                    alt={event.name}
-                    className="w-44 h-auto rounded"
-                  />
-                </div>
-                <div className="flex flex-col w-full">
-                  <h4 className="text-xl text-blue-400">
-                    {getDayLabel(event.date)}
-                  </h4>
-                  <h3 className="mt-2 text-3xl">{event.name}</h3>
-                  <p className="mt-1 text-lg text-gray-400">{event.time}</p>
-                  <p className="mt-1 text-lg text-gray-400">{event.location}</p>
-                </div>
+                return (
+                  <div
+                    key={event.id}
+                    className="flex items-start bg-gray-800 rounded-lg p-5 shadow-lg cursor-pointer relative hover:bg-gray-700 transition-colors"
+                    onClick={() => handleEventClick(event)}
+                  >
+                    {/* Timeline Marker */}
+                    <div className="absolute left-[-60px] top-6 flex flex-col items-center">
+                      <div
+                        className={`w-5 h-5 ${statusColor} rounded-full z-10`}
+                      ></div>
+                      {event !== filteredEvents[filteredEvents.length - 1] && (
+                        <div className="w-px flex-1 bg-gray-600 mt-1"></div>
+                      )}
+                    </div>
+
+                    {/* Event Content */}
+                    <div className="mr-6">
+                      <img
+                        src={event.imageUrl}
+                        alt={event.name}
+                        className="w-44 h-auto rounded"
+                      />
+                    </div>
+                    <div className="flex flex-col w-full">
+                      <h4 className="text-xl text-blue-400">
+                        {getDayLabel(event.date)}
+                      </h4>
+                      <h3 className="mt-2 text-3xl">{event.name}</h3>
+                      <p className="mt-1 text-lg text-gray-400">{event.time}</p>
+                      <p className="mt-1 text-lg text-gray-400">
+                        {event.location}
+                      </p>
+
+                      {/* Category and Status Tags */}
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {/* Category Tag */}
+                        <span className="inline-block px-3 py-1 bg-blue-600 text-white text-sm rounded-full">
+                          {event.category}
+                        </span>
+                        {/* Status Tag */}
+                        <span
+                          className={`inline-block px-3 py-1 text-white text-sm rounded-full ${
+                            status === "Yaklaşan"
+                              ? "bg-green-600"
+                              : "bg-red-600"
+                          }`}
+                        >
+                          {status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              // Message when no events are found
+              <div className="text-center text-gray-400 mt-6">
+                <p className="text-lg text-gray-400 mt-10">
+                  Yaklaşan bir etkinlik yok. Takipte kalın!
+                </p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </main>
@@ -371,10 +408,64 @@ export default function EventsPage() {
             <p className="text-lg text-gray-400 mb-2">
               {getDayLabel(selectedEvent.date)}, {selectedEvent.time}
             </p>
-            <p className="text-lg text-gray-400 mb-5">
-              {selectedEvent.location}
+            <p className="text-lg text-gray-400 mb-2">
+              <strong>Kategori:</strong> {selectedEvent.category}
+            </p>
+            <p className="text-lg text-gray-400 mb-2">
+              <strong>Lokasyon:</strong> {selectedEvent.location}
             </p>
             <p className="text-lg mb-6">{selectedEvent.description}</p>
+
+            {/* Sponsors Section */}
+            {selectedEvent.sponsors && selectedEvent.sponsors.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-2xl font-semibold mb-3">Sponsorluk</h3>
+                <div className="flex flex-wrap gap-4">
+                  {getSponsorsDetails(selectedEvent.sponsors).map((sponsor) => (
+                    <div
+                      key={sponsor.id}
+                      className="flex items-center space-x-2"
+                    >
+                      <img
+                        src={sponsor.img_url}
+                        alt={sponsor.name}
+                        className="w-10 h-10 object-contain"
+                      />
+                      <span className="text-lg">{sponsor.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* File URL Section */}
+            {selectedEvent.file_url && (
+              <div className="mb-6">
+                <a
+                  href={selectedEvent.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M4 16l4-4m0 0l4 4m-4-4v12"
+                    />
+                  </svg>
+                  Etkinlik Dokümanları
+                </a>
+              </div>
+            )}
+
             {!isExpired(selectedEvent.date) ? (
               user ? (
                 hasSignedUp ? (

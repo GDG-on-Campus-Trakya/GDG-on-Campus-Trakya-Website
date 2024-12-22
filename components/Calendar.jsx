@@ -1,6 +1,6 @@
 import React from "react";
+// components/Calendar.jsx
 
-// Helper function to format dates
 const formatDate = (date) => {
   const d = new Date(date);
   const year = d.getFullYear();
