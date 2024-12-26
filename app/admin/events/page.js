@@ -191,7 +191,7 @@ export default function AdminEventsPage() {
         return;
       }
   
-      // Fetch user emails in batches
+      // Fetch user emails in batches and filter by wantsToGetEmails
       const usersCollectionRef = collection(db, "users");
       let userEmails = [];
       const batchSize = 10;
@@ -200,7 +200,8 @@ export default function AdminEventsPage() {
         const batch = registeredUserIds.slice(i, i + batchSize);
         const usersQuery = query(
           usersCollectionRef,
-          where("__name__", "in", batch)
+          where("__name__", "in", batch),
+          where("wantsToGetEmails", "==", true) // Filter users who want to receive emails
         );
         const usersSnapshot = await getDocs(usersQuery);
         

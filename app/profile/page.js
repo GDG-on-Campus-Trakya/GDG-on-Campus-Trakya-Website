@@ -19,6 +19,8 @@ import EventList from "../../components/EventList";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import QRCode from "qrcode";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const formatDate = (date) => {
   const d = new Date(date);
@@ -34,6 +36,8 @@ const Profile = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [errorData, setErrorData] = useState(null);
   const [qrCodes, setQRCodes] = useState({});
+  const [isEmailUpdateLoading, setIsEmailUpdateLoading] = useState(false);
+  const [userWantsEmails, setUserWantsEmails] = useState(false);
 
   const router = useRouter();
   const profileRef = useRef(null);
@@ -129,6 +133,24 @@ const Profile = () => {
     }
   }, [registrations, user]);
 
+  useEffect(() => {
+    const fetchUserEmailPreference = async () => {
+      if (user) {
+        try {
+          const userRef = doc(db, "users", user.uid);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            setUserWantsEmails(userSnap.data().wantsToGetEmails || false);
+          }
+        } catch (error) {
+          console.error("Error fetching user email preference:", error);
+        }
+      }
+    };
+
+    fetchUserEmailPreference();
+  }, [user]);
+
   // Function to remove a registration
   const removeRegistration = async (registrationId) => {
     try {
@@ -165,6 +187,21 @@ const Profile = () => {
     document.body.removeChild(link);
   };
 
+  const handleEmailPreferenceChange = async (newPreference) => {
+    setIsEmailUpdateLoading(true);
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await setDoc(userRef, { wantsToGetEmails: newPreference }, { merge: true });
+      setUserWantsEmails(newPreference);
+      toast.success("Email preference updated successfully.");
+    } catch (error) {
+      console.error("Error updating email preference:", error);
+      toast.error("Failed to update email preference.");
+    } finally {
+      setIsEmailUpdateLoading(false);
+    }
+  };
+
   if (loadingAuth || loadingData) {
     return (
       <div className="flex items-center justify-center p-10 text-lg text-white">
@@ -198,6 +235,31 @@ const Profile = () => {
 
       {/* User Information */}
       {user && <UserInfo user={user} />}
+
+      {/* Email Preferences */}
+      <div className="mt-10">
+        <h2 className="text-2xl border-b-2 border-blue-400 pb-2 mb-5 inline-block">
+          Email Preferences
+        </h2>
+        <div className="flex flex-row items-center justify-between space-x-4 rounded-lg border p-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="email-notifications">Email Notifications</Label>
+            <p className="text-sm text-gray-400">
+              Receive emails about events and updates
+            </p>
+          </div>
+          <Switch
+            id="email-notifications"
+            checked={userWantsEmails}
+            onCheckedChange={handleEmailPreferenceChange}
+            disabled={isEmailUpdateLoading}
+            className="data-[state=checked]:bg-blue-600"
+          />
+        </div>
+        {isEmailUpdateLoading && (
+          <p className="mt-2 text-sm text-gray-500">Updating...</p>
+        )}
+      </div>
 
       {/* Registered Events */}
       <div className="mt-10">
