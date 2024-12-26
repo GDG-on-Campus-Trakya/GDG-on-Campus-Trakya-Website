@@ -36,6 +36,11 @@ Projeyi çalıştırmak için aşağıdaki adımları izleyin:
    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="STORAGE_BUCKET"
    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="MESSAGING_SENDER_ID"
    NEXT_PUBLIC_FIREBASE_APP_ID="APP_ID"
+
+   EMAIL_USER="email"
+   EMAIL_APP_PASSWORD="password"
+
+   NEXT_PUBLIC_BASE_URL="url"
 4. Geliştirme sunucusunu başlatın:
    ```bash  
    npm run dev

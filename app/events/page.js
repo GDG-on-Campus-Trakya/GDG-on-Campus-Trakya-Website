@@ -2,9 +2,18 @@
 // events/page.js
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../firebase";
-import { addDoc, collection, query, where, getDocs } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  getDoc,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Calendar from "../../components/Calendar";
 
 export default function EventsPage() {
@@ -20,6 +29,7 @@ export default function EventsPage() {
 
   const [hasSignedUp, setHasSignedUp] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const drawerRef = useRef(null);
 
@@ -63,7 +73,7 @@ export default function EventsPage() {
       setSignupError("You must be logged in to sign up for an event.");
       return;
     }
-
+  
     try {
       const registrationsRef = collection(db, "registrations");
       const signupQuery = query(
@@ -71,21 +81,38 @@ export default function EventsPage() {
         where("eventId", "==", selectedEvent.id),
         where("userId", "==", user.uid)
       );
-
+  
       const querySnapshot = await getDocs(signupQuery);
-
+  
       if (!querySnapshot.empty) {
         setSignupMessage("You have already signed up for this event.");
         setHasSignedUp(true);
         return;
       }
-
-      await addDoc(registrationsRef, {
+  
+      const newRegistration = await addDoc(registrationsRef, {
         eventId: selectedEvent.id,
         userId: user.uid,
         signedUpAt: new Date(),
+        didJoinEvent: false
       });
-
+  
+      const qrCodeRef = collection(db, "qrCodes");
+      const newQrCode = await addDoc(qrCodeRef, {
+        registrationId: newRegistration.id,
+        createdAt: new Date()
+      });
+  
+      const qrCodeData = `qrCode=${newQrCode.id}`;
+  
+      await updateDoc(doc(qrCodeRef, newQrCode.id), {
+        code: qrCodeData
+      });
+  
+      await updateDoc(doc(registrationsRef, newRegistration.id), {
+        qrCodeId: newQrCode.id
+      });
+  
       setSignupMessage("Successfully signed up for the event!");
       setHasSignedUp(true);
     } catch (error) {
@@ -94,7 +121,6 @@ export default function EventsPage() {
     }
   };
 
-  // Effect to fetch events and sponsors
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -116,8 +142,56 @@ export default function EventsPage() {
         console.error("Error fetching events or sponsors:", error);
       }
     };
-    fetchData();
-  }, []);
+
+    fetchData().then(() => {
+      // Only try to handle QR code redirect after events are loaded
+      handleQRCodeRedirect();
+    });
+  }, []); // Empty dependency array to run only once on mount
+
+  // Add another effect to handle QR code redirect when events change
+  useEffect(() => {
+    if (events.length > 0) {
+      handleQRCodeRedirect();
+    }
+  }, [events]); // Run when events are updated
+
+  const handleQRCodeRedirect = async () => {
+    const qrCodeId = searchParams.get("qrCode");
+
+    if (qrCodeId && !selectedEvent && events.length > 0) { // Only proceed if we have events
+      try {
+        const qrCodeRef = doc(db, "eventQrCodes", qrCodeId);
+        const qrCodeSnap = await getDoc(qrCodeRef);
+
+        if (qrCodeSnap.exists()) {
+          const qrCodeData = qrCodeSnap.data();
+          const eventId = qrCodeData.eventId;
+          
+          // Add debug logs
+          console.log("QR Code Data:", qrCodeData);
+          console.log("Event ID from QR:", eventId);
+          console.log("Available events:", events);
+          
+          // Try to find event by both document ID and numeric ID
+          const event = events.find((e) => {
+            console.log("Checking event:", e.id, typeof e.id);
+            return e.id === eventId || e.id === parseInt(eventId);
+          });
+
+          if (event) {
+            setSelectedEvent(event);
+          } else {
+            console.error("Event not found for QR code:", qrCodeId);
+          }
+        } else {
+          console.error("Invalid QR code:", qrCodeId);
+        }
+      } catch (error) {
+        console.error("Error handling QR code redirect:", error);
+      }
+    }
+  };
 
   // Prevent scrolling when drawer is open (çokomelli)
   useEffect(() => {

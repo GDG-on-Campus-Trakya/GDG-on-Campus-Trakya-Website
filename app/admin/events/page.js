@@ -11,8 +11,14 @@ import {
   setDoc,
   addDoc,
   deleteDoc,
+  query,
+  where,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import QRCode from "qrcode";
+import { v4 as uuidv4 } from 'uuid';
+
+
 
 export default function AdminEventsPage() {
   const [user, loading] = useAuthState(auth);
@@ -105,7 +111,7 @@ export default function AdminEventsPage() {
     try {
       const newEvent = {
         ...formData,
-        id: events.length + 1,
+        id: uuidv4(),
       };
       const docRef = await addDoc(collection(db, "events"), newEvent);
       setEvents((prev) => [...prev, { firestoreId: docRef.id, ...newEvent }]);
@@ -165,6 +171,155 @@ export default function AdminEventsPage() {
       category: "Konferans",
     });
   };
+
+  // Update this function in your AdminEventsPage component
+  const handleSendEmailToRegisteredUsers = async (eventId) => {
+    try {
+      // Fetch registrations for the event
+      const registrationsRef = collection(db, "registrations");
+      const registrationsQuery = query(
+        registrationsRef,
+        where("eventId", "==", eventId)
+      );
+      const registrationsSnapshot = await getDocs(registrationsQuery);
+      const registeredUserIds = registrationsSnapshot.docs.map(
+        (doc) => doc.data().userId
+      );
+  
+      if (registeredUserIds.length === 0) {
+        alert("No users registered for this event.");
+        return;
+      }
+  
+      // Fetch user emails in batches
+      const usersCollectionRef = collection(db, "users");
+      let userEmails = [];
+      const batchSize = 10;
+      
+      for (let i = 0; i < registeredUserIds.length; i += batchSize) {
+        const batch = registeredUserIds.slice(i, i + batchSize);
+        const usersQuery = query(
+          usersCollectionRef,
+          where("__name__", "in", batch)
+        );
+        const usersSnapshot = await getDocs(usersQuery);
+        
+        usersSnapshot.forEach((doc) => {
+          const userData = doc.data();
+          if (userData.email) {
+            userEmails.push(userData.email);
+          }
+        });
+      }
+  
+      const event = events.find((e) => e.id === eventId);
+      if (!event) {
+        throw new Error("Event not found");
+      }
+  
+      // Use the correct API route path
+      const response = await fetch("/api/sendEmail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to: userEmails,
+          subject: `Update: ${event.name}`,
+          text: `Dear participant,\n\nThis is an update regarding the event "${event.name}" scheduled for ${event.date} at ${event.time}.\n\nLocation: ${event.location}\n\nThank you for your registration!\n\nBest regards,\nGDG Trakya Team`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2>Event Update: ${event.name}</h2>
+              <p>Dear participant,</p>
+              <p>This is an update regarding the event you registered for:</p>
+              <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                <p><strong>Date:</strong> ${event.date}</p>
+                <p><strong>Time:</strong> ${event.time}</p>
+                <p><strong>Location:</strong> ${event.location}</p>
+              </div>
+              <p>Thank you for your registration!</p>
+              <p>Best regards,<br>GDG Trakya Team</p>
+            </div>
+          `,
+          adminEmail: user.email, // Pass admin's email for verification
+        }),
+      });
+  
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to send emails');
+      }
+  
+      alert("Emails sent successfully!");
+    } catch (error) {
+      console.error("Error sending emails:", error);
+      alert(error.message || "Error sending emails. Please try again later.");
+    }
+  };
+
+  // Function to generate QR code
+  const handleGenerateQRCode = async (eventId) => {
+    try {
+      // Check if a QR code already exists for the event
+      const qrCodesRef = collection(db, "eventQrCodes");
+      const qrCodeQuery = query(
+        qrCodesRef,
+        where("eventId", "==", eventId)
+      );
+      const qrCodeSnapshot = await getDocs(qrCodeQuery);
+
+      if (!qrCodeSnapshot.empty) {
+        // QR code exists, display it
+        const existingQRCodeData = qrCodeSnapshot.docs[0].data();
+        const qrCodeId = qrCodeSnapshot.docs[0].id;
+        const qrCodeDataURL = await QRCode.toDataURL(existingQRCodeData.code);
+
+        setCurrentQRCodeDataURL(qrCodeDataURL);
+        setCurrentQRCodeId(qrCodeId);
+        setQRCodeModalOpen(true);
+        return;
+      }
+
+      // Fetch the event details
+      const event = events.find((e) => e.id === eventId);
+      if (!event) {
+        throw new Error("Event not found");
+      }
+
+      // Call the API route to generate QR code
+      const response = await fetch("/api/qrCode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          eventId: eventId,
+          adminEmail: user.email, // Pass admin's email for verification
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to generate QR code");
+      }
+
+      const { qrCodeDataURL, qrCodeId } = await response.json();
+
+      // Display the QR code to the admin (you can use a modal or a new page)
+      setCurrentQRCodeDataURL(qrCodeDataURL);
+      setCurrentQRCodeId(qrCodeId);
+      setQRCodeModalOpen(true);
+    } catch (error) {
+      console.error("Error generating QR code:", error);
+      alert(
+        error.message || "Error generating QR code. Please try again later."
+      );
+    }
+  };
+
+  const [qrCodeModalOpen, setQRCodeModalOpen] = useState(false);
+  const [currentQRCodeDataURL, setCurrentQRCodeDataURL] = useState("");
+  const [currentQRCodeId, setCurrentQRCodeId] = useState("");
 
   if (loading) {
     return (
@@ -384,12 +539,45 @@ export default function AdminEventsPage() {
                   >
                     Delete
                   </button>
+                  <button
+                    onClick={() =>
+                      handleSendEmailToRegisteredUsers(event.id)
+                    }
+                    className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition-colors"
+                  >
+                    Send Email to Registered Users
+                  </button>
+                  <button
+                    onClick={() => handleGenerateQRCode(event.id)}
+                    className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition-colors"
+                  >
+                    Generate QR Code
+                  </button>
                 </div>
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      {/* QR Code Modal */}
+      {qrCodeModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
+            <h2 className="text-xl font-semibold mb-4">QR Code</h2>
+            <img src={currentQRCodeDataURL} alt="QR Code" className="w-full" />
+            <p className="mt-4 text-gray-600">
+              QR Code ID: {currentQRCodeId}
+            </p>
+            <button
+              onClick={() => setQRCodeModalOpen(false)}
+              className="mt-6 w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

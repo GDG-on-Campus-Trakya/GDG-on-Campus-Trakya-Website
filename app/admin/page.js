@@ -192,6 +192,12 @@ export default function AdminPage() {
           >
             Manage Users
           </Link>
+          <Link
+            href="/admin/qr-verification"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md text-center hover:bg-blue-600 transition-colors"
+          >
+            QR Code Verification
+          </Link>
         </div>
       </section>
     </div>

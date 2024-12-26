@@ -12,7 +12,13 @@ const formatDate = (date) => {
   return `${month} ${year}`;
 };
 
-const EventList = ({ registrations, events, removeRegistration }) => {
+const EventList = ({
+  registrations,
+  events,
+  removeRegistration,
+  qrCodes,
+  downloadQRCode,
+}) => {
   if (registrations.length === 0) {
     return (
       <p className="text-gray-400">Henüz bir etkinliğe kayıt olmadınız.</p>
@@ -26,7 +32,7 @@ const EventList = ({ registrations, events, removeRegistration }) => {
         if (!event) return null;
 
         const signedUpDate = new Date(
-          registration.signedUpAt.seconds * 1000
+          registration.signedUpAt?.seconds * 1000 || Date.now()
         ).toLocaleDateString("tr-TR", {
           year: "numeric",
           month: "long",
@@ -77,6 +83,28 @@ const EventList = ({ registrations, events, removeRegistration }) => {
                 </span>
               </div>
             </div>
+
+            {/* QR Code and Actions */}
+            {qrCodes[registration.qrCodeId] && (
+              <div className="mt-4 flex items-center gap-4">
+                <img
+                  src={qrCodes[registration.qrCodeId]}
+                  alt="QR Code"
+                  className="w-32 h-32"
+                />
+                <button
+                  onClick={() =>
+                    downloadQRCode(
+                      qrCodes[registration.qrCodeId],
+                      event.name
+                    )
+                  }
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                >
+                  Kodu İndir
+                </button>
+              </div>
+            )}
 
             {/* Remove Button */}
             {!expired && (

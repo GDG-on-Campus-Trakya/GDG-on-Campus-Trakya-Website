@@ -10,12 +10,15 @@ import {
   where,
   deleteDoc,
   doc,
+  getDoc,
+  setDoc,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import UserInfo from "../../components/UserInfo";
 import EventList from "../../components/EventList";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import QRCode from "qrcode";
 
 const formatDate = (date) => {
   const d = new Date(date);
@@ -30,6 +33,7 @@ const Profile = () => {
   const [events, setEvents] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [errorData, setErrorData] = useState(null);
+  const [qrCodes, setQRCodes] = useState({});
 
   const router = useRouter();
   const profileRef = useRef(null);
@@ -92,6 +96,39 @@ const Profile = () => {
     }
   }, [loadingAuth, user, router]);
 
+  useEffect(() => {
+    const fetchQRCodes = async () => {
+      if (registrations.length > 0) {
+        const qrCodesData = {};
+        for (const registration of registrations) {
+          if (registration.qrCodeId) {
+            try {
+              const response = await fetch(
+                `/api/userQrCode?qrCodeId=${registration.qrCodeId}`
+              );
+              if (response.ok) {
+                const { qrCodeDataURL } = await response.json();
+                qrCodesData[registration.qrCodeId] = qrCodeDataURL;
+              } else {
+                console.error(
+                  "Failed to fetch QR code:",
+                  response.statusText
+                );
+              }
+            } catch (error) {
+              console.error("Error fetching QR code:", error);
+            }
+          }
+        }
+        setQRCodes(qrCodesData);
+      }
+    };
+
+    if (user) {
+      fetchQRCodes();
+    }
+  }, [registrations, user]);
+
   // Function to remove a registration
   const removeRegistration = async (registrationId) => {
     try {
@@ -116,6 +153,16 @@ const Profile = () => {
       console.error("Error removing registration:", error);
       toast.error("Kayıt silinirken bir hata oluştu. Lütfen tekrar deneyin.");
     }
+  };
+
+  // Function to download QR code
+  const downloadQRCode = (qrCodeDataURL, eventName) => {
+    const link = document.createElement("a");
+    link.href = qrCodeDataURL;
+    link.download = `${eventName}-registration-qr.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (loadingAuth || loadingData) {
@@ -161,6 +208,8 @@ const Profile = () => {
           registrations={registrations}
           events={events}
           removeRegistration={removeRegistration}
+          qrCodes={qrCodes}
+          downloadQRCode={downloadQRCode}
         />
       </div>
 
