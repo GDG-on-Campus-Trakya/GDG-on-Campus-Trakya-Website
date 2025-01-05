@@ -154,22 +154,39 @@ const Profile = () => {
   // Function to remove a registration
   const removeRegistration = async (registrationId) => {
     try {
-      await deleteDoc(doc(db, "registrations", registrationId));
-
+      const registrationRef = doc(db, "registrations", registrationId);
+      const registrationSnap = await getDoc(registrationRef);
+  
+      if (!registrationSnap.exists()) {
+        toast.error("Registration not found.");
+        return;
+      }
+  
+      const registrationData = registrationSnap.data();
+      const qrCodeId = registrationData.qrCodeId;
+  
+      // Delete the registration document
+      await deleteDoc(registrationRef);
+  
+      // Delete the associated QR code document if it exists
+      if (qrCodeId) {
+        await deleteDoc(doc(db, "qrCodes", qrCodeId));
+      }
+  
       setRegistrations((prevRegistrations) =>
         prevRegistrations.filter((reg) => reg.id !== registrationId)
       );
-
+  
       const updatedRegistrations = registrations.filter(
         (reg) => reg.id !== registrationId
       );
       const remainingEventIds = updatedRegistrations.map((reg) => reg.eventId);
       const uniqueRemainingEventIds = [...new Set(remainingEventIds)];
-
+  
       setEvents((prevEvents) =>
         prevEvents.filter((event) => uniqueRemainingEventIds.includes(event.id))
       );
-
+  
       toast.success("Kayıt başarıyla silindi.");
     } catch (error) {
       console.error("Error removing registration:", error);

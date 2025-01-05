@@ -5,11 +5,10 @@ import { toast } from "react-toastify";
 
 const isExpired = (eventDate) => new Date(eventDate) < new Date();
 
-const formatDate = (date) => {
+// Updated formatDate function to accept options
+const formatDate = (date, options = {}) => {
   const d = new Date(date);
-  const month = d.toLocaleString("tr-TR", { month: "long" });
-  const year = d.getFullYear();
-  return `${month} ${year}`;
+  return d.toLocaleString("tr-TR", options);
 };
 
 const EventList = ({
@@ -31,13 +30,16 @@ const EventList = ({
         const event = events.find((evt) => evt.id === registration.eventId);
         if (!event) return null;
 
-        const signedUpDate = new Date(
-          registration.signedUpAt?.seconds * 1000 || Date.now()
-        ).toLocaleDateString("tr-TR", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
+        const signedUpDate = formatDate(
+          registration.signedUpAt?.seconds * 1000 || Date.now(),
+          {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }
+        );
 
         const expired = isExpired(event.date);
         const status = expired ? "Geçmiş" : "Yaklaşan";
@@ -61,15 +63,22 @@ const EventList = ({
               <h3 className="text-2xl font-semibold text-white">
                 {event.name}
               </h3>
-              <p className="mt-2">
-                <strong>Tarih:</strong> {formatDate(event.date)}
-              </p>
-              <p>
-                <strong>Saat:</strong> {event.time}
-              </p>
-              <p>
-                <strong>Lokasyon:</strong> {event.location}
-              </p>
+              <div className="mt-2">
+                <p>
+                  <strong>Etkinlik Tarihi:</strong>{" "}
+                  {formatDate(event.date, {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })} {event.time}
+                </p>
+                <p>
+                  <strong>Etkinlik Lokasyonu:</strong> {event.location}
+                </p>
+                <p>
+                  <strong>Kayıt Tarihi:</strong> {signedUpDate}
+                </p>
+              </div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {/* Category Tag */}
                 <span className="inline-block px-3 py-1 bg-blue-600 text-white text-sm rounded-full">
@@ -85,7 +94,7 @@ const EventList = ({
             </div>
 
             {/* QR Code and Actions */}
-            {qrCodes[registration.qrCodeId] && (
+            {!expired && qrCodes[registration.qrCodeId] ? (
               <div className="mt-4 flex items-center gap-4">
                 <img
                   src={qrCodes[registration.qrCodeId]}
@@ -104,6 +113,12 @@ const EventList = ({
                   Kodu İndir
                 </button>
               </div>
+            ) : (
+              <p className="mt-4 text-gray-500">
+                {expired
+                  ? "Bu etkinlik sona erdiği için QR kodu mevcut değil."
+                  : "QR kodu yükleniyor..."}
+              </p>
             )}
 
             {/* Remove Button */}
