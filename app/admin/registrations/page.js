@@ -25,6 +25,7 @@ export default function AdminRegistrationsPage() {
   const [events, setEvents] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [usersMap, setUsersMap] = useState({});
+  const [expandedEvents, setExpandedEvents] = useState({});
 
   const router = useRouter();
 
@@ -121,6 +122,14 @@ export default function AdminRegistrationsPage() {
     }
   };
 
+  // Add this function to toggle event expansion
+  const toggleEventExpansion = (eventId) => {
+    setExpandedEvents(prev => ({
+      ...prev,
+      [eventId]: !prev[eventId]
+    }));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -138,93 +147,113 @@ export default function AdminRegistrationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
       {/* Back to Admin Panel Button */}
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6">
         <Link
           href="/admin"
-          className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+          className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
         >
           ← Back to Admin Panel
         </Link>
       </div>
 
-      <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
+      <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-gray-800">
         Admin Panel - Registrations
       </h1>
 
-      <section className="bg-white shadow-md rounded-lg p-6 mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+      <section className="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
           Manage Registrations
         </h2>
         {events.length === 0 ? (
           <p className="text-gray-500">No events found.</p>
         ) : (
-          <ul className="space-y-6">
-            {events.map((event) => (
-              <li
-                key={event.firestoreId}
-                className="bg-gray-50 p-4 rounded-md shadow-sm"
-              >
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  {event.name}
-                </h3>
-                <ul className="space-y-2">
-                  {/* Filter registrations */}
-                  {registrations.filter((reg) => reg.eventId === event.id)
-                    .length === 0 ? (
-                    <p className="text-gray-500">
-                      No registered users for this event.
-                    </p>
-                  ) : (
-                    registrations
-                      .filter((reg) => reg.eventId === event.id)
-                      .map((reg) => {
-                        const userData = usersMap[reg.userId];
-                        const signedUpDate = reg.signedUpAt
-                          ? new Date(reg.signedUpAt.seconds * 1000).toLocaleString("tr-TR", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : "Unknown Date";
+          <ul className="space-y-4 sm:space-y-6">
+            {events.map((event) => {
+              const registeredUsers = registrations.filter(
+                (reg) => reg.eventId === event.id
+              );
+              const registrationCount = registeredUsers.length;
 
-                        return (
-                          <li
-                            key={reg.firestoreId}
-                            className="flex justify-between items-center bg-gray-100 p-3 rounded-md"
-                          >
-                            <div>
-                              <p className="text-gray-700">
-                                {userData ? `Name: ${userData.name}` : `User ID: ${reg.userId}`}
-                              </p>
-                              <p className="text-gray-700">
-                                {userData ? `Email: ${userData.email}` : ""}
-                              </p>
-                              <p className="text-gray-500 text-sm">
-                                Registered on: {signedUpDate}
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => handleRemoveRegistration(reg.firestoreId)}
-                              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
-                            >
-                              Remove
-                            </button>
-                          </li>
-                        );
-                      })
+              return (
+                <li
+                  key={event.firestoreId}
+                  className="bg-gray-50 rounded-md shadow-sm overflow-hidden"
+                >
+                  <button
+                    onClick={() => toggleEventExpansion(event.firestoreId)}
+                    className="w-full p-3 sm:p-4 flex justify-between items-start gap-4 hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex flex-col items-start flex-1 min-w-0">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-800 break-words w-full">
+                        {event.name}
+                      </h3>
+                      <span className="text-sm text-gray-500 mt-1">
+                        {registrationCount} {registrationCount === 1 ? 'registration' : 'registrations'}
+                      </span>
+                    </div>
+                    <span className="text-xl font-medium text-gray-500 w-6 h-6 flex items-center justify-center flex-shrink-0">
+                      {expandedEvents[event.firestoreId] ? '−' : '+'}
+                    </span>
+                  </button>
+
+                  {expandedEvents[event.firestoreId] && (
+                    <div className="border-t border-gray-200 p-3 sm:p-4">
+                      <ul className="space-y-2 sm:space-y-3">
+                        {registrationCount === 0 ? (
+                          <p className="text-sm sm:text-base text-gray-500">
+                            No registered users for this event.
+                          </p>
+                        ) : (
+                          registeredUsers.map((reg) => {
+                            const userData = usersMap[reg.userId];
+                            const signedUpDate = reg.signedUpAt
+                              ? new Date(reg.signedUpAt.seconds * 1000).toLocaleString("tr-TR", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : "Unknown Date";
+
+                            return (
+                              <li
+                                key={reg.firestoreId}
+                                className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 rounded-md gap-3 sm:gap-0 border border-gray-100"
+                              >
+                                <div className="w-full sm:w-auto">
+                                  <p className="text-sm sm:text-base text-gray-700">
+                                    {userData ? `Name: ${userData.name}` : `User ID: ${reg.userId}`}
+                                  </p>
+                                  <p className="text-sm sm:text-base text-gray-700">
+                                    {userData ? `Email: ${userData.email}` : ""}
+                                  </p>
+                                  <p className="text-xs sm:text-sm text-gray-500">
+                                    Registered on: {signedUpDate}
+                                  </p>
+                                </div>
+                                <button
+                                  onClick={() => handleRemoveRegistration(reg.firestoreId)}
+                                  className="w-full sm:w-auto bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors text-sm"
+                                >
+                                  Remove
+                                </button>
+                              </li>
+                            );
+                          })
+                        )}
+                      </ul>
+                    </div>
                   )}
-                </ul>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
 
-      {/* Toast Container */}
       <ToastContainer />
     </div>
   );

@@ -114,14 +114,14 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
+      <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-gray-800">
         Admin Panel
       </h1>
 
       {/* Manage Admins */}
-      <section className="bg-white shadow-md rounded-lg p-6 mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+      <section className="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
           Manage Admins
         </h2>
         <form onSubmit={handleAddAdmin} className="space-y-4 mb-6">
@@ -163,11 +163,11 @@ export default function AdminPage() {
       </section>
 
       {/* Links to other Admin Pages */}
-      <section className="bg-white shadow-md rounded-lg p-6">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+      <section className="bg-white shadow-md rounded-lg p-4 sm:p-6">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
           Other Admin Pages
         </h2>
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <Link
             href="/admin/events"
             className="bg-blue-500 text-white px-4 py-2 rounded-md text-center hover:bg-blue-600 transition-colors"

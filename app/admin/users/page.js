@@ -201,24 +201,24 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
       {/* Back to Admin Panel Button */}
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6">
         <Link
           href="/admin"
-          className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+          className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
         >
           ← Back to Admin Panel
         </Link>
       </div>
 
-      <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
+      <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-gray-800">
         Admin Panel - Users
       </h1>
 
       {/* Add / Edit User Form */}
-      <section className="bg-white shadow-md rounded-lg p-6 mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+      <section className="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
           {isEditing ? "Edit User" : "Add User"}
         </h2>
         <form
@@ -281,21 +281,21 @@ export default function AdminUsersPage() {
       </section>
 
       {/* Display / Manage Users */}
-      <section className="bg-white shadow-md rounded-lg p-6 mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+      <section className="bg-white shadow-md rounded-lg p-4 sm:p-6">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
           Manage Users
         </h2>
         {usersList.length === 0 ? (
-          <p className="text-gray-500">No users found.</p>
+          <p className="text-sm sm:text-base text-gray-500">No users found.</p>
         ) : (
           <ul className="space-y-4">
             {usersList.map((usr) => (
               <li
                 key={usr.firestoreId}
-                className="flex justify-between items-center bg-gray-50 p-4 rounded-md shadow-sm"
+                className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-50 p-4 rounded-md shadow-sm gap-3 sm:gap-0"
               >
-                <div>
-                  <p className="text-lg font-medium text-gray-800">
+                <div className="w-full sm:w-auto">
+                  <p className="text-base sm:text-lg font-medium text-gray-800">
                     {usr.name}
                   </p>
                   <p className="text-sm text-gray-600">{usr.email}</p>
@@ -309,16 +309,16 @@ export default function AdminUsersPage() {
                     </span>
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto">
                   <button
                     onClick={() => handleEditUser(usr)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition-colors"
+                    className="flex-1 sm:flex-none bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition-colors text-sm"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDeleteUser(usr.firestoreId)}
-                    className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+                    className="flex-1 sm:flex-none bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors text-sm"
                   >
                     Delete
                   </button>
