@@ -15,6 +15,7 @@ import {
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Link from "next/link";
 
 export default function AdminRegistrationsPage() {
   const [user, loading] = useAuthState(auth);
@@ -138,6 +139,16 @@ export default function AdminRegistrationsPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
+      {/* Back to Admin Panel Button */}
+      <div className="mb-6">
+        <Link
+          href="/admin"
+          className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+        >
+          ← Back to Admin Panel
+        </Link>
+      </div>
+
       <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
         Admin Panel - Registrations
       </h1>

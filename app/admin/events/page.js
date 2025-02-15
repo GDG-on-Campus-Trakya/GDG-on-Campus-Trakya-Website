@@ -17,6 +17,7 @@ import {
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { v4 as uuidv4 } from "uuid";
+import Link from "next/link";
 
 export default function AdminEventsPage() {
   const [user, loading] = useAuthState(auth);
@@ -335,6 +336,16 @@ export default function AdminEventsPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
+      {/* Back to Admin Panel Button */}
+      <div className="mb-6">
+        <Link
+          href="/admin"
+          className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+        >
+          ← Back to Admin Panel
+        </Link>
+      </div>
+
       <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
         Admin Panel - Events
       </h1>
