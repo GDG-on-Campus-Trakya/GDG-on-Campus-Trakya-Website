@@ -171,23 +171,13 @@ export default function AdminRegistrationsPage() {
                       .map((reg) => {
                         const userData = usersMap[reg.userId];
                         const signedUpDate = reg.signedUpAt
-                          ? reg.signedUpAt.seconds
-                            ? new Date(
-                                reg.signedUpAt.seconds * 1000
-                              ).toLocaleString("tr-TR", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                            : new Date(reg.signedUpAt).toLocaleString("tr-TR", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
+                          ? new Date(reg.signedUpAt.seconds * 1000).toLocaleString("tr-TR", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
                           : "Unknown Date";
 
                         return (
@@ -197,9 +187,7 @@ export default function AdminRegistrationsPage() {
                           >
                             <div>
                               <p className="text-gray-700">
-                                {userData
-                                  ? `Name: ${userData.name}`
-                                  : `User ID: ${reg.userId}`}
+                                {userData ? `Name: ${userData.name}` : `User ID: ${reg.userId}`}
                               </p>
                               <p className="text-gray-700">
                                 {userData ? `Email: ${userData.email}` : ""}
@@ -209,9 +197,7 @@ export default function AdminRegistrationsPage() {
                               </p>
                             </div>
                             <button
-                              onClick={() =>
-                                handleRemoveRegistration(reg.firestoreId)
-                              }
+                              onClick={() => handleRemoveRegistration(reg.firestoreId)}
                               className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
                             >
                               Remove

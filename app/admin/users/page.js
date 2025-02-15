@@ -12,6 +12,7 @@ import {
   addDoc,
   setDoc,
   deleteDoc,
+  Timestamp
 } from "firebase/firestore";
 
 export default function AdminUsersPage() {
@@ -61,10 +62,17 @@ export default function AdminUsersPage() {
       try {
         const usersSnapshot = await getDocs(collection(db, "users"));
         setUsersList(
-          usersSnapshot.docs.map((doc) => ({
-            firestoreId: doc.id,
-            ...doc.data(),
-          }))
+          usersSnapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+              firestoreId: doc.id,
+              ...data,
+              // Convert Timestamp to string when displaying
+              createdAt: data.createdAt instanceof Timestamp 
+                ? data.createdAt.toDate().toLocaleString()
+                : data.createdAt
+            };
+          })
         );
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -75,6 +83,7 @@ export default function AdminUsersPage() {
       fetchUsers();
     }
   }, [isAdmin]);
+
 
   const isEditing = !!userFormData.firestoreId;
 
@@ -107,10 +116,14 @@ export default function AdminUsersPage() {
         name: userFormData.name,
         email: userFormData.email,
         wantsToGetEmails: userFormData.wantsToGetEmails,
-        createdAt: userFormData.createdAt || new Date().toISOString(),
+        createdAt: Timestamp.now(), // Use Timestamp instead of ISO string
       };
       const docRef = await addDoc(collection(db, "users"), newUser);
-      setUsersList((prev) => [...prev, { firestoreId: docRef.id, ...newUser }]);
+      setUsersList((prev) => [...prev, { 
+        firestoreId: docRef.id, 
+        ...newUser,
+        createdAt: newUser.createdAt.toDate().toLocaleString() // Convert for display
+      }]);
       resetUserForm();
     } catch (error) {
       console.error("Error adding user:", error);
@@ -127,21 +140,28 @@ export default function AdminUsersPage() {
     e.preventDefault();
     try {
       const userRef = doc(db, "users", userFormData.firestoreId);
-      await setDoc(
-        userRef,
-        {
-          name: userFormData.name,
-          email: userFormData.email,
-          wantsToGetEmails: userFormData.wantsToGetEmails,
-          createdAt: userFormData.createdAt,
-        },
-        { merge: true }
-      );
+      const updateData = {
+        name: userFormData.name,
+        email: userFormData.email,
+        wantsToGetEmails: userFormData.wantsToGetEmails,
+        // Only update createdAt if it's empty or invalid
+        ...((!userFormData.createdAt || userFormData.createdAt === '') && {
+          createdAt: Timestamp.now()
+        })
+      };
+      
+      await setDoc(userRef, updateData, { merge: true });
 
       setUsersList((prev) =>
         prev.map((usr) =>
           usr.firestoreId === userFormData.firestoreId
-            ? { ...usr, ...userFormData }
+            ? { 
+                ...usr, 
+                ...updateData,
+                createdAt: updateData.createdAt instanceof Timestamp 
+                  ? updateData.createdAt.toDate().toLocaleString()
+                  : usr.createdAt
+              }
             : usr
         )
       );

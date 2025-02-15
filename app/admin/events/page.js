@@ -16,9 +16,7 @@ import {
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
-import { v4 as uuidv4 } from 'uuid';
-
-
+import { v4 as uuidv4 } from "uuid";
 
 export default function AdminEventsPage() {
   const [user, loading] = useAuthState(auth);
@@ -185,17 +183,17 @@ export default function AdminEventsPage() {
       const registeredUserIds = registrationsSnapshot.docs.map(
         (doc) => doc.data().userId
       );
-  
+
       if (registeredUserIds.length === 0) {
         alert("No users registered for this event.");
         return;
       }
-  
+
       // Fetch user emails in batches and filter by wantsToGetEmails
       const usersCollectionRef = collection(db, "users");
       let userEmails = [];
       const batchSize = 10;
-      
+
       for (let i = 0; i < registeredUserIds.length; i += batchSize) {
         const batch = registeredUserIds.slice(i, i + batchSize);
         const usersQuery = query(
@@ -204,7 +202,7 @@ export default function AdminEventsPage() {
           where("wantsToGetEmails", "==", true) // Filter users who want to receive emails
         );
         const usersSnapshot = await getDocs(usersQuery);
-        
+
         usersSnapshot.forEach((doc) => {
           const userData = doc.data();
           if (userData.email) {
@@ -212,12 +210,12 @@ export default function AdminEventsPage() {
           }
         });
       }
-  
+
       const event = events.find((e) => e.id === eventId);
       if (!event) {
         throw new Error("Event not found");
       }
-  
+
       // Use the correct API route path
       const response = await fetch("/api/sendEmail", {
         method: "POST",
@@ -245,12 +243,12 @@ export default function AdminEventsPage() {
           adminEmail: user.email, // Pass admin's email for verification
         }),
       });
-  
+
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || 'Failed to send emails');
+        throw new Error(data.message || "Failed to send emails");
       }
-  
+
       alert("Emails sent successfully!");
     } catch (error) {
       console.error("Error sending emails:", error);
@@ -263,10 +261,7 @@ export default function AdminEventsPage() {
     try {
       // Check if a QR code already exists for the event
       const qrCodesRef = collection(db, "eventQrCodes");
-      const qrCodeQuery = query(
-        qrCodesRef,
-        where("eventId", "==", eventId)
-      );
+      const qrCodeQuery = query(qrCodesRef, where("eventId", "==", eventId));
       const qrCodeSnapshot = await getDocs(qrCodeQuery);
 
       if (!qrCodeSnapshot.empty) {
@@ -541,9 +536,7 @@ export default function AdminEventsPage() {
                     Delete
                   </button>
                   <button
-                    onClick={() =>
-                      handleSendEmailToRegisteredUsers(event.id)
-                    }
+                    onClick={() => handleSendEmailToRegisteredUsers(event.id)}
                     className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition-colors"
                   >
                     Send Email to Registered Users
@@ -567,9 +560,7 @@ export default function AdminEventsPage() {
           <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
             <h2 className="text-xl font-semibold mb-4">QR Code</h2>
             <img src={currentQRCodeDataURL} alt="QR Code" className="w-full" />
-            <p className="mt-4 text-gray-600">
-              QR Code ID: {currentQRCodeId}
-            </p>
+            <p className="mt-4 text-gray-600">QR Code ID: {currentQRCodeId}</p>
             <button
               onClick={() => setQRCodeModalOpen(false)}
               className="mt-6 w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
