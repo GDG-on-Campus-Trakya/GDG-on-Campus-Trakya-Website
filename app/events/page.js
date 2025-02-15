@@ -124,30 +124,43 @@ export default function EventsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Add error handling and loading states
         const eventsSnapshot = await getDocs(collection(db, "events"));
-        const eventsData = eventsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        eventsData.sort((a, b) => new Date(a.date) - new Date(b.date));
-        setEvents(eventsData);
+        if (!eventsSnapshot.empty) {
+          const eventsData = eventsSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          eventsData.sort((a, b) => new Date(a.date) - new Date(b.date));
+          setEvents(eventsData);
+        } else {
+          console.log("No events found");
+          setEvents([]);
+        }
 
         const sponsorsSnapshot = await getDocs(collection(db, "sponsors"));
-        const sponsorsData = sponsorsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setSponsors(sponsorsData);
+        if (!sponsorsSnapshot.empty) {
+          const sponsorsData = sponsorsSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setSponsors(sponsorsData);
+        } else {
+          console.log("No sponsors found");
+          setSponsors([]);
+        }
       } catch (error) {
-        console.error("Error fetching events or sponsors:", error);
+        console.error("Error fetching data:", error);
+        // Set empty arrays to prevent undefined errors
+        setEvents([]);
+        setSponsors([]);
       }
     };
 
     fetchData().then(() => {
-      // Only try to handle QR code redirect after events are loaded
       handleQRCodeRedirect();
     });
-  }, []); // Empty dependency array to run only once on mount
+  }, []);
 
   // Add another effect to handle QR code redirect when events change
   useEffect(() => {

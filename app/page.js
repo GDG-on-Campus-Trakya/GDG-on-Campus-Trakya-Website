@@ -48,38 +48,6 @@ export default function LandingPage() {
           </div>
         </div>
       </header>
-      {/* Right Section: Social Media Icons */}
-      <div className="flex space-x-4">
-        <button
-          onClick={() =>
-            window.open(
-              "https://www.linkedin.com/company/gdscedirne/posts/?feedView=all",
-              "_blank"
-            )
-          }
-          className="w-6 h-6 sm:w-7 sm:h-7 cursor-pointer hover:scale-110 transition-transform"
-          aria-label="LinkedIn"
-        >
-          <img
-            src="/linkedin.png"
-            alt="LinkedIn"
-            className="w-full h-full object-contain"
-          />
-        </button>
-        <button
-          onClick={() =>
-            window.open("https://www.instagram.com/gdgoncampustu/", "_blank")
-          }
-          className="w-6 h-6 sm:w-7 sm:h-7 cursor-pointer hover:scale-110 transition-transform"
-          aria-label="Instagram"
-        >
-          <img
-            src="/Instagram.png"
-            alt="Instagram"
-            className="w-full h-full object-contain"
-          />
-        </button>
-      </div>
       {/* Gradient Animation Styles */}
       <style jsx>{`
         @keyframes gradient-border {
