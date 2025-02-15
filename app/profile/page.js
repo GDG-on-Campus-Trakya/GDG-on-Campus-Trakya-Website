@@ -102,22 +102,22 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchQRCodes = async () => {
-      if (registrations.length > 0) {
+      if (registrations.length > 0 && user) {
         const qrCodesData = {};
         for (const registration of registrations) {
           if (registration.qrCodeId) {
             try {
-              const response = await fetch(
-                `/api/userQrCode?qrCodeId=${registration.qrCodeId}`
-              );
-              if (response.ok) {
-                const { qrCodeDataURL } = await response.json();
+              // Fetch QR code directly from Firestore
+              const qrCodeRef = doc(db, "qrCodes", registration.qrCodeId);
+              const qrCodeSnap = await getDoc(qrCodeRef);
+              
+              if (qrCodeSnap.exists()) {
+                const qrCodeData = qrCodeSnap.data().code;
+                // Generate QR code data URL
+                const qrCodeDataURL = await QRCode.toDataURL(qrCodeData, {
+                  errorCorrectionLevel: "H",
+                });
                 qrCodesData[registration.qrCodeId] = qrCodeDataURL;
-              } else {
-                console.error(
-                  "Failed to fetch QR code:",
-                  response.statusText
-                );
               }
             } catch (error) {
               console.error("Error fetching QR code:", error);
