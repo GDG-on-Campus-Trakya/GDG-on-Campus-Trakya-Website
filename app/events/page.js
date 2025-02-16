@@ -314,7 +314,6 @@ export default function EventsPage() {
     return filtered;
   }, [events, selectedDate, filterStatus]);
 
-  // Effect to handle clicks outside the drawer
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (drawerRef.current && !drawerRef.current.contains(event.target)) {
@@ -338,7 +337,7 @@ export default function EventsPage() {
   return (
     <div className="font-sans bg-gradient-to-b from-[#0a0a19] to-black text-white min-h-screen flex flex-col items-center p-6">
       <header className="flex flex-col items-center mb-6">
-        <h1 className="text-5xl font-bold mb-3">Events</h1>
+        <h1 className="text-5xl font-bold mb-3">Etkinlikler</h1>
         <p className="text-lg text-gray-400">
           Katılmak istediğiniz etkinlikleri keşfedin ve kaydolun!
         </p>

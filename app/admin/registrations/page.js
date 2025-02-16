@@ -154,20 +154,20 @@ export default function AdminRegistrationsPage() {
           href="/admin"
           className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
         >
-          ← Back to Admin Panel
+          ← Admin Paneline Geri Dön
         </Link>
       </div>
 
       <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-gray-800">
-        Admin Panel - Registrations
+        Admin Paneli - Etkinlik Kayıtları
       </h1>
 
       <section className="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
-          Manage Registrations
+          Etkinlik Kayıtlarını Yönet
         </h2>
         {events.length === 0 ? (
-          <p className="text-gray-500">No events found.</p>
+          <p className="text-gray-500">Etkinlik bulunamadı.</p>
         ) : (
           <ul className="space-y-4 sm:space-y-6">
             {events.map((event) => {
@@ -203,7 +203,7 @@ export default function AdminRegistrationsPage() {
                       <ul className="space-y-2 sm:space-y-3">
                         {registrationCount === 0 ? (
                           <p className="text-sm sm:text-base text-gray-500">
-                            No registered users for this event.
+                            Bu etkinlik için kayıtlı kullanıcı bulunamadı.
                           </p>
                         ) : (
                           registeredUsers.map((reg) => {
@@ -231,14 +231,14 @@ export default function AdminRegistrationsPage() {
                                     {userData ? `Email: ${userData.email}` : ""}
                                   </p>
                                   <p className="text-xs sm:text-sm text-gray-500">
-                                    Registered on: {signedUpDate}
+                                    Kayıt Tarihi: {signedUpDate}
                                   </p>
                                 </div>
                                 <button
                                   onClick={() => handleRemoveRegistration(reg.firestoreId)}
                                   className="w-full sm:w-auto bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors text-sm"
                                 >
-                                  Remove
+                                  Sil
                                 </button>
                               </li>
                             );

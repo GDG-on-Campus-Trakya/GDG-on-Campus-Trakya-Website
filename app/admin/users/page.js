@@ -208,18 +208,18 @@ export default function AdminUsersPage() {
           href="/admin"
           className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
         >
-          ← Back to Admin Panel
+          ← Admin Paneline Geri Dön
         </Link>
       </div>
 
       <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-gray-800">
-        Admin Panel - Users
+        Admin Paneli - Kullanıcılar
       </h1>
 
       {/* Add / Edit User Form */}
       <section className="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
-          {isEditing ? "Edit User" : "Add User"}
+          {isEditing ? "Kullanıcı Düzenle" : "Kullanıcı Ekle"}
         </h2>
         <form
           onSubmit={isEditing ? handleUpdateUser : handleAddUser}
@@ -228,7 +228,7 @@ export default function AdminUsersPage() {
           <input
             type="text"
             name="name"
-            placeholder="User Name"
+            placeholder="Kullanıcı Adı"
             value={userFormData.name}
             onChange={handleChange}
             required
@@ -237,7 +237,7 @@ export default function AdminUsersPage() {
           <input
             type="email"
             name="email"
-            placeholder="User Email"
+            placeholder="Kullanıcı Email'i"
             value={userFormData.email}
             onChange={handleChange}
             required
@@ -256,7 +256,7 @@ export default function AdminUsersPage() {
               htmlFor="wantsEmails"
               className="text-gray-700 select-none cursor-pointer"
             >
-              Wants to get emails
+              Email almak istiyor mu?
             </label>
           </div>
 
@@ -266,7 +266,7 @@ export default function AdminUsersPage() {
               isEditing ? "bg-yellow-500" : "bg-green-500"
             } text-white py-2 rounded-md`}
           >
-            {isEditing ? "Update User" : "Add User"}
+            {isEditing ? "Kullanıcı Güncelle" : "Kullanıcı Ekle"}
           </button>
           {isEditing && (
             <button
@@ -274,7 +274,7 @@ export default function AdminUsersPage() {
               onClick={resetUserForm}
               className="w-full mt-2 bg-gray-500 text-white py-2 rounded-md"
             >
-              Cancel Edit
+              İptal Et
             </button>
           )}
         </form>
@@ -283,10 +283,10 @@ export default function AdminUsersPage() {
       {/* Display / Manage Users */}
       <section className="bg-white shadow-md rounded-lg p-4 sm:p-6">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
-          Manage Users
+          Kullanıcıları Yönet
         </h2>
         {usersList.length === 0 ? (
-          <p className="text-sm sm:text-base text-gray-500">No users found.</p>
+          <p className="text-sm sm:text-base text-gray-500">Kullanıcı bulunamadı.</p>
         ) : (
           <ul className="space-y-4">
             {usersList.map((usr) => (
@@ -314,13 +314,13 @@ export default function AdminUsersPage() {
                     onClick={() => handleEditUser(usr)}
                     className="flex-1 sm:flex-none bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition-colors text-sm"
                   >
-                    Edit
+                    Düzenle
                   </button>
                   <button
                     onClick={() => handleDeleteUser(usr.firestoreId)}
                     className="flex-1 sm:flex-none bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors text-sm"
                   >
-                    Delete
+                    Sil
                   </button>
                 </div>
               </li>

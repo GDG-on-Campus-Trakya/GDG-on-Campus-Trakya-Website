@@ -342,18 +342,18 @@ export default function AdminEventsPage() {
           href="/admin"
           className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
         >
-          ← Back to Admin Panel
+          ← Admin Paneline Geri Dön
         </Link>
       </div>
 
       <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-gray-800">
-        Admin Panel - Events
+        Admin Paneli - Etkinlikler
       </h1>
 
       {/* Add / Edit Event Form */}
       <section className="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
         <h2 className="text-2xl font-semibold mb-4 text-gray-700">
-          {isEditing ? "Edit Event" : "Add Event"}
+          {isEditing ? "Etkinlik Düzenle" : "Etkinlik Ekle"}
         </h2>
         <form
           onSubmit={isEditing ? handleUpdateEvent : handleAddEvent}
@@ -362,7 +362,7 @@ export default function AdminEventsPage() {
           <input
             type="text"
             name="name"
-            placeholder="Event Name"
+            placeholder="Etkinlik Adı"
             value={formData.name}
             onChange={handleChange}
             required
@@ -371,7 +371,7 @@ export default function AdminEventsPage() {
           <input
             type="text"
             name="description"
-            placeholder="Event Description"
+            placeholder="Etkinlik Açıklaması"
             value={formData.description}
             onChange={handleChange}
             required
@@ -380,7 +380,7 @@ export default function AdminEventsPage() {
           <input
             type="date"
             name="date"
-            placeholder="Event Date"
+            placeholder="Etkinlik Tarihi"
             value={formData.date}
             onChange={handleChange}
             required
@@ -389,7 +389,7 @@ export default function AdminEventsPage() {
           <input
             type="time"
             name="time"
-            placeholder="Event Time"
+            placeholder="Etkinlik Saati"
             value={formData.time}
             onChange={handleChange}
             required
@@ -398,7 +398,7 @@ export default function AdminEventsPage() {
           <input
             type="url"
             name="imageUrl"
-            placeholder="Image URL"
+            placeholder="Resim URL'si"
             value={formData.imageUrl}
             onChange={handleChange}
             required
@@ -407,7 +407,7 @@ export default function AdminEventsPage() {
           <input
             type="text"
             name="location"
-            placeholder="Location"
+            placeholder="Konum"
             value={formData.location}
             onChange={handleChange}
             required
@@ -417,7 +417,7 @@ export default function AdminEventsPage() {
           {/* Category Dropdown */}
           <div>
             <label htmlFor="category" className="block text-gray-700 mb-2">
-              Category
+              Kategori
             </label>
             <select
               name="category"
@@ -436,7 +436,7 @@ export default function AdminEventsPage() {
           {/* Sponsors Dropdown */}
           <div>
             <label htmlFor="sponsors" className="block text-gray-700 mb-2">
-              Sponsors
+              Sponsorlar
             </label>
             <div className="relative">
               <button
@@ -444,7 +444,7 @@ export default function AdminEventsPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white text-left"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
-                Select Sponsors
+                Sponsor Seç
               </button>
               {isDropdownOpen && (
                 <ul className="absolute z-10 mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 w-full overflow-auto">
@@ -508,7 +508,7 @@ export default function AdminEventsPage() {
               isEditing ? "yellow-600" : "green-600"
             } transition-colors`}
           >
-            {isEditing ? "Update Event" : "Add Event"}
+            {isEditing ? "Etkinlik Güncelle" : "Etkinlik Ekle"}
           </button>
         </form>
       </section>
@@ -516,10 +516,10 @@ export default function AdminEventsPage() {
       {/* Manage Events */}
       <section className="bg-white shadow-md rounded-lg p-4 sm:p-6">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
-          Manage Events
+          Etkinlikleri Yönet
         </h2>
         {events.length === 0 ? (
-          <p className="text-gray-500">No events found.</p>
+          <p className="text-gray-500">Etkinlik bulunamadı.</p>
         ) : (
           <ul className="space-y-4">
             {events.map((event) => (
@@ -538,25 +538,25 @@ export default function AdminEventsPage() {
                     onClick={() => handleEditEvent(event)}
                     className="flex-1 sm:flex-none bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition-colors text-sm"
                   >
-                    Edit
+                    Düzenle
                   </button>
                   <button
                     onClick={() => handleDeleteEvent(event.firestoreId)}
                     className="flex-1 sm:flex-none bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors text-sm"
                   >
-                    Delete
+                    Sil
                   </button>
                   <button
                     onClick={() => handleSendEmailToRegisteredUsers(event.id)}
                     className="flex-1 sm:flex-none bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition-colors text-sm"
                   >
-                    Send Email
+                    Email Gönder
                   </button>
                   <button
                     onClick={() => handleGenerateQRCode(event.id)}
                     className="flex-1 sm:flex-none bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition-colors text-sm"
                   >
-                    QR Code
+                    QR Kodu Oluştur
                   </button>
                 </div>
               </li>
@@ -569,14 +569,14 @@ export default function AdminEventsPage() {
       {qrCodeModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
-            <h2 className="text-xl font-semibold mb-4">QR Code</h2>
-            <img src={currentQRCodeDataURL} alt="QR Code" className="w-full" />
-            <p className="mt-4 text-gray-600">QR Code ID: {currentQRCodeId}</p>
+            <h2 className="text-xl font-semibold mb-4">QR Kodu</h2>
+            <img src={currentQRCodeDataURL} alt="QR Kodu" className="w-full" />
+            <p className="mt-4 text-gray-600">QR Kodu ID: {currentQRCodeId}</p>
             <button
               onClick={() => setQRCodeModalOpen(false)}
               className="mt-6 w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
             >
-              Close
+              Kapat
             </button>
           </div>
         </div>

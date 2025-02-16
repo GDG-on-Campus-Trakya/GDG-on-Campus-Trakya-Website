@@ -222,7 +222,7 @@ const Profile = () => {
   if (loadingAuth || loadingData) {
     return (
       <div className="flex items-center justify-center p-10 text-lg text-white">
-        <p>Loading...</p>
+        <p>Yükleniyor...</p>
       </div>
     );
   }
@@ -230,7 +230,7 @@ const Profile = () => {
   if (errorAuth) {
     return (
       <div className="flex items-center justify-center p-10 text-lg text-red-500">
-        <p>Error: {errorAuth.message}</p>
+        <p>Hata: {errorAuth.message}</p>
       </div>
     );
   }
@@ -238,7 +238,7 @@ const Profile = () => {
   if (errorData) {
     return (
       <div className="flex items-center justify-center p-10 text-lg text-red-500">
-        <p>Error: {errorData}</p>
+        <p>Hata: {errorData}</p>
       </div>
     );
   }
@@ -256,13 +256,13 @@ const Profile = () => {
       {/* Email Preferences */}
       <div className="mt-10">
         <h2 className="text-2xl border-b-2 border-blue-400 pb-2 mb-5 inline-block">
-          Email Preferences
+          Email Tercihleri
         </h2>
         <div className="flex flex-row items-center justify-between space-x-4 rounded-lg border p-4">
           <div className="space-y-0.5">
-            <Label htmlFor="email-notifications">Email Notifications</Label>
+            <Label htmlFor="email-notifications">Email Bildirimleri</Label>
             <p className="text-sm text-gray-400">
-              Receive emails about events and updates
+              Etkinlikler ve güncellemeler hakkında email alın
             </p>
           </div>
           <Switch
@@ -274,7 +274,7 @@ const Profile = () => {
           />
         </div>
         {isEmailUpdateLoading && (
-          <p className="mt-2 text-sm text-gray-500">Updating...</p>
+          <p className="mt-2 text-sm text-gray-500">Güncelleniyor...</p>
         )}
       </div>
 

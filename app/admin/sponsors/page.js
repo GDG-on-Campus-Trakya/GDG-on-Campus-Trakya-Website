@@ -188,13 +188,13 @@ export default function AdminSponsorsPage() {
       </div>
 
       <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-gray-800">
-        Admin Panel - Sponsors
+        Admin Paneli - Sponsorlar
       </h1>
 
       {/* Sponsor Form */}
       <section className="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
-          {isEditing ? "Edit Sponsor" : "Add Sponsor"}
+          {isEditing ? "Sponsor Düzenle" : "Sponsor Ekle"}
         </h2>
         <form
           onSubmit={isEditing ? handleUpdateSponsor : handleAddSponsor}
@@ -203,7 +203,7 @@ export default function AdminSponsorsPage() {
           <input
             type="text"
             name="name"
-            placeholder="Sponsor Name"
+            placeholder="Sponsor Adı"
             value={sponsorFormData.name}
             onChange={handleSponsorChange}
             required
@@ -212,7 +212,7 @@ export default function AdminSponsorsPage() {
           <input
             type="url"
             name="img_url"
-            placeholder="Image URL"
+            placeholder="Resim URL'si"
             value={sponsorFormData.img_url}
             onChange={handleSponsorChange}
             required
@@ -221,7 +221,7 @@ export default function AdminSponsorsPage() {
           <input
             type="url"
             name="website_url"
-            placeholder="Website URL"
+            placeholder="Website URL'si"
             value={sponsorFormData.website_url}
             onChange={handleSponsorChange}
             required
@@ -236,7 +236,7 @@ export default function AdminSponsorsPage() {
               isEditing ? "yellow-600" : "green-600"
             } transition-colors`}
           >
-            {isEditing ? "Update Sponsor" : "Add Sponsor"}
+            {isEditing ? "Sponsor Güncelle" : "Sponsor Ekle"}
           </button>
 
           {isEditing && (
@@ -245,7 +245,7 @@ export default function AdminSponsorsPage() {
               onClick={resetSponsorForm}
               className="w-full mt-2 bg-gray-500 text-white py-2 rounded-md"
             >
-              Cancel Edit
+              İptal Et
             </button>
           )}
         </form>
@@ -254,10 +254,10 @@ export default function AdminSponsorsPage() {
       {/* Manage Sponsors */}
       <section className="bg-white shadow-md rounded-lg p-4 sm:p-6">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
-          Manage Sponsors
+          Sponsorları Yönet
         </h2>
         {sponsors.length === 0 ? (
-          <p className="text-sm sm:text-base text-gray-500">No sponsors found.</p>
+          <p className="text-sm sm:text-base text-gray-500">Sponsor bulunamadı.</p>
         ) : (
           <ul className="space-y-4">
             {sponsors.map((sponsor) => (
@@ -285,13 +285,13 @@ export default function AdminSponsorsPage() {
                     onClick={() => handleEditSponsor(sponsor)}
                     className="flex-1 sm:flex-none bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition-colors text-sm"
                   >
-                    Edit
+                    Düzenle
                   </button>
                   <button
                     onClick={() => handleDeleteSponsor(sponsor.firestoreId)}
                     className="flex-1 sm:flex-none bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors text-sm"
                   >
-                    Delete
+                    Sil
                   </button>
                 </div>
               </li>

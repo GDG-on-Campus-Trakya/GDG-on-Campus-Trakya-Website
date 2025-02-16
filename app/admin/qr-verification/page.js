@@ -210,12 +210,12 @@ export default function AdminQRVerificationPage() {
           href="/admin"
           className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
         >
-          ← Back to Admin Panel
+          ← Admin Paneline Geri Dön
         </Link>
       </div>
 
       <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
-        Admin QR Code Verification
+          Admin QR Kodu Doğrulama
       </h1>
 
       <div className="max-w-md mx-auto bg-white rounded-lg p-6 shadow-md">
@@ -232,7 +232,7 @@ export default function AdminQRVerificationPage() {
             onClick={startScanning}
             className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors mt-4"
           >
-            Start Scanning
+            Tarama Başlat
           </button>
         )}
         
@@ -241,13 +241,13 @@ export default function AdminQRVerificationPage() {
             onClick={stopScanning}
             className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition-colors mt-4"
           >
-            Stop Scanning
+            Tarama Durdur
           </button>
         )}
 
         {qrCodeData && (
           <div className="mt-4 p-3 bg-gray-50 rounded-md">
-            <h2 className="font-semibold text-gray-700">Scanned QR Code:</h2>
+            <h2 className="font-semibold text-gray-700">Taranan QR Kod:</h2>
             <p className="text-gray-600 break-all">{qrCodeData}</p>
           </div>
         )}

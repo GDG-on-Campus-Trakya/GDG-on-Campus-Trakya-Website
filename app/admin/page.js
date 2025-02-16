@@ -116,18 +116,18 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
       <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-gray-800">
-        Admin Panel
+        Admin Paneli
       </h1>
 
       {/* Manage Admins */}
       <section className="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
-          Manage Admins
+          Adminleri Yönet
         </h2>
         <form onSubmit={handleAddAdmin} className="space-y-4 mb-6">
           <input
             type="email"
-            placeholder="Admin Email"
+            placeholder="Admin Email'i"
             value={newAdminEmail}
             onChange={(e) => setNewAdminEmail(e.target.value)}
             required
@@ -137,7 +137,7 @@ export default function AdminPage() {
             type="submit"
             className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition-colors"
           >
-            Add Admin
+            Admin Ekle
           </button>
         </form>
         <ul className="space-y-4">
@@ -155,7 +155,7 @@ export default function AdminPage() {
                 onClick={() => handleRemoveAdmin(admin.id)}
                 className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
               >
-                Remove
+                Admin Sil
               </button>
             </li>
           ))}
@@ -165,38 +165,38 @@ export default function AdminPage() {
       {/* Links to other Admin Pages */}
       <section className="bg-white shadow-md rounded-lg p-4 sm:p-6">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
-          Other Admin Pages
+          Diğer Admin Panelleri
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <Link
             href="/admin/events"
             className="bg-blue-500 text-white px-4 py-2 rounded-md text-center hover:bg-blue-600 transition-colors"
           >
-            Manage Events
+            Etkinlikleri Yönet
           </Link>
           <Link
             href="/admin/sponsors"
             className="bg-blue-500 text-white px-4 py-2 rounded-md text-center hover:bg-blue-600 transition-colors"
           >
-            Manage Sponsors
+            Sponsorları Yönet
           </Link>
           <Link
             href="/admin/registrations"
             className="bg-blue-500 text-white px-4 py-2 rounded-md text-center hover:bg-blue-600 transition-colors"
           >
-            Manage Registrations
+            Etkinlik Kayıtlarını Yönet
           </Link>
           <Link
             href="/admin/users"
             className="bg-blue-500 text-white px-4 py-2 rounded-md text-center hover:bg-blue-600 transition-colors"
           >
-            Manage Users
+            Kullanıcıları Yönet
           </Link>
           <Link
             href="/admin/qr-verification"
             className="bg-blue-500 text-white px-4 py-2 rounded-md text-center hover:bg-blue-600 transition-colors"
           >
-            QR Code Verification
+            QR Kod Doğrulama
           </Link>
         </div>
       </section>
