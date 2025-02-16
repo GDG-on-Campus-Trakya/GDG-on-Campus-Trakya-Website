@@ -94,4 +94,53 @@ body {
   overflow-x: hidden;
 }
 
+@layer components {
+  .drawer {
+    background: transparent;
+  }
+
+  .drawer-content {
+    --tw-translate-x: 100%;
+    margin-left: auto;
+    background: transparent !important;
+    border: none !important;
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+
+  .drawer-content[data-state='open'] {
+    --tw-translate-x: 0;
+    transform: translate(var(--tw-translate-x));
+  }
+
+  .drawer-content[data-state='closed'] {
+    --tw-translate-x: 100%;
+    transform: translate(var(--tw-translate-x));
+  }
+
+  /* Override any default background colors */
+  .drawer-content > * {
+    background: transparent;
+  }
+
+  /* Custom scrollbar styles */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+  }
+}
+
 

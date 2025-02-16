@@ -15,6 +15,17 @@ import {
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Calendar from "../../components/Calendar";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
+import { cn } from "@/lib/utils"
 
 export default function EventsPage() {
   const [events, setEvents] = useState([]);
@@ -172,30 +183,28 @@ export default function EventsPage() {
   const handleQRCodeRedirect = async () => {
     const qrCodeId = searchParams.get("qrCode");
 
-    if (qrCodeId && !selectedEvent && events.length > 0) { // Only proceed if we have events
+    if (qrCodeId && !selectedEvent && events.length > 0) {
       try {
-        const qrCodeRef = doc(db, "eventQrCodes", qrCodeId);
+        const qrCodeRef = doc(db, "qrCodes", qrCodeId);
         const qrCodeSnap = await getDoc(qrCodeRef);
 
         if (qrCodeSnap.exists()) {
-          const qrCodeData = qrCodeSnap.data();
-          const eventId = qrCodeData.eventId;
-          
-          // Add debug logs
-          console.log("QR Code Data:", qrCodeData);
-          console.log("Event ID from QR:", eventId);
-          console.log("Available events:", events);
-          
-          // Try to find event by both document ID and numeric ID
-          const event = events.find((e) => {
-            console.log("Checking event:", e.id, typeof e.id);
-            return e.id === eventId || e.id === parseInt(eventId);
-          });
+          const registrationId = qrCodeSnap.data().registrationId;
+          const registrationRef = doc(db, "registrations", registrationId);
+          const registrationSnap = await getDoc(registrationRef);
 
-          if (event) {
-            setSelectedEvent(event);
+          if (registrationSnap.exists()) {
+            const eventId = registrationSnap.data().eventId;
+            
+            const event = events.find(e => e.id === eventId);
+
+            if (event) {
+              setSelectedEvent(event);
+            } else {
+              console.error("Event not found for registration:", registrationId);
+            }
           } else {
-            console.error("Event not found for QR code:", qrCodeId);
+            console.error("Registration not found for QR code:", qrCodeId);
           }
         } else {
           console.error("Invalid QR code:", qrCodeId);
@@ -454,145 +463,158 @@ export default function EventsPage() {
         </div>
       </main>
 
-      {/* Backdrop and Drawer */}
-      {selectedEvent && (
-        <>
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-            onClick={closeDrawer}
-          ></div>
-          <div
-            className="fixed top-0 right-0 w-96 h-full bg-gray-800 text-white p-6 shadow-lg overflow-y-auto z-50"
-            ref={drawerRef}
-          >
-            <button
-              className="absolute top-6 left-6 text-3xl font-bold hover:text-gray-400 transition-colors focus:outline-none"
-              onClick={closeDrawer}
-            >
-              &times;
-            </button>
-            <div className="flex justify-end space-x-3 mb-6">
-              <button
-                className="w-10 h-10 bg-gray-700 text-gray-400 rounded-full hover:bg-gray-600 transition-colors"
-                onClick={showPreviousEvent}
-              >
-                &#8592;
-              </button>
-              <button
-                className="w-10 h-10 bg-gray-700 text-gray-400 rounded-full hover:bg-gray-600 transition-colors"
-                onClick={showNextEvent}
-              >
-                &#8594;
-              </button>
-            </div>
-            <img
-              src={selectedEvent.imageUrl}
-              alt={selectedEvent.name}
-              className="w-full h-auto rounded mb-6"
-            />
-            <h2 className="text-3xl font-bold mb-3">{selectedEvent.name}</h2>
-            <p className="text-lg text-gray-400 mb-2">
-              {getDayLabel(selectedEvent.date)}, {selectedEvent.time}
-            </p>
-            <p className="text-lg text-gray-400 mb-2">
-              <strong>Kategori:</strong> {selectedEvent.category}
-            </p>
-            <p className="text-lg text-gray-400 mb-2">
-              <strong>Lokasyon:</strong> {selectedEvent.location}
-            </p>
-            <p className="text-lg mb-6">{selectedEvent.description}</p>
-
-            {/* Sponsors Section */}
-            {selectedEvent.sponsors && selectedEvent.sponsors.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-2xl font-semibold mb-3">Sponsorluk</h3>
-                <div className="flex flex-wrap gap-4">
-                  {getSponsorsDetails(selectedEvent.sponsors).map((sponsor) => (
-                    <div
-                      key={sponsor.id}
-                      className="flex items-center space-x-2"
-                    >
-                      <img
-                        src={sponsor.img_url}
-                        alt={sponsor.name}
-                        className="w-10 h-10 object-contain"
-                      />
-                      <span className="text-lg">{sponsor.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* File URL Section */}
-            {selectedEvent.file_url && (
-              <div className="mb-6">
-                <a
-                  href={selectedEvent.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+      {/* Drawer */}
+      <Drawer open={!!selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)}>
+        <DrawerContent className="fixed inset-y-0 right-0 h-[98vh] my-auto w-[400px] bg-transparent border-none shadow-2xl">
+          <div className={cn(
+            "h-full w-full bg-gradient-to-b from-[#0a0a19] to-black text-white p-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent rounded-l-lg",
+          )}>
+            <DrawerHeader className="p-0">
+              <div className="flex justify-end space-x-3 mb-6">
+                <button
+                  className="w-10 h-10 bg-gray-700 text-gray-400 rounded-full hover:bg-gray-600 transition-colors"
+                  onClick={showPreviousEvent}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M4 16l4-4m0 0l4 4m-4-4v12"
-                    />
-                  </svg>
-                  Etkinlik Dokümanları
-                </a>
+                  &#8592;
+                </button>
+                <button
+                  className="w-10 h-10 bg-gray-700 text-gray-400 rounded-full hover:bg-gray-600 transition-colors"
+                  onClick={showNextEvent}
+                >
+                  &#8594;
+                </button>
+              </div>
+              {selectedEvent && (
+                <>
+                  <img
+                    src={selectedEvent.imageUrl}
+                    alt={selectedEvent.name}
+                    className="w-full h-auto rounded mb-6 select-none pointer-events-none"
+                    draggable="false"
+                  />
+                  <DrawerTitle className="text-3xl font-bold mb-3">
+                    {selectedEvent.name}
+                  </DrawerTitle>
+                  <DrawerDescription>
+                    <p className="text-lg text-gray-400 mb-2">
+                      {getDayLabel(selectedEvent.date)}, {selectedEvent.time}
+                    </p>
+                    <p className="text-lg text-gray-400 mb-2">
+                      <strong>Kategori:</strong> {selectedEvent.category}
+                    </p>
+                    <p className="text-lg text-gray-400 mb-2">
+                      <strong>Lokasyon:</strong> {selectedEvent.location}
+                    </p>
+                    <p className="text-lg mb-6">{selectedEvent.description}</p>
+                  </DrawerDescription>
+                </>
+              )}
+            </DrawerHeader>
+
+            {selectedEvent && (
+              <div className="space-y-6">
+                {/* Sponsors Section */}
+                {selectedEvent.sponsors && selectedEvent.sponsors.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-2xl font-semibold mb-3">Sponsorluk</h3>
+                    <div className="flex flex-wrap gap-4">
+                      {getSponsorsDetails(selectedEvent.sponsors).map((sponsor) => (
+                        <div
+                          key={sponsor.id}
+                          className="flex items-center space-x-2"
+                        >
+                          <img
+                            src={sponsor.img_url}
+                            alt={sponsor.name}
+                            className="w-10 h-10 object-contain"
+                          />
+                          <span className="text-lg">{sponsor.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* File URL Section */}
+                {selectedEvent.file_url && (
+                  <div className="mb-6">
+                    <a
+                      href={selectedEvent.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M4 16l4-4m0 0l4 4m-4-4v12"
+                        />
+                      </svg>
+                      Etkinlik Dokümanları
+                    </a>
+                  </div>
+                )}
               </div>
             )}
 
-            {!isExpired(selectedEvent.date) ? (
-              user ? (
-                hasSignedUp ? (
-                  <button
-                    className="w-full py-3 bg-gray-500 text-white rounded cursor-not-allowed"
-                    disabled
-                  >
-                    Kayıt Olundu
-                  </button>
-                ) : (
-                  <>
+            <DrawerFooter className="p-0 mt-6">
+              {selectedEvent && !isExpired(selectedEvent.date) ? (
+                user ? (
+                  hasSignedUp ? (
                     <button
-                      className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
-                      onClick={handleSignup}
+                      className="w-full py-3 bg-gray-500 text-white rounded cursor-not-allowed"
+                      disabled
                     >
-                      Kayıt Ol
+                      Kayıt Olundu
                     </button>
-                    {signupMessage && (
-                      <p className="mt-3 text-green-500 text-sm">
-                        {signupMessage}
-                      </p>
-                    )}
-                    {signupError && (
-                      <p className="mt-3 text-red-500 text-sm">{signupError}</p>
-                    )}
-                  </>
+                  ) : (
+                    <>
+                      <button
+                        className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                        onClick={handleSignup}
+                      >
+                        Kayıt Ol
+                      </button>
+                      {signupMessage && (
+                        <p className="mt-3 text-green-500 text-sm">
+                          {signupMessage}
+                        </p>
+                      )}
+                      {signupError && (
+                        <p className="mt-3 text-red-500 text-sm">{signupError}</p>
+                      )}
+                    </>
+                  )
+                ) : (
+                  <button
+                    className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                    onClick={() => router.push("/")}
+                  >
+                    Kayıt Olmak için Giriş Yapın
+                  </button>
                 )
               ) : (
-                <button
-                  className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
-                  onClick={() => router.push("/")}
-                >
-                  Kayıt Olmak için Giriş Yapın
+                selectedEvent && (
+                  <p className="text-red-500 text-md">Bu etkinlik sona erdi.</p>
+                )
+              )}
+              <DrawerClose asChild>
+                <button className="w-full py-3 mt-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors">
+                  Kapat
                 </button>
-              )
-            ) : (
-              <p className="text-red-500 text-md">Bu etkinlik sona erdi.</p>
-            )}
+              </DrawerClose>
+            </DrawerFooter>
           </div>
-        </>
-      )}
+        </DrawerContent>
+      </Drawer>
 
       {/* Conditional Rendering for Loading and Error States */}
       {loading && (

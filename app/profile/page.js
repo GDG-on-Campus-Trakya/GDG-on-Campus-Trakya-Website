@@ -107,16 +107,26 @@ const Profile = () => {
         for (const registration of registrations) {
           if (registration.qrCodeId) {
             try {
-              // Fetch QR code directly from Firestore
               const qrCodeRef = doc(db, "qrCodes", registration.qrCodeId);
               const qrCodeSnap = await getDoc(qrCodeRef);
               
               if (qrCodeSnap.exists()) {
-                const qrCodeData = qrCodeSnap.data().code;
-                // Generate QR code data URL
-                const qrCodeDataURL = await QRCode.toDataURL(qrCodeData, {
+                // Generate the full URL for the QR code
+                const baseUrl = window.location.origin; // Gets the base URL of your website
+                const eventId = registration.eventId;
+                const qrCodeUrl = `${baseUrl}/events?qrCode=${registration.qrCodeId}`;
+                
+                // Generate QR code with the full URL
+                const qrCodeDataURL = await QRCode.toDataURL(qrCodeUrl, {
                   errorCorrectionLevel: "H",
+                  margin: 2,
+                  width: 400,
+                  color: {
+                    dark: "#000000",
+                    light: "#ffffff"
+                  }
                 });
+                
                 qrCodesData[registration.qrCodeId] = qrCodeDataURL;
               }
             } catch (error) {
