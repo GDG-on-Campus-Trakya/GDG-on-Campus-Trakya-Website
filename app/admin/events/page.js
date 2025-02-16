@@ -13,11 +13,14 @@ import {
   deleteDoc,
   query,
   where,
+  updateDoc,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { v4 as uuidv4 } from "uuid";
 import Link from "next/link";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function AdminEventsPage() {
   const [user, loading] = useAuthState(auth);
@@ -112,11 +115,12 @@ export default function AdminEventsPage() {
         ...formData,
         id: uuidv4(),
       };
-      const docRef = await addDoc(collection(db, "events"), newEvent);
-      setEvents((prev) => [...prev, { firestoreId: docRef.id, ...newEvent }]);
+      await addDoc(collection(db, "events"), newEvent);
+      toast.success("Etkinlik başarıyla oluşturuldu!");
       resetForm();
     } catch (error) {
       console.error("Error adding event:", error);
+      toast.error("Etkinlik oluşturulurken bir hata oluştu!");
     }
   };
 
@@ -132,6 +136,7 @@ export default function AdminEventsPage() {
     try {
       const eventRef = doc(db, "events", String(formData.firestoreId));
       await setDoc(eventRef, { ...formData }, { merge: true });
+      toast.success("Etkinlik başarıyla güncellendi!");
       setEvents((prev) =>
         prev.map((event) =>
           event.firestoreId === formData.firestoreId ? formData : event
@@ -140,6 +145,7 @@ export default function AdminEventsPage() {
       resetForm();
     } catch (error) {
       console.error("Error updating event:", error);
+      toast.error("Etkinlik güncellenirken bir hata oluştu!");
     }
   };
 
@@ -147,11 +153,13 @@ export default function AdminEventsPage() {
   const handleDeleteEvent = async (firestoreId) => {
     try {
       await deleteDoc(doc(db, "events", firestoreId));
+      toast.success("Etkinlik başarıyla silindi!");
       setEvents((prev) =>
         prev.filter((event) => event.firestoreId !== firestoreId)
       );
     } catch (error) {
       console.error("Error deleting event:", error);
+      toast.error("Etkinlik silinirken bir hata oluştu!");
     }
   };
 
@@ -581,6 +589,8 @@ export default function AdminEventsPage() {
           </div>
         </div>
       )}
+
+      <ToastContainer theme="dark" />
     </div>
   );
 }

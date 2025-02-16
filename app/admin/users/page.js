@@ -12,9 +12,12 @@ import {
   addDoc,
   setDoc,
   deleteDoc,
-  Timestamp
+  Timestamp,
+  updateDoc
 } from "firebase/firestore";
 import Link from "next/link";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function AdminUsersPage() {
   const [user, loading] = useAuthState(auth);
@@ -167,8 +170,10 @@ export default function AdminUsersPage() {
         )
       );
       resetUserForm();
+      toast.success("Kullanıcı başarıyla güncellendi!");
     } catch (error) {
       console.error("Error updating user:", error);
+      toast.error("Kullanıcı güncellenirken bir hata oluştu!");
     }
   };
 
@@ -179,8 +184,10 @@ export default function AdminUsersPage() {
       setUsersList((prev) =>
         prev.filter((user) => user.firestoreId !== firestoreId)
       );
+      toast.success("Kullanıcı başarıyla silindi!");
     } catch (error) {
       console.error("Error deleting user:", error);
+      toast.error("Kullanıcı silinirken bir hata oluştu!");
     }
   };
 
@@ -328,6 +335,7 @@ export default function AdminUsersPage() {
           </ul>
         )}
       </section>
+      <ToastContainer theme="dark" />
     </div>
   );
 }

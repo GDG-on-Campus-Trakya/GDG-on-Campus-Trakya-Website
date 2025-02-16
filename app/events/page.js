@@ -26,6 +26,8 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 import { cn } from "@/lib/utils"
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function EventsPage() {
   const [events, setEvents] = useState([]);
@@ -81,10 +83,10 @@ export default function EventsPage() {
 
   const handleSignup = async () => {
     if (!user) {
-      setSignupError("You must be logged in to sign up for an event.");
+      toast.error("Kayıt olmak için giriş yapmalısınız.");
       return;
     }
-  
+
     try {
       const registrationsRef = collection(db, "registrations");
       const signupQuery = query(
@@ -92,43 +94,43 @@ export default function EventsPage() {
         where("eventId", "==", selectedEvent.id),
         where("userId", "==", user.uid)
       );
-  
+
       const querySnapshot = await getDocs(signupQuery);
-  
+
       if (!querySnapshot.empty) {
-        setSignupMessage("You have already signed up for this event.");
+        toast.info("Bu etkinliğe zaten kayıt oldunuz.");
         setHasSignedUp(true);
         return;
       }
-  
+
       const newRegistration = await addDoc(registrationsRef, {
         eventId: selectedEvent.id,
         userId: user.uid,
         signedUpAt: new Date(),
         didJoinEvent: false
       });
-  
+
       const qrCodeRef = collection(db, "qrCodes");
       const newQrCode = await addDoc(qrCodeRef, {
         registrationId: newRegistration.id,
         createdAt: new Date()
       });
-  
+
       const qrCodeData = `qrCode=${newQrCode.id}`;
-  
+
       await updateDoc(doc(qrCodeRef, newQrCode.id), {
         code: qrCodeData
       });
-  
+
       await updateDoc(doc(registrationsRef, newRegistration.id), {
         qrCodeId: newQrCode.id
       });
-  
-      setSignupMessage("Successfully signed up for the event!");
+
+      toast.success("Etkinliğe başarıyla kayıt oldunuz!");
       setHasSignedUp(true);
     } catch (error) {
       console.error("Error signing up for event:", error);
-      setSignupError("There was an error signing up. Please try again.");
+      toast.error("Kayıt olurken bir hata oluştu. Lütfen tekrar deneyin.");
     }
   };
 
@@ -195,22 +197,22 @@ export default function EventsPage() {
 
           if (registrationSnap.exists()) {
             const eventId = registrationSnap.data().eventId;
-            
             const event = events.find(e => e.id === eventId);
 
             if (event) {
               setSelectedEvent(event);
             } else {
-              console.error("Event not found for registration:", registrationId);
+              toast.error("QR kod için etkinlik bulunamadı.");
             }
           } else {
-            console.error("Registration not found for QR code:", qrCodeId);
+            toast.error("QR kod için kayıt bulunamadı.");
           }
         } else {
-          console.error("Invalid QR code:", qrCodeId);
+          toast.error("Geçersiz QR kod.");
         }
       } catch (error) {
         console.error("Error handling QR code redirect:", error);
+        toast.error("QR kod işlenirken bir hata oluştu.");
       }
     }
   };
@@ -347,9 +349,9 @@ export default function EventsPage() {
     <div className="font-sans bg-gradient-to-b from-[#0a0a19] to-black text-white min-h-screen flex flex-col items-center p-6">
       <header className="flex flex-col items-center mb-6">
         <h1 className="text-5xl font-bold mb-3">Etkinlikler</h1>
-        <p className="text-lg text-gray-400">
+        <div className="text-lg text-gray-400">
           Katılmak istediğiniz etkinlikleri keşfedin ve kaydolun!
-        </p>
+        </div>
       </header>
 
       <main className="flex flex-col lg:flex-row gap-6 justify-center w-full max-w-5xl">
@@ -425,10 +427,10 @@ export default function EventsPage() {
                         {getDayLabel(event.date)}
                       </h4>
                       <h3 className="mt-2 text-3xl">{event.name}</h3>
-                      <p className="mt-1 text-lg text-gray-400">{event.time}</p>
-                      <p className="mt-1 text-lg text-gray-400">
+                      <div className="mt-1 text-lg text-gray-400">{event.time}</div>
+                      <div className="mt-1 text-lg text-gray-400">
                         {event.location}
-                      </p>
+                      </div>
 
                       {/* Category and Status Tags */}
                       <div className="flex flex-wrap gap-2 mt-2">
@@ -454,9 +456,9 @@ export default function EventsPage() {
             ) : (
               // Message when no events are found
               <div className="text-center text-gray-400 mt-6">
-                <p className="text-lg text-gray-400 mt-10">
+                <div className="text-lg text-gray-400 mt-10">
                   Yaklaşan bir etkinlik yok. Takipte kalın!
-                </p>
+                </div>
               </div>
             )}
           </div>
@@ -495,17 +497,23 @@ export default function EventsPage() {
                   <DrawerTitle className="text-3xl font-bold mb-3">
                     {selectedEvent.name}
                   </DrawerTitle>
-                  <DrawerDescription>
-                    <p className="text-lg text-gray-400 mb-2">
-                      {getDayLabel(selectedEvent.date)}, {selectedEvent.time}
-                    </p>
-                    <p className="text-lg text-gray-400 mb-2">
-                      <strong>Kategori:</strong> {selectedEvent.category}
-                    </p>
-                    <p className="text-lg text-gray-400 mb-2">
-                      <strong>Lokasyon:</strong> {selectedEvent.location}
-                    </p>
-                    <p className="text-lg mb-6">{selectedEvent.description}</p>
+                  
+                  {/* Wrap content in DrawerDescription for accessibility */}
+                  <DrawerDescription asChild>
+                    <div className="space-y-4">
+                      <div className="text-lg text-gray-400">
+                        {getDayLabel(selectedEvent.date)}, {selectedEvent.time}
+                      </div>
+                      <div className="text-lg text-gray-400">
+                        <strong>Kategori:</strong> {selectedEvent.category}
+                      </div>
+                      <div className="text-lg text-gray-400">
+                        <strong>Lokasyon:</strong> {selectedEvent.location}
+                      </div>
+                      <div className="text-lg text-white">
+                        {selectedEvent.description}
+                      </div>
+                    </div>
                   </DrawerDescription>
                 </>
               )}
@@ -584,12 +592,12 @@ export default function EventsPage() {
                         Kayıt Ol
                       </button>
                       {signupMessage && (
-                        <p className="mt-3 text-green-500 text-sm">
+                        <h4 className="mt-3 text-green-500 text-sm">
                           {signupMessage}
-                        </p>
+                        </h4>
                       )}
                       {signupError && (
-                        <p className="mt-3 text-red-500 text-sm">{signupError}</p>
+                        <h4 className="mt-3 text-red-500 text-sm">{signupError}</h4>
                       )}
                     </>
                   )
@@ -603,7 +611,7 @@ export default function EventsPage() {
                 )
               ) : (
                 selectedEvent && (
-                  <p className="text-red-500 text-md">Bu etkinlik sona erdi.</p>
+                  <h3 className="text-red-500 text-md">Bu etkinlik sona erdi.</h3>
                 )
               )}
               <DrawerClose asChild>
@@ -627,6 +635,19 @@ export default function EventsPage() {
           <div className="text-white text-2xl">Hata: {error.message}</div>
         </div>
       )}
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </div>
   );
 }

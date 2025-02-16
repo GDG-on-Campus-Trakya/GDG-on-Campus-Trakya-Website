@@ -7,6 +7,8 @@ import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "fireb
 import { useRouter } from "next/navigation";
 import { Html5Qrcode } from "html5-qrcode";
 import Link from "next/link";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function AdminQRVerificationPage() {
   const [user, loading] = useAuthState(auth);
@@ -129,7 +131,7 @@ export default function AdminQRVerificationPage() {
         const registrationData = registrationDoc.data();
 
         if (registrationData.didJoinEvent) {
-          setVerificationResult("This QR code has already been verified!");
+          toast.info("Bu QR kod zaten kullanılmış!");
           return;
         }
 
@@ -169,6 +171,7 @@ export default function AdminQRVerificationPage() {
         });
 
         setVerificationResult(`Verified: ${eventData.name} - ${userData.email} - ${userData.name}`);
+        toast.success("Katılım başarıyla kaydedildi!");
         
       } catch (firestoreError) {
         console.error("Firestore error:", firestoreError);
@@ -177,6 +180,7 @@ export default function AdminQRVerificationPage() {
     } catch (error) {
       console.error("Error verifying QR code:", error);
       setVerificationResult("Error verifying QR code");
+      toast.error("QR kod işlenirken bir hata oluştu!");
     }
   };
 
@@ -262,6 +266,7 @@ export default function AdminQRVerificationPage() {
           </div>
         )}
       </div>
+      <ToastContainer theme="dark" />
     </div>
   );
 }

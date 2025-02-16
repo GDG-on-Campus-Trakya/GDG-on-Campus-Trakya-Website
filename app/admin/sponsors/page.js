@@ -14,6 +14,8 @@ import {
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function AdminSponsorsPage() {
   const [user, loading] = useAuthState(auth);
@@ -108,8 +110,10 @@ export default function AdminSponsorsPage() {
         { firestoreId: docRef.id, ...newSponsor },
       ]);
       resetSponsorForm();
+      toast.success("Sponsor başarıyla eklendi!");
     } catch (error) {
       console.error("Error adding sponsor:", error);
+      toast.error("Sponsor eklenirken bir hata oluştu!");
     }
   };
 
@@ -140,8 +144,10 @@ export default function AdminSponsorsPage() {
         )
       );
       resetSponsorForm();
+      toast.success("Sponsor başarıyla güncellendi!");
     } catch (error) {
       console.error("Error updating sponsor:", error);
+      toast.error("Sponsor güncellenirken bir hata oluştu!");
     }
   };
 
@@ -152,8 +158,10 @@ export default function AdminSponsorsPage() {
       setSponsors((prev) =>
         prev.filter((sponsor) => sponsor.firestoreId !== firestoreId)
       );
+      toast.success("Sponsor başarıyla silindi!");
     } catch (error) {
       console.error("Error deleting sponsor:", error);
+      toast.error("Sponsor silinirken bir hata oluştu!");
     }
   };
 
@@ -183,7 +191,7 @@ export default function AdminSponsorsPage() {
           href="/admin"
           className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
         >
-          ← Back to Admin Panel
+          ← Admin Paneline Geri Dön
         </Link>
       </div>
 
@@ -299,6 +307,19 @@ export default function AdminSponsorsPage() {
           </ul>
         )}
       </section>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </div>
   );
 }

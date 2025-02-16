@@ -13,6 +13,8 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function AdminPage() {
   const [user, loading] = useAuthState(auth);
@@ -82,18 +84,27 @@ export default function AdminPage() {
         { id: newAdminEmail, email: newAdminEmail },
       ]);
       setNewAdminEmail("");
+      toast.success("Admin başarıyla eklendi!");
     } catch (error) {
       console.error("Error adding admin:", error);
+      toast.error("Admin eklenirken bir hata oluştu!");
     }
   };
 
   // Remove an admin
   const handleRemoveAdmin = async (id) => {
+    if (id === user.email) {
+      toast.error("Kendinizi admin listesinden çıkaramazsınız!");
+      return;
+    }
+
     try {
       await deleteDoc(doc(db, "admins", id));
       setAdmins((prev) => prev.filter((admin) => admin.id !== id));
+      toast.success("Admin başarıyla silindi!");
     } catch (error) {
       console.error("Error removing admin:", error);
+      toast.error("Admin silinirken bir hata oluştu!");
     }
   };
 
@@ -200,6 +211,19 @@ export default function AdminPage() {
           </Link>
         </div>
       </section>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </div>
   );
 }
