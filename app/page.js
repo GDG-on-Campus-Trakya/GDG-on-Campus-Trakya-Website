@@ -1,36 +1,61 @@
 "use client";
 // page.js
 import Link from "next/link";
-import React from "react";
+import { motion } from "framer-motion";
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white overflow-hidden">
-      <header className="flex flex-col lg:flex-row items-center justify-center p-4 lg:p-8 w-full">
+    <div className="flex flex-1 flex-col items-center justify-center bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white">
+      <header className="flex flex-col lg:flex-row items-center justify-center p-4 lg:p-8 w-full h-[calc(100vh-80px)]">
         {/* Content Wrapper */}
-        <div className="flex flex-col lg:flex-row items-center max-w-7xl w-full mx-auto">
+        <div className="flex flex-col lg:flex-row items-center max-w-7xl w-full mx-auto gap-12">
           {/* Left Section */}
-          <div className="max-w-3xl space-y-4 lg:space-y-6 text-center lg:text-left lg:mr-12">
-            <h1 className="text-4xl lg:text-7xl font-bold text-transparent bg-clip-text animate-gradient-text pb-2">
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-3xl space-y-6 lg:space-y-8 text-center lg:text-left lg:mr-12"
+          >
+            <h1 className="text-5xl lg:text-7xl font-bold text-transparent bg-clip-text animate-gradient-text pb-2">
               GDG On Campus Trakya
             </h1>
-            {/* <p className="text-lg lg:text-xl text-gray-300">
-              güzel kulüp gelin
+            <p className="text-xl lg:text-2xl text-gray-300">
+              Teknoloji ve inovasyonun buluşma noktası. Geleceği birlikte şekillendiriyoruz!
             </p>
-            <Link href="/events">
-              <button className="px-6 py-3 lg:px-8 lg:py-4 bg-red-500 hover:bg-red-600 rounded-lg shadow-lg text-white font-semibold text-base lg:text-lg transition duration-300">
-                Etkinlikler
-              </button>
-            </Link> */}
-          </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <Link href="/events">
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg text-white font-semibold text-lg transition duration-300"
+                >
+                  Etkinlikleri Keşfet
+                </motion.button>
+              </Link>
+              <Link href="/about">
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-8 py-4 bg-transparent border-2 border-blue-600 hover:bg-blue-600/10 rounded-lg shadow-lg text-white font-semibold text-lg transition duration-300"
+                >
+                  Bizi Tanı
+                </motion.button>
+              </Link>
+            </div>
+          </motion.div>
+
           {/* Right Section */}
-          <div className="flex justify-center w-full lg:w-2/3 mt-8 lg:mt-0">
+          <motion.div 
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="flex justify-center w-full lg:w-2/3 mt-8 lg:mt-0"
+          >
             <div className="relative w-48 sm:w-64 md:w-80 lg:w-full max-w-2xl">
-              {/* Video with Slimmed Gradient Border */}
               <div className="rounded-full p-0.5 bg-gradient-to-r animate-gradient-border">
                 <video
                   className="w-full h-auto rounded-full shadow-lg border-2 border-transparent"
-                  src="/video2.mp4" // Replace with your actual video file path
+                  src="/video2.mp4"
                   aria-label="Promotional Video"
                   autoPlay
                   loop
@@ -39,40 +64,67 @@ export default function LandingPage() {
                   style={{ objectFit: "cover" }}
                 />
               </div>
-              {/* Floating Icons */}
-              <div className="absolute -top-6 sm:-top-8 md:-top-10 -right-6 sm:-right-8 md:-right-10 w-16 sm:w-20 md:w-24 h-16 sm:h-20 md:h-24 bg-gradient-to-r from-blue-500 to-yellow-500 rounded-full blur-2xl hidden md:block"></div>
-              <div className="absolute bottom-6 sm:bottom-8 md:bottom-10 -left-6 sm:-left-8 md:-left-10 w-12 sm:w-16 md:w-20 h-12 sm:h-16 md:h-20 bg-gradient-to-r from-yellow-500 to-red-500 rounded-full blur-2xl hidden md:block"></div>
-              <div className="absolute top-6 sm:top-8 md:top-10 -left-6 sm:-left-8 md:-left-10 w-20 sm:w-24 md:w-32 h-20 sm:h-24 md:h-32 bg-gradient-to-r from-green-500 to-blue-500 rounded-full blur-3xl hidden lg:block"></div>
-              <div className="absolute bottom-12 sm:bottom-8 md:bottom-50 -right-6 sm:-right-8 md:-right-10 w-20 sm:w-24 md:w-32 h-20 sm:h-24 md:h-32 bg-gradient-to-r from-green-500 to-blue-500 rounded-full blur-2xl hidden lg:block"></div>
+              
+              {/* Enhanced Floating Elements */}
+              <motion.div
+                animate={{
+                  y: [0, 20, 0],
+                  rotate: [0, 5, -5, 0]
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-2xl opacity-60"
+              />
+              <motion.div
+                animate={{
+                  y: [0, -20, 0],
+                  rotate: [0, -5, 5, 0]
+                }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="absolute bottom-6 -left-6 w-20 h-20 bg-gradient-to-r from-green-500 to-blue-500 rounded-full blur-2xl opacity-60"
+              />
+            </div>
+          </motion.div>
+        </div>
+      </header>
+
+      {/* Stats Section - Now positioned below the header */}
+      <motion.section 
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="w-full bg-gray-900/50 py-16"
+      >
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div className="space-y-2">
+              <h3 className="text-4xl font-bold text-blue-500">500+</h3>
+              <p className="text-gray-400">Topluluk Üyesi</p>
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-4xl font-bold text-green-500">50+</h3>
+              <p className="text-gray-400">Başarılı Etkinlik</p>
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-4xl font-bold text-purple-500">20+</h3>
+              <p className="text-gray-400">Teknoloji Partneri</p>
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-4xl font-bold text-yellow-500">100+</h3>
+              <p className="text-gray-400">Saat Eğitim</p>
             </div>
           </div>
         </div>
-      </header>
-      {/* Gradient Animation Styles */}
+      </motion.section>
+
       <style jsx>{`
-        @keyframes gradient-border {
-          0% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-          100% {
-            background-position: 0% 50%;
-          }
-        }
-        .animate-gradient-border {
-          background-size: 200% 200%;
-          animation: gradient-border 6s infinite;
-          background-image: linear-gradient(
-            90deg,
-            yellow,
-            blue,
-            green,
-            red,
-            yellow
-          );
-        }
         @keyframes gradient-text {
           0% {
             background-position: 0% 50%;
@@ -87,6 +139,29 @@ export default function LandingPage() {
         .animate-gradient-text {
           background-size: 200% 200%;
           animation: gradient-text 6s infinite;
+          background-image: linear-gradient(
+            90deg,
+            yellow,
+            blue,
+            green,
+            red,
+            yellow
+          );
+        }
+        @keyframes gradient-border {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+        .animate-gradient-border {
+          background-size: 200% 200%;
+          animation: gradient-border 6s infinite;
           background-image: linear-gradient(
             90deg,
             yellow,

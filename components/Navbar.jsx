@@ -7,6 +7,7 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
   const [user, loading] = useAuthState(auth);
@@ -71,31 +72,46 @@ export default function Navbar() {
   }, [menuOpen]);
 
   return (
-    <nav
-      className={`flex items-center justify-between px-8 h-16 ${
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      className={`flex items-center justify-between px-8 h-20 ${
         isLandingPage
-          ? "bg-gradient-to-b from-gray-900 via-black to-gray-800"
+          ? "bg-gradient-to-b from-gray-900 to-gray-900"
           : "bg-black/70 backdrop-blur-md"
-      } text-white sticky top-0 z-50 shadow-lg`}
+      } text-white sticky top-0 z-50 transition-all duration-300`}
     >
-      {/* Left Side - New Button */}
-      <div className="flex items-center">
+      {/* Left Side - Logo */}
+      <motion.div 
+        whileHover={{ scale: 1.05 }}
+        className="flex items-center"
+      >
         <Link href="/">
           <img
             src="/landing-Photoroom.png"
             alt="Home"
-            className="w-16 h-16 cursor-pointer"
+            className="w-20 h-20 cursor-pointer"
           />
         </Link>
-      </div>
+      </motion.div>
 
       {/* Middle Links */}
-      <div className="flex gap-5 text-sm font-medium">
-        <Link href="/about" className="hover:text-blue-400 transition">
-          Hakkımızda
+      <div className="flex gap-8 text-base font-medium">
+        <Link href="/about">
+          <motion.span
+            whileHover={{ scale: 1.1, color: "#60A5FA" }}
+            className="hover:text-blue-400 transition cursor-pointer"
+          >
+            Hakkımızda
+          </motion.span>
         </Link>
-        <Link href="/events" className="hover:text-blue-400 transition">
-          Etkinlikler
+        <Link href="/events">
+          <motion.span
+            whileHover={{ scale: 1.1, color: "#60A5FA" }}
+            className="hover:text-blue-400 transition cursor-pointer"
+          >
+            Etkinlikler
+          </motion.span>
         </Link>
       </div>
 
@@ -103,47 +119,55 @@ export default function Navbar() {
       <div className="flex items-center gap-4">
         {user ? (
           <div className="relative">
-            <img
+            <motion.img
+              whileHover={{ scale: 1.1 }}
               src={user.photoURL || "/default-profile.png"}
               alt="Profile"
-              className="w-8 h-8 rounded-full shadow cursor-pointer"
+              className="w-10 h-10 rounded-full shadow cursor-pointer border-2 border-blue-500"
               onClick={toggleMenu}
             />
-            {menuOpen && (
-              <div
-                ref={menuRef}
-                className="absolute top-12 right-0 bg-gradient-to-t from-gray-800 to-gray-700 text-white rounded-lg shadow-lg py-2 w-48 z-50"
-              >
-                <div className="px-4 py-2">
-                  <strong>{user.displayName || "User"}</strong>
-                  <br />
-                  <small className="text-gray-400">{user.email}</small>
-                </div>
-                <div className="border-t border-gray-700 my-1"></div>
-                <button
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-700"
-                  onClick={handleProfileClick}
+            <AnimatePresence>
+              {menuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  ref={menuRef}
+                  className="absolute top-12 right-0 bg-gradient-to-b from-gray-800 to-gray-900 text-white rounded-lg shadow-lg py-2 w-56 z-50"
                 >
-                  Profili Görüntüle
-                </button>
-                <button
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-700"
-                  onClick={handleSignOut}
-                >
-                  Çıkış Yap
-                </button>
-              </div>
-            )}
+                  <div className="px-4 py-2 border-b border-gray-700">
+                    <p className="font-bold text-blue-400">{user.displayName || "User"}</p>
+                    <p className="text-sm text-gray-400">{user.email}</p>
+                  </div>
+                  <motion.button
+                    whileHover={{ backgroundColor: "#374151" }}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-700 transition-colors"
+                    onClick={handleProfileClick}
+                  >
+                    Profili Görüntüle
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ backgroundColor: "#374151" }}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-700 transition-colors"
+                    onClick={handleSignOut}
+                  >
+                    Çıkış Yap
+                  </motion.button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         ) : (
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={handleGoogleSignIn}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg text-white font-semibold transition duration-300"
           >
             Giriş Yap
-          </button>
+          </motion.button>
         )}
       </div>
-    </nav>
+    </motion.nav>
   );
 }

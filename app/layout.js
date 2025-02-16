@@ -9,10 +9,10 @@ export default async function RootLayout({ children }) {
   
   return (
     <html className="h-full">
-      <body className="flex flex-col min-h-screen">
+      <body className="flex flex-col min-h-screen overflow-x-hidden">
           <AuthProvider>
           <Navbar />
-          <main className="flex flex-1 flex-col">
+          <main className="flex-1">
             {children}
           </main>
           <Footer />
