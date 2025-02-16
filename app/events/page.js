@@ -28,6 +28,7 @@ import {
 import { cn } from "@/lib/utils"
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function EventsPage() {
   const [events, setEvents] = useState([]);
@@ -346,131 +347,225 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="font-sans bg-gradient-to-b from-[#0a0a19] to-black text-white min-h-screen flex flex-col items-center p-6">
-      <header className="flex flex-col items-center mb-6">
-        <h1 className="text-5xl font-bold mb-3">Etkinlikler</h1>
-        <div className="text-lg text-gray-400">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="font-sans bg-gradient-to-b from-[#0a0a19] to-black text-white min-h-screen flex flex-col items-center p-6"
+    >
+      <motion.header 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="flex flex-col items-center mb-6"
+      >
+        <motion.h1 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="text-5xl font-bold mb-3"
+        >
+          Etkinlikler
+        </motion.h1>
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="text-lg text-gray-400"
+        >
           Katılmak istediğiniz etkinlikleri keşfedin ve kaydolun!
-        </div>
-      </header>
+        </motion.div>
+      </motion.header>
 
       <main className="flex flex-col lg:flex-row gap-6 justify-center w-full max-w-5xl">
-        {/* Calendar */}
-        <div className="w-full max-w-sm lg:w-1/3 lg:sticky lg:top-5 flex flex-col gap-4 lg:order-2 order-1 mx-auto">
-          <Calendar
-            currentMonth={currentMonth}
-            setCurrentMonth={setCurrentMonth}
-            selectedDate={selectedDate}
-            handleDateClick={handleDateClick}
-            eventDates={eventDates}
-          />
+        {/* Calendar Section */}
+        <motion.div 
+          initial={{ x: -50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
+          className="w-full max-w-sm lg:w-1/3 lg:sticky lg:top-5 flex flex-col gap-4 lg:order-2 order-1 mx-auto"
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+          >
+            <Calendar
+              currentMonth={currentMonth}
+              setCurrentMonth={setCurrentMonth}
+              selectedDate={selectedDate}
+              handleDateClick={handleDateClick}
+              eventDates={eventDates}
+            />
+          </motion.div>
 
-          {/* Upcoming | Past Filter - only show if no date is selected */}
+          {/* Filter Buttons */}
           {!selectedDate && (
-            <div className="flex justify-between mt-3">
-              <button
-                className={`flex-1 py-3 px-4 rounded bg-gray-700 text-gray-400 hover:bg-blue-500 hover:text-white transition-colors ${
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="flex justify-between mt-3"
+            >
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`flex-1 py-3 px-4 rounded bg-gray-700 text-gray-400 hover:bg-blue-500 hover:text-white transition-all ${
                   filterStatus === "upcoming" ? "bg-blue-500 text-white" : ""
                 }`}
                 onClick={() => handleFilterChange("upcoming")}
               >
                 Yaklaşan
-              </button>
-              <button
-                className={`flex-1 py-3 px-4 rounded bg-gray-700 text-gray-400 hover:bg-blue-500 hover:text-white transition-colors ${
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`flex-1 py-3 px-4 rounded bg-gray-700 text-gray-400 hover:bg-blue-500 hover:text-white transition-all ${
                   filterStatus === "past" ? "bg-blue-500 text-white" : ""
                 }`}
                 onClick={() => handleFilterChange("past")}
               >
                 Geçmiş
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
 
         {/* Event List */}
-        <div className="relative flex-1 max-w-[900px] lg:order-1 order-2">
-          <div className="absolute left-10 top-0 bottom-0 w-px bg-gray-600"></div>
+        <motion.div 
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
+          className="relative flex-1 max-w-[900px] lg:order-1 order-2"
+        >
+          <motion.div 
+            initial={{ height: 0 }}
+            animate={{ height: "100%" }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="absolute left-10 top-0 bottom-0 w-px bg-gray-600"
+          />
           <div className="flex flex-col gap-6 ml-14">
-            {filteredEvents.length > 0 ? (
-              filteredEvents.map((event) => {
-                const status = isExpired(event.date) ? "Geçmiş" : "Yaklaşan";
-                const statusColor =
-                  status === "Yaklaşan" ? "bg-green-600" : "bg-red-600";
+            <AnimatePresence>
+              {filteredEvents.length > 0 ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-6"
+                >
+                  {filteredEvents.map((event, index) => {
+                    const status = isExpired(event.date) ? "Geçmiş" : "Yaklaşan";
+                    const statusColor = status === "Yaklaşan" ? "bg-green-600" : "bg-red-600";
 
-                return (
-                  <div
-                    key={event.id}
-                    className="flex items-start bg-gray-800 rounded-lg p-5 shadow-lg cursor-pointer relative hover:bg-gray-700 transition-colors"
-                    onClick={() => handleEventClick(event)}
-                  >
-                    {/* Timeline Marker */}
-                    <div className="absolute left-[-60px] top-6 flex flex-col items-center">
-                      <div
-                        className={`w-5 h-5 ${statusColor} rounded-full z-10`}
-                      ></div>
-                      {event !== filteredEvents[filteredEvents.length - 1] && (
-                        <div className="w-px flex-1 bg-gray-600 mt-1"></div>
-                      )}
-                    </div>
-
-                    {/* Event Content */}
-                    <div className="mr-6">
-                      <img
-                        src={event.imageUrl}
-                        alt={event.name}
-                        className="w-44 h-auto rounded"
-                      />
-                    </div>
-                    <div className="flex flex-col w-full">
-                      <h4 className="text-xl text-blue-400">
-                        {getDayLabel(event.date)}
-                      </h4>
-                      <h3 className="mt-2 text-3xl">{event.name}</h3>
-                      <div className="mt-1 text-lg text-gray-400">{event.time}</div>
-                      <div className="mt-1 text-lg text-gray-400">
-                        {event.location}
-                      </div>
-
-                      {/* Category and Status Tags */}
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {/* Category Tag */}
-                        <span className="inline-block px-3 py-1 bg-blue-600 text-white text-sm rounded-full">
-                          {event.category}
-                        </span>
-                        {/* Status Tag */}
-                        <span
-                          className={`inline-block px-3 py-1 text-white text-sm rounded-full ${
-                            status === "Yaklaşan"
-                              ? "bg-green-600"
-                              : "bg-red-600"
-                          }`}
+                    return (
+                      <motion.div
+                        key={event.id}
+                        initial={{ x: -50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: 50, opacity: 0 }}
+                        transition={{ 
+                          delay: index * 0.1,
+                          duration: 0.5,
+                          ease: "easeOut"
+                        }}
+                        whileHover={{ 
+                          scale: 1.02,
+                          backgroundColor: "rgba(55, 65, 81, 0.8)",
+                          transition: { duration: 0.2 }
+                        }}
+                        className="flex items-start bg-gray-800 rounded-lg p-5 shadow-lg cursor-pointer relative hover:bg-gray-700 transition-all"
+                        onClick={() => handleEventClick(event)}
+                      >
+                        {/* Timeline Marker with animation */}
+                        <motion.div 
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: index * 0.1 + 0.3, duration: 0.3 }}
+                          className="absolute left-[-60px] top-6 flex flex-col items-center"
                         >
-                          {status}
-                        </span>
-                      </div>
-                    </div>
+                          <motion.div
+                            whileHover={{ scale: 1.2 }}
+                            className={`w-5 h-5 ${statusColor} rounded-full z-10`}
+                          />
+                        </motion.div>
+
+                        {/* Event Content */}
+                        <motion.div 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: index * 0.1 + 0.2 }}
+                          className="mr-6"
+                        >
+                          <img
+                            src={event.imageUrl}
+                            alt={event.name}
+                            className="w-44 h-auto rounded"
+                          />
+                        </motion.div>
+
+                        {/* Event Details */}
+                        <div className="flex flex-col w-full">
+                          <h4 className="text-xl text-blue-400">
+                            {getDayLabel(event.date)}
+                          </h4>
+                          <h3 className="mt-2 text-3xl">{event.name}</h3>
+                          <div className="mt-1 text-lg text-gray-400">{event.time}</div>
+                          <div className="mt-1 text-lg text-gray-400">
+                            {event.location}
+                          </div>
+
+                          {/* Category and Status Tags */}
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {/* Category Tag */}
+                            <span className="inline-block px-3 py-1 bg-blue-600 text-white text-sm rounded-full">
+                              {event.category}
+                            </span>
+                            {/* Status Tag */}
+                            <span
+                              className={`inline-block px-3 py-1 text-white text-sm rounded-full ${
+                                status === "Yaklaşan"
+                                  ? "bg-green-600"
+                                  : "bg-red-600"
+                              }`}
+                            >
+                              {status}
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="no-events"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.5 }}
+                  className="text-center text-gray-400 mt-6"
+                >
+                  <div className="text-lg text-gray-400 mt-10">
+                    Yaklaşan bir etkinlik yok. Takipte kalın!
                   </div>
-                );
-              })
-            ) : (
-              // Message when no events are found
-              <div className="text-center text-gray-400 mt-6">
-                <div className="text-lg text-gray-400 mt-10">
-                  Yaklaşan bir etkinlik yok. Takipte kalın!
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </div>
+        </motion.div>
       </main>
 
-      {/* Drawer */}
+      {/* Drawer with animations */}
       <Drawer open={!!selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)}>
         <DrawerContent className="fixed inset-y-0 right-0 h-[98vh] my-auto w-[400px] bg-transparent border-none shadow-2xl">
-          <div className={cn(
-            "h-full w-full bg-gradient-to-b from-[#0a0a19] to-black text-white p-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent rounded-l-lg",
-          )}>
+          <motion.div
+            initial={{ x: 400, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 400, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className={cn(
+              "h-full w-full bg-[#0a0a19] text-white p-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent rounded-l-lg bg-gray-800",
+            )}
+          >
             <DrawerHeader className="p-0">
               <div className="flex justify-end space-x-3 mb-6">
                 <button
@@ -620,7 +715,7 @@ export default function EventsPage() {
                 </button>
               </DrawerClose>
             </DrawerFooter>
-          </div>
+          </motion.div>
         </DrawerContent>
       </Drawer>
 
@@ -648,6 +743,6 @@ export default function EventsPage() {
         pauseOnHover
         theme="dark"
       />
-    </div>
+    </motion.div>
   );
 }

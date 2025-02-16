@@ -1,7 +1,9 @@
 // components/EventList.jsx
 
+"use client";
 import React from "react";
 import { toast } from "react-toastify";
+import { motion } from "framer-motion";
 
 const isExpired = (eventDate) => new Date(eventDate) < new Date();
 
@@ -47,8 +49,11 @@ const EventList = ({
           status === "Yaklaşan" ? "bg-green-600" : "bg-red-600";
 
         return (
-          <li
+          <motion.li
             key={registration.id}
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            whileHover={{ scale: 1.01 }}
             className="flex flex-col md:flex-row items-start md:items-center bg-gray-800 p-5 rounded-lg shadow-md space-y-4 md:space-y-0 md:space-x-6"
           >
             {/* Event Image */}
@@ -94,51 +99,39 @@ const EventList = ({
             </div>
 
             {/* QR Code and Actions */}
-            {!expired && qrCodes[registration.qrCodeId] ? (
-              <div className="mt-4 flex items-center gap-4">
-                <img
-                  src={qrCodes[registration.qrCodeId]}
-                  alt="QR Code"
-                  className="w-32 h-32"
-                />
+            <div className="flex flex-col gap-4">
+              {!expired && qrCodes[registration.qrCodeId] && (
+                <div className="flex flex-col items-center gap-2">
+                  <img
+                    src={qrCodes[registration.qrCodeId]}
+                    alt="QR Code"
+                    className="w-32 h-32"
+                  />
+                  <button
+                    onClick={() =>
+                      downloadQRCode(qrCodes[registration.qrCodeId], event.name)
+                    }
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
+                  >
+                    Kodu İndir
+                  </button>
+                </div>
+              )}
+              {!expired && (
                 <button
-                  onClick={() =>
-                    downloadQRCode(
-                      qrCodes[registration.qrCodeId],
-                      event.name
-                    )
-                  }
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  onClick={() => removeRegistration(registration)}
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition-colors w-full"
                 >
-                  Kodu İndir
+                  Kayıt Sil
                 </button>
-              </div>
-            ) : (
-              <p className="mt-4 text-gray-500">
-                {expired
-                  ? "Bu etkinlik sona erdiği için QR kodu mevcut değil."
-                  : "QR kodu yükleniyor..."}
-              </p>
-            )}
-
-            {/* Remove Button */}
-            {!expired && (
-              <button
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      "Etkinlik kaydınızı silmek istediğinize emin misiniz?"
-                    )
-                  ) {
-                    removeRegistration(registration.id);
-                  }
-                }}
-                className="mt-2 md:mt-0 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition-colors"
-              >
-                Kayıt Sil
-              </button>
-            )}
-          </li>
+              )}
+              {expired && (
+                <p className="text-gray-500 text-center">
+                  Bu etkinlik sona erdiği için QR kodu mevcut değil.
+                </p>
+              )}
+            </div>
+          </motion.li>
         );
       })}
     </ul>

@@ -21,6 +21,17 @@ import "react-toastify/dist/ReactToastify.css";
 import QRCode from "qrcode";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { motion } from "framer-motion";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const formatDate = (date) => {
   const d = new Date(date);
@@ -38,6 +49,8 @@ const Profile = () => {
   const [qrCodes, setQRCodes] = useState({});
   const [isEmailUpdateLoading, setIsEmailUpdateLoading] = useState(false);
   const [userWantsEmails, setUserWantsEmails] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [registrationToDelete, setRegistrationToDelete] = useState(null);
 
   const router = useRouter();
   const profileRef = useRef(null);
@@ -229,6 +242,24 @@ const Profile = () => {
     }
   };
 
+  const handleDeleteClick = (registration) => {
+    setRegistrationToDelete(registration);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (registrationToDelete) {
+      try {
+        await removeRegistration(registrationToDelete.id);
+        toast.success("Etkinlik kaydı silindi");
+      } catch (error) {
+        toast.error("Bir hata oluştu");
+      }
+    }
+    setIsDeleteDialogOpen(false);
+    setRegistrationToDelete(null);
+  };
+
   if (loadingAuth || loadingData) {
     return (
       <div className="flex items-center justify-center p-10 text-lg text-white">
@@ -254,21 +285,45 @@ const Profile = () => {
   }
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       ref={profileRef}
       className="p-10 bg-gray-900 min-h-screen text-white font-sans"
     >
-      <h1 className="text-center text-4xl mb-10">Profiliniz</h1>
+      <motion.h1 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="text-center text-4xl mb-10"
+      >
+        Profiliniz
+      </motion.h1>
 
       {/* User Information */}
-      {user && <UserInfo user={user} />}
+      {user && (
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <UserInfo user={user} />
+        </motion.div>
+      )}
 
       {/* Email Preferences */}
-      <div className="mt-10">
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        className="mt-10"
+      >
         <h2 className="text-2xl border-b-2 border-blue-400 pb-2 mb-5 inline-block">
           Email Tercihleri
         </h2>
-        <div className="flex flex-row items-center justify-between space-x-4 rounded-lg border p-4">
+        <motion.div 
+          whileHover={{ scale: 1.01 }}
+          className="flex flex-row items-center justify-between space-x-4 rounded-lg border p-4"
+        >
           <div className="space-y-0.5">
             <Label htmlFor="email-notifications">Email Bildirimleri</Label>
             <p className="text-sm text-gray-400">
@@ -282,29 +337,64 @@ const Profile = () => {
             disabled={isEmailUpdateLoading}
             className="data-[state=checked]:bg-blue-600"
           />
-        </div>
+        </motion.div>
         {isEmailUpdateLoading && (
           <p className="mt-2 text-sm text-gray-500">Güncelleniyor...</p>
         )}
-      </div>
+      </motion.div>
 
       {/* Registered Events */}
-      <div className="mt-10">
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.4 }}
+        className="mt-10"
+      >
         <h2 className="text-2xl border-b-2 border-blue-400 pb-2 mb-5 inline-block">
           Kayıt Olunmuş Etkinlikler
         </h2>
-        <EventList
-          registrations={registrations}
-          events={events}
-          removeRegistration={removeRegistration}
-          qrCodes={qrCodes}
-          downloadQRCode={downloadQRCode}
-        />
-      </div>
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <EventList
+            registrations={registrations}
+            events={events}
+            removeRegistration={handleDeleteClick}
+            qrCodes={qrCodes}
+            downloadQRCode={downloadQRCode}
+          />
+        </motion.div>
+      </motion.div>
 
-      {/* Toast Container */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent className="bg-gray-800 text-white border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Etkinlik kaydınızı silmek istediğinize emin misiniz?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              className="bg-gray-700 hover:bg-gray-600 text-white border-0"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              İptal
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 text-white border-0"
+              onClick={handleConfirmDelete}
+            >
+              Sil
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <ToastContainer />
-    </div>
+    </motion.div>
   );
 };
 
