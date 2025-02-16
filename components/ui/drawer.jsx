@@ -2,15 +2,31 @@
 
 import * as React from "react"
 import { Drawer as DrawerPrimitive } from "vaul"
+import { useEffect } from "react"
 
 import { cn } from "@/lib/utils"
 
 const Drawer = ({
   shouldScaleBackground = true,
+  open,
   ...props
-}) => (
-  <DrawerPrimitive.Root shouldScaleBackground={shouldScaleBackground} {...props} />
-)
+}) => {
+  React.useEffect(() => {
+    if (open) {
+      document.body.setAttribute('data-drawer-open', 'true');
+    } else {
+      document.body.setAttribute('data-drawer-open', 'false');
+    }
+
+    return () => {
+      document.body.setAttribute('data-drawer-open', 'false');
+    };
+  }, [open]);
+
+  return (
+    <DrawerPrimitive.Root shouldScaleBackground={shouldScaleBackground} open={open} {...props} />
+  );
+}
 Drawer.displayName = "Drawer"
 
 const DrawerTrigger = DrawerPrimitive.Trigger
