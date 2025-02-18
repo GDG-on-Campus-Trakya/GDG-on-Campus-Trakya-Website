@@ -3,7 +3,15 @@
 import { useEffect, useState } from "react";
 import { auth, db } from "../../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Html5Qrcode } from "html5-qrcode";
 import Link from "next/link";
@@ -92,7 +100,9 @@ export default function AdminQRVerificationPage() {
       );
     } catch (error) {
       console.error("Error starting scanner:", error);
-      setError("Unable to access camera. Please ensure you've granted camera permissions.");
+      setError(
+        "Unable to access camera. Please ensure you've granted camera permissions."
+      );
       setScanning(false);
     }
   };
@@ -107,10 +117,10 @@ export default function AdminQRVerificationPage() {
 
   const verifyQRCode = async (data) => {
     try {
-      console.log("Verifying QR code:", data);    
+      console.log("Verifying QR code:", data);
       const match = data.match(/qrCode=([^,\s]+)/);
       const qrCodeId = match ? match[1] : null;
-      
+
       if (!qrCodeId) {
         setVerificationResult("Invalid QR Code format");
         return;
@@ -119,7 +129,10 @@ export default function AdminQRVerificationPage() {
       try {
         // Get registration data first
         const registrationsRef = collection(db, "registrations");
-        const registrationQuery = query(registrationsRef, where("qrCodeId", "==", qrCodeId));
+        const registrationQuery = query(
+          registrationsRef,
+          where("qrCodeId", "==", qrCodeId)
+        );
         const registrationSnapshot = await getDocs(registrationQuery);
 
         if (registrationSnapshot.empty) {
@@ -135,25 +148,12 @@ export default function AdminQRVerificationPage() {
           return;
         }
 
-        const usersRef = collection(db, "users");
-        const docId = registrationData.userId;
-        const userDocRef = doc(usersRef, docId);
-        const userSnapshot = await getDoc(userDocRef);
-        
-        if (!userSnapshot.exists()) {
-          setVerificationResult("User not found");
-          return;
-        }
-
-        const userData = userSnapshot.data();
-
-        if (!registrationData.eventId) {
-          setVerificationResult("Event ID not found in registration");
-          return;
-        }
-
+        // Get event data to check date
         const eventsRef = collection(db, "events");
-        const eventQuery = query(eventsRef, where("id", "==", registrationData.eventId));
+        const eventQuery = query(
+          eventsRef,
+          where("id", "==", registrationData.eventId)
+        );
         const eventSnapshot = await getDocs(eventQuery);
 
         if (eventSnapshot.empty) {
@@ -164,15 +164,44 @@ export default function AdminQRVerificationPage() {
         const eventDoc = eventSnapshot.docs[0];
         const eventData = eventDoc.data();
 
+        // Check if verification is happening on the event date
+        const eventDate = new Date(eventData.date);
+        const today = new Date();
+
+        // Set hours to 0 to compare just the dates
+        today.setHours(0, 0, 0, 0);
+        eventDate.setHours(0, 0, 0, 0);
+
+        if (eventDate.getTime() !== today.getTime()) {
+          setVerificationResult(
+            "QR code can only be verified on the day of the event"
+          );
+          toast.error("QR kodu sadece etkinlik günü doğrulanabilir!");
+          return;
+        }
+
+        const usersRef = collection(db, "users");
+        const docId = registrationData.userId;
+        const userDocRef = doc(usersRef, docId);
+        const userSnapshot = await getDoc(userDocRef);
+
+        if (!userSnapshot.exists()) {
+          setVerificationResult("User not found");
+          return;
+        }
+
+        const userData = userSnapshot.data();
+
         await updateDoc(registrationDoc.ref, {
           didJoinEvent: true,
           verifiedAt: new Date(),
-          verifiedBy: user.email
+          verifiedBy: user.email,
         });
 
-        setVerificationResult(`Verified: ${eventData.name} - ${userData.email} - ${userData.name}`);
+        setVerificationResult(
+          `Verified: ${eventData.name} - ${userData.email} - ${userData.name}`
+        );
         toast.success("Katılım başarıyla kaydedildi!");
-        
       } catch (firestoreError) {
         console.error("Firestore error:", firestoreError);
         setVerificationResult("Database error during verification");
@@ -219,7 +248,7 @@ export default function AdminQRVerificationPage() {
       </div>
 
       <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
-          Admin QR Kodu Doğrulama
+        Admin QR Kodu Doğrulama
       </h1>
 
       <div className="max-w-md mx-auto bg-white rounded-lg p-6 shadow-md">
@@ -228,9 +257,9 @@ export default function AdminQRVerificationPage() {
             {error}
           </div>
         )}
-        
+
         <div id="qr-reader" className="w-full"></div>
-        
+
         {!scanning && (
           <button
             onClick={startScanning}
@@ -239,7 +268,7 @@ export default function AdminQRVerificationPage() {
             Tarama Başlat
           </button>
         )}
-        
+
         {scanning && (
           <button
             onClick={stopScanning}
@@ -257,11 +286,13 @@ export default function AdminQRVerificationPage() {
         )}
 
         {verificationResult && (
-          <div className={`mt-4 p-3 rounded-md ${
-            verificationResult.startsWith("Verified") 
-              ? "bg-green-100 text-green-700"
-              : "bg-red-100 text-red-700"
-          }`}>
+          <div
+            className={`mt-4 p-3 rounded-md ${
+              verificationResult.startsWith("Verified")
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
             <p>{verificationResult}</p>
           </div>
         )}
