@@ -13,7 +13,10 @@ import {
   setDoc,
   deleteDoc,
   Timestamp,
-  updateDoc
+  updateDoc,
+  query,
+  where,
+  writeBatch,
 } from "firebase/firestore";
 import Link from "next/link";
 import { ToastContainer, toast } from "react-toastify";
@@ -72,9 +75,10 @@ export default function AdminUsersPage() {
               firestoreId: doc.id,
               ...data,
               // Convert Timestamp to string when displaying
-              createdAt: data.createdAt instanceof Timestamp 
-                ? data.createdAt.toDate().toLocaleString()
-                : data.createdAt
+              createdAt:
+                data.createdAt instanceof Timestamp
+                  ? data.createdAt.toDate().toLocaleString()
+                  : data.createdAt,
             };
           })
         );
@@ -87,7 +91,6 @@ export default function AdminUsersPage() {
       fetchUsers();
     }
   }, [isAdmin]);
-
 
   const isEditing = !!userFormData.firestoreId;
 
@@ -123,11 +126,14 @@ export default function AdminUsersPage() {
         createdAt: Timestamp.now(), // Use Timestamp instead of ISO string
       };
       const docRef = await addDoc(collection(db, "users"), newUser);
-      setUsersList((prev) => [...prev, { 
-        firestoreId: docRef.id, 
-        ...newUser,
-        createdAt: newUser.createdAt.toDate().toLocaleString() // Convert for display
-      }]);
+      setUsersList((prev) => [
+        ...prev,
+        {
+          firestoreId: docRef.id,
+          ...newUser,
+          createdAt: newUser.createdAt.toDate().toLocaleString(), // Convert for display
+        },
+      ]);
       resetUserForm();
     } catch (error) {
       console.error("Error adding user:", error);
@@ -149,22 +155,23 @@ export default function AdminUsersPage() {
         email: userFormData.email,
         wantsToGetEmails: userFormData.wantsToGetEmails,
         // Only update createdAt if it's empty or invalid
-        ...((!userFormData.createdAt || userFormData.createdAt === '') && {
-          createdAt: Timestamp.now()
-        })
+        ...((!userFormData.createdAt || userFormData.createdAt === "") && {
+          createdAt: Timestamp.now(),
+        }),
       };
-      
+
       await setDoc(userRef, updateData, { merge: true });
 
       setUsersList((prev) =>
         prev.map((usr) =>
           usr.firestoreId === userFormData.firestoreId
-            ? { 
-                ...usr, 
+            ? {
+                ...usr,
                 ...updateData,
-                createdAt: updateData.createdAt instanceof Timestamp 
-                  ? updateData.createdAt.toDate().toLocaleString()
-                  : usr.createdAt
+                createdAt:
+                  updateData.createdAt instanceof Timestamp
+                    ? updateData.createdAt.toDate().toLocaleString()
+                    : usr.createdAt,
               }
             : usr
         )
@@ -180,11 +187,32 @@ export default function AdminUsersPage() {
   // Delete user
   const handleDeleteUser = async (firestoreId) => {
     try {
-      await deleteDoc(doc(db, "users", firestoreId));
+      // First, get all registrations for this user
+      const registrationsRef = collection(db, "registrations");
+      const registrationsQuery = query(
+        registrationsRef,
+        where("userId", "==", firestoreId)
+      );
+      const registrationsSnapshot = await getDocs(registrationsQuery);
+
+      // Delete all registrations in a batch
+      const batch = writeBatch(db);
+
+      // Add user document to batch delete
+      batch.delete(doc(db, "users", firestoreId));
+
+      // Add all registrations to batch delete
+      registrationsSnapshot.docs.forEach((registration) => {
+        batch.delete(doc(db, "registrations", registration.id));
+      });
+
+      // Commit the batch
+      await batch.commit();
+
       setUsersList((prev) =>
         prev.filter((user) => user.firestoreId !== firestoreId)
       );
-      toast.success("Kullanıcı başarıyla silindi!");
+      toast.success("Kullanıcı ve ilgili kayıtları başarıyla silindi!");
     } catch (error) {
       console.error("Error deleting user:", error);
       toast.error("Kullanıcı silinirken bir hata oluştu!");
@@ -293,7 +321,9 @@ export default function AdminUsersPage() {
           Kullanıcıları Yönet
         </h2>
         {usersList.length === 0 ? (
-          <p className="text-sm sm:text-base text-gray-500">Kullanıcı bulunamadı.</p>
+          <p className="text-sm sm:text-base text-gray-500">
+            Kullanıcı bulunamadı.
+          </p>
         ) : (
           <ul className="space-y-4">
             {usersList.map((usr) => (
