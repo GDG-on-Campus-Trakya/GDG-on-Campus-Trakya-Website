@@ -24,8 +24,8 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/drawer";
+import { cn } from "@/lib/utils";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion, AnimatePresence } from "framer-motion";
@@ -89,6 +89,25 @@ export default function EventsPage() {
     }
 
     try {
+      // Check if user has completed their profile
+      const userRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userRef);
+
+      if (!userDoc.exists()) {
+        toast.error("Profil bilgileriniz bulunamadı.");
+        router.push("/profile");
+        return;
+      }
+
+      const userData = userDoc.data();
+      if (!userData.name || !userData.faculty || !userData.department) {
+        toast.error(
+          "Etkinliğe kayıt olabilmek için profil bilgilerinizi tamamlamanız gerekmektedir."
+        );
+        router.push("/profile");
+        return;
+      }
+
       const registrationsRef = collection(db, "registrations");
       const signupQuery = query(
         registrationsRef,
@@ -108,23 +127,23 @@ export default function EventsPage() {
         eventId: selectedEvent.id,
         userId: user.uid,
         signedUpAt: new Date(),
-        didJoinEvent: false
+        didJoinEvent: false,
       });
 
       const qrCodeRef = collection(db, "qrCodes");
       const newQrCode = await addDoc(qrCodeRef, {
         registrationId: newRegistration.id,
-        createdAt: new Date()
+        createdAt: new Date(),
       });
 
       const qrCodeData = `qrCode=${newQrCode.id}`;
 
       await updateDoc(doc(qrCodeRef, newQrCode.id), {
-        code: qrCodeData
+        code: qrCodeData,
       });
 
       await updateDoc(doc(registrationsRef, newRegistration.id), {
-        qrCodeId: newQrCode.id
+        qrCodeId: newQrCode.id,
       });
 
       toast.success("Etkinliğe başarıyla kayıt oldunuz!");
@@ -188,25 +207,17 @@ export default function EventsPage() {
 
     if (qrCodeId && !selectedEvent && events.length > 0) {
       try {
-        const qrCodeRef = doc(db, "qrCodes", qrCodeId);
+        const qrCodeRef = doc(db, "eventQrCodes", qrCodeId);
         const qrCodeSnap = await getDoc(qrCodeRef);
 
         if (qrCodeSnap.exists()) {
-          const registrationId = qrCodeSnap.data().registrationId;
-          const registrationRef = doc(db, "registrations", registrationId);
-          const registrationSnap = await getDoc(registrationRef);
+          const eventId = qrCodeSnap.data().eventId;
+          const event = events.find((e) => e.id === eventId);
 
-          if (registrationSnap.exists()) {
-            const eventId = registrationSnap.data().eventId;
-            const event = events.find(e => e.id === eventId);
-
-            if (event) {
-              setSelectedEvent(event);
-            } else {
-              toast.error("QR kod için etkinlik bulunamadı.");
-            }
+          if (event) {
+            setSelectedEvent(event);
           } else {
-            toast.error("QR kod için kayıt bulunamadı.");
+            toast.error("QR kod için etkinlik bulunamadı.");
           }
         } else {
           toast.error("Geçersiz QR kod.");
@@ -347,18 +358,18 @@ export default function EventsPage() {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="font-sans bg-gradient-to-b from-[#0a0a19] to-black text-white min-h-screen flex flex-col items-center p-6"
     >
-      <motion.header 
+      <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="flex flex-col items-center mb-6"
       >
-        <motion.h1 
+        <motion.h1
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
@@ -366,7 +377,7 @@ export default function EventsPage() {
         >
           Etkinlikler
         </motion.h1>
-        <motion.div 
+        <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}
@@ -378,7 +389,7 @@ export default function EventsPage() {
 
       <main className="flex flex-col lg:flex-row gap-6 justify-center w-full max-w-5xl">
         {/* Calendar Section */}
-        <motion.div 
+        <motion.div
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
@@ -400,7 +411,7 @@ export default function EventsPage() {
 
           {/* Filter Buttons */}
           {!selectedDate && (
-            <motion.div 
+            <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.6, duration: 0.5 }}
@@ -431,13 +442,13 @@ export default function EventsPage() {
         </motion.div>
 
         {/* Event List */}
-        <motion.div 
+        <motion.div
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
           className="relative flex-1 max-w-[900px] lg:order-1 order-2"
         >
-          <motion.div 
+          <motion.div
             initial={{ height: 0 }}
             animate={{ height: "100%" }}
             transition={{ delay: 0.5, duration: 0.5 }}
@@ -453,8 +464,11 @@ export default function EventsPage() {
                   className="space-y-6"
                 >
                   {filteredEvents.map((event, index) => {
-                    const status = isExpired(event.date) ? "Geçmiş" : "Yaklaşan";
-                    const statusColor = status === "Yaklaşan" ? "bg-green-600" : "bg-red-600";
+                    const status = isExpired(event.date)
+                      ? "Geçmiş"
+                      : "Yaklaşan";
+                    const statusColor =
+                      status === "Yaklaşan" ? "bg-green-600" : "bg-red-600";
 
                     return (
                       <motion.div
@@ -462,24 +476,27 @@ export default function EventsPage() {
                         initial={{ x: -50, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: 50, opacity: 0 }}
-                        transition={{ 
+                        transition={{
                           delay: index * 0.1,
                           duration: 0.5,
-                          ease: "easeOut"
+                          ease: "easeOut",
                         }}
-                        whileHover={{ 
+                        whileHover={{
                           scale: 1.02,
                           backgroundColor: "rgba(55, 65, 81, 0.8)",
-                          transition: { duration: 0.2 }
+                          transition: { duration: 0.2 },
                         }}
                         className="flex items-start bg-gray-800 rounded-lg p-5 shadow-lg cursor-pointer relative hover:bg-gray-700 transition-all"
                         onClick={() => handleEventClick(event)}
                       >
                         {/* Timeline Marker with animation */}
-                        <motion.div 
+                        <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          transition={{ delay: index * 0.1 + 0.3, duration: 0.3 }}
+                          transition={{
+                            delay: index * 0.1 + 0.3,
+                            duration: 0.3,
+                          }}
                           className="absolute left-[-60px] top-6 flex flex-col items-center"
                         >
                           <motion.div
@@ -489,7 +506,7 @@ export default function EventsPage() {
                         </motion.div>
 
                         {/* Event Content */}
-                        <motion.div 
+                        <motion.div
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ delay: index * 0.1 + 0.2 }}
@@ -508,7 +525,9 @@ export default function EventsPage() {
                             {getDayLabel(event.date)}
                           </h4>
                           <h3 className="mt-2 text-3xl">{event.name}</h3>
-                          <div className="mt-1 text-lg text-gray-400">{event.time}</div>
+                          <div className="mt-1 text-lg text-gray-400">
+                            {event.time}
+                          </div>
                           <div className="mt-1 text-lg text-gray-400">
                             {event.location}
                           </div>
@@ -555,7 +574,10 @@ export default function EventsPage() {
       </main>
 
       {/* Drawer with animations */}
-      <Drawer open={!!selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)}>
+      <Drawer
+        open={!!selectedEvent}
+        onOpenChange={(open) => !open && setSelectedEvent(null)}
+      >
         <DrawerContent className="fixed inset-y-0 right-0 h-[98vh] my-auto w-[400px] bg-transparent border-none shadow-2xl">
           <motion.div
             initial={{ x: 400, opacity: 0 }}
@@ -563,7 +585,7 @@ export default function EventsPage() {
             exit={{ x: 400, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className={cn(
-              "h-full w-full bg-[#0a0a19] text-white p-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent rounded-l-lg bg-gray-800",
+              "h-full w-full bg-[#0a0a19] text-white p-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent rounded-l-lg bg-gray-800"
             )}
           >
             <DrawerHeader className="p-0">
@@ -592,7 +614,7 @@ export default function EventsPage() {
                   <DrawerTitle className="text-3xl font-bold mb-3">
                     {selectedEvent.name}
                   </DrawerTitle>
-                  
+
                   {/* Wrap content in DrawerDescription for accessibility */}
                   <DrawerDescription asChild>
                     <div className="space-y-4">
@@ -617,26 +639,31 @@ export default function EventsPage() {
             {selectedEvent && (
               <div className="space-y-6">
                 {/* Sponsors Section */}
-                {selectedEvent.sponsors && selectedEvent.sponsors.length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="text-2xl font-semibold mb-3">Sponsorluk</h3>
-                    <div className="flex flex-wrap gap-4">
-                      {getSponsorsDetails(selectedEvent.sponsors).map((sponsor) => (
-                        <div
-                          key={sponsor.id}
-                          className="flex items-center space-x-2"
-                        >
-                          <img
-                            src={sponsor.img_url}
-                            alt={sponsor.name}
-                            className="w-10 h-10 object-contain"
-                          />
-                          <span className="text-lg">{sponsor.name}</span>
-                        </div>
-                      ))}
+                {selectedEvent.sponsors &&
+                  selectedEvent.sponsors.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-2xl font-semibold mb-3">
+                        Sponsorluk
+                      </h3>
+                      <div className="flex flex-wrap gap-4">
+                        {getSponsorsDetails(selectedEvent.sponsors).map(
+                          (sponsor) => (
+                            <div
+                              key={sponsor.id}
+                              className="flex items-center space-x-2"
+                            >
+                              <img
+                                src={sponsor.img_url}
+                                alt={sponsor.name}
+                                className="w-10 h-10 object-contain"
+                              />
+                              <span className="text-lg">{sponsor.name}</span>
+                            </div>
+                          )
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* File URL Section */}
                 {selectedEvent.file_url && (
@@ -692,7 +719,9 @@ export default function EventsPage() {
                         </h4>
                       )}
                       {signupError && (
-                        <h4 className="mt-3 text-red-500 text-sm">{signupError}</h4>
+                        <h4 className="mt-3 text-red-500 text-sm">
+                          {signupError}
+                        </h4>
                       )}
                     </>
                   )
@@ -706,7 +735,9 @@ export default function EventsPage() {
                 )
               ) : (
                 selectedEvent && (
-                  <h3 className="text-red-500 text-md">Bu etkinlik sona erdi.</h3>
+                  <h3 className="text-red-500 text-md">
+                    Bu etkinlik sona erdi.
+                  </h3>
                 )
               )}
               <DrawerClose asChild>

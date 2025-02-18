@@ -12,6 +12,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  writeBatch,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import UserInfo from "../../components/UserInfo";
@@ -122,24 +123,22 @@ const Profile = () => {
             try {
               const qrCodeRef = doc(db, "qrCodes", registration.qrCodeId);
               const qrCodeSnap = await getDoc(qrCodeRef);
-              
+
               if (qrCodeSnap.exists()) {
-                // Generate the full URL for the QR code
-                const baseUrl = window.location.origin; // Gets the base URL of your website
-                const eventId = registration.eventId;
-                const qrCodeUrl = `${baseUrl}/events?qrCode=${registration.qrCodeId}`;
-                
-                // Generate QR code with the full URL
-                const qrCodeDataURL = await QRCode.toDataURL(qrCodeUrl, {
+                // Use the same QR code format as stored in the database
+                const qrCodeData = qrCodeSnap.data().code;
+
+                // Generate QR code with the code from the database
+                const qrCodeDataURL = await QRCode.toDataURL(qrCodeData, {
                   errorCorrectionLevel: "H",
                   margin: 2,
                   width: 400,
                   color: {
                     dark: "#000000",
-                    light: "#ffffff"
-                  }
+                    light: "#ffffff",
+                  },
                 });
-                
+
                 qrCodesData[registration.qrCodeId] = qrCodeDataURL;
               }
             } catch (error) {
@@ -179,37 +178,44 @@ const Profile = () => {
     try {
       const registrationRef = doc(db, "registrations", registrationId);
       const registrationSnap = await getDoc(registrationRef);
-  
+
       if (!registrationSnap.exists()) {
         toast.error("Registration not found.");
         return;
       }
-  
+
       const registrationData = registrationSnap.data();
       const qrCodeId = registrationData.qrCodeId;
-  
-      // Delete the registration document
-      await deleteDoc(registrationRef);
-  
-      // Delete the associated QR code document if it exists
+
+      // Create a batch
+      const batch = writeBatch(db);
+
+      // Add registration document to batch delete
+      batch.delete(registrationRef);
+
+      // Add QR code document to batch delete if it exists
       if (qrCodeId) {
-        await deleteDoc(doc(db, "qrCodes", qrCodeId));
+        const qrCodeRef = doc(db, "qrCodes", qrCodeId);
+        batch.delete(qrCodeRef);
       }
-  
+
+      // Commit the batch
+      await batch.commit();
+
       setRegistrations((prevRegistrations) =>
         prevRegistrations.filter((reg) => reg.id !== registrationId)
       );
-  
+
       const updatedRegistrations = registrations.filter(
         (reg) => reg.id !== registrationId
       );
       const remainingEventIds = updatedRegistrations.map((reg) => reg.eventId);
       const uniqueRemainingEventIds = [...new Set(remainingEventIds)];
-  
+
       setEvents((prevEvents) =>
         prevEvents.filter((event) => uniqueRemainingEventIds.includes(event.id))
       );
-  
+
       toast.success("Kayıt başarıyla silindi.");
     } catch (error) {
       console.error("Error removing registration:", error);
@@ -231,7 +237,11 @@ const Profile = () => {
     setIsEmailUpdateLoading(true);
     try {
       const userRef = doc(db, "users", user.uid);
-      await setDoc(userRef, { wantsToGetEmails: newPreference }, { merge: true });
+      await setDoc(
+        userRef,
+        { wantsToGetEmails: newPreference },
+        { merge: true }
+      );
       setUserWantsEmails(newPreference);
       toast.success("Email preference updated successfully.");
     } catch (error) {
@@ -291,7 +301,7 @@ const Profile = () => {
       ref={profileRef}
       className="p-10 bg-gray-900 min-h-screen text-white font-sans"
     >
-      <motion.h1 
+      <motion.h1
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="text-center text-4xl mb-10"
@@ -311,7 +321,7 @@ const Profile = () => {
       )}
 
       {/* Email Preferences */}
-      <motion.div 
+      <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}
@@ -320,7 +330,7 @@ const Profile = () => {
         <h2 className="text-2xl border-b-2 border-blue-400 pb-2 mb-5 inline-block">
           Email Tercihleri
         </h2>
-        <motion.div 
+        <motion.div
           whileHover={{ scale: 1.01 }}
           className="flex flex-row items-center justify-between space-x-4 rounded-lg border p-4"
         >
@@ -344,7 +354,7 @@ const Profile = () => {
       </motion.div>
 
       {/* Registered Events */}
-      <motion.div 
+      <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.4 }}
@@ -368,7 +378,10 @@ const Profile = () => {
         </motion.div>
       </motion.div>
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent className="bg-gray-800 text-white border-gray-700">
           <AlertDialogHeader>
             <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
@@ -377,7 +390,7 @@ const Profile = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel 
+            <AlertDialogCancel
               className="bg-gray-700 hover:bg-gray-600 text-white border-0"
               onClick={() => setIsDeleteDialogOpen(false)}
             >
