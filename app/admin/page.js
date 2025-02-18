@@ -209,6 +209,12 @@ export default function AdminPage() {
           >
             QR Kod Doğrulama
           </Link>
+          <Link
+            href="/admin/event-stats"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md text-center hover:bg-blue-600 transition-colors"
+          >
+            Etkinlik İstatistikleri
+          </Link>
         </div>
       </section>
 
