@@ -10,17 +10,21 @@ export default function AuthProvider({ children }) {
   useEffect(() => {
     const createUserDocument = async () => {
       if (user) {
-        const userRef = doc(db, "users", user.uid)
-        const userSnap = await getDoc(userRef)
+        try {
+          const userRef = doc(db, "users", user.uid)
+          const userSnap = await getDoc(userRef)
 
-        if (!userSnap.exists()) {
-          await setDoc(userRef, {
-            name: user.displayName || "New User",
-            email: user.email,
-            wantsToGetEmails: true,
-            language: "tr",
-            createdAt: new Date(),
-          })
+          if (!userSnap.exists()) {
+            await setDoc(userRef, {
+              name: user.displayName || "New User",
+              email: user.email,
+              wantsToGetEmails: true,
+              language: "tr",
+              createdAt: new Date(),
+            })
+          }
+        } catch (error) {
+          console.warn("Failed to create user document:", error)
         }
       }
     }

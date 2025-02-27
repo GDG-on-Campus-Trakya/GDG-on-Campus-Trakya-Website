@@ -5,11 +5,11 @@ import { auth, googleProvider, db } from "../firebase";
 import { signInWithPopup, signOut } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import Link from "next/link";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Navbar() {
+function NavbarContent() {
   const [user, loading] = useAuthState(auth);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -169,5 +169,13 @@ export default function Navbar() {
         )}
       </div>
     </motion.nav>
+  );
+}
+
+export default function Navbar() {
+  return (
+    <Suspense fallback={<div>Loading navigation...</div>}>
+      <NavbarContent />
+    </Suspense>
   );
 }

@@ -12,7 +12,7 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Calendar from "../../components/Calendar";
 import {
@@ -30,7 +30,27 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function EventsPage() {
+function SearchParamsHandler({ onQRCodeRedirect, events }) {
+  const searchParams = useSearchParams();
+  
+  useEffect(() => {
+    const handleQRCodeRedirect = async () => {
+      const qrCodeId = searchParams.get("qrCode");
+
+      if (qrCodeId && events.length > 0) {
+        onQRCodeRedirect(qrCodeId);
+      }
+    };
+
+    if (events.length > 0) {
+      handleQRCodeRedirect();
+    }
+  }, [searchParams, events, onQRCodeRedirect]);
+
+  return null;
+}
+
+function EventsPageContent() {
   const [events, setEvents] = useState([]);
   const [sponsors, setSponsors] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -43,7 +63,6 @@ export default function EventsPage() {
 
   const [hasSignedUp, setHasSignedUp] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const drawerRef = useRef(null);
 
@@ -55,7 +74,13 @@ export default function EventsPage() {
     return `${year}-${month}-${day}`;
   };
 
-  const isExpired = (eventDate) => new Date(eventDate) < new Date();
+  const isExpired = (eventDate, eventTime) => {
+    const now = new Date();
+    const [hours, minutes] = eventTime.split(':').map(Number);
+    const eventDateTime = new Date(eventDate);
+    eventDateTime.setHours(hours, minutes, 0, 0);
+    return now > eventDateTime;
+  };
 
   useEffect(() => {
     const checkSignupStatus = async () => {
@@ -154,6 +179,31 @@ export default function EventsPage() {
     }
   };
 
+  const handleQRCodeRedirect = async (qrCodeId) => {
+    if (qrCodeId && !selectedEvent && events.length > 0) {
+      try {
+        const qrCodeRef = doc(db, "eventQrCodes", qrCodeId);
+        const qrCodeSnap = await getDoc(qrCodeRef);
+
+        if (qrCodeSnap.exists()) {
+          const eventId = qrCodeSnap.data().eventId;
+          const event = events.find((e) => e.id === eventId);
+
+          if (event) {
+            setSelectedEvent(event);
+          } else {
+            toast.error("QR kod için etkinlik bulunamadı.");
+          }
+        } else {
+          toast.error("Geçersiz QR kod.");
+        }
+      } catch (error) {
+        console.error("Error handling QR code redirect:", error);
+        toast.error("QR kod işlenirken bir hata oluştu.");
+      }
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -190,44 +240,8 @@ export default function EventsPage() {
       }
     };
 
-    fetchData().then(() => {
-      handleQRCodeRedirect();
-    });
+    fetchData();
   }, []);
-
-  // Add another effect to handle QR code redirect when events change
-  useEffect(() => {
-    if (events.length > 0) {
-      handleQRCodeRedirect();
-    }
-  }, [events]); // Run when events are updated
-
-  const handleQRCodeRedirect = async () => {
-    const qrCodeId = searchParams.get("qrCode");
-
-    if (qrCodeId && !selectedEvent && events.length > 0) {
-      try {
-        const qrCodeRef = doc(db, "eventQrCodes", qrCodeId);
-        const qrCodeSnap = await getDoc(qrCodeRef);
-
-        if (qrCodeSnap.exists()) {
-          const eventId = qrCodeSnap.data().eventId;
-          const event = events.find((e) => e.id === eventId);
-
-          if (event) {
-            setSelectedEvent(event);
-          } else {
-            toast.error("QR kod için etkinlik bulunamadı.");
-          }
-        } else {
-          toast.error("Geçersiz QR kod.");
-        }
-      } catch (error) {
-        console.error("Error handling QR code redirect:", error);
-        toast.error("QR kod işlenirken bir hata oluştu.");
-      }
-    }
-  };
 
   // Prevent scrolling when drawer is open (çokomelli)
   useEffect(() => {
@@ -325,15 +339,23 @@ export default function EventsPage() {
         (event) => formatDate(event.date) === selectedDateStr
       );
     } else if (filterStatus === "upcoming") {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      filtered = filtered.filter((event) => new Date(event.date) >= today);
+      const now = new Date();
+      filtered = filtered.filter((event) => {
+        const [hours, minutes] = event.time.split(':').map(Number);
+        const eventDateTime = new Date(event.date);
+        eventDateTime.setHours(hours, minutes, 0, 0);
+        return eventDateTime >= now;
+      });
       // Sort upcoming events from oldest to newest
       filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
     } else if (filterStatus === "past") {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      filtered = filtered.filter((event) => new Date(event.date) < today);
+      const now = new Date();
+      filtered = filtered.filter((event) => {
+        const [hours, minutes] = event.time.split(':').map(Number);
+        const eventDateTime = new Date(event.date);
+        eventDateTime.setHours(hours, minutes, 0, 0);
+        return eventDateTime < now;
+      });
       // Sort past events from newest to oldest
       filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
     }
@@ -390,6 +412,10 @@ export default function EventsPage() {
           Katılmak istediğiniz etkinlikleri keşfedin ve kaydolun!
         </motion.div>
       </motion.header>
+
+      <Suspense fallback={null}>
+        <SearchParamsHandler onQRCodeRedirect={handleQRCodeRedirect} events={events} />
+      </Suspense>
 
       <main className="flex flex-col lg:flex-row gap-6 justify-center w-full max-w-5xl">
         {/* Calendar Section */}
@@ -468,7 +494,7 @@ export default function EventsPage() {
                   className="space-y-6"
                 >
                   {filteredEvents.map((event, index) => {
-                    const status = isExpired(event.date)
+                    const status = isExpired(event.date, event.time)
                       ? "Geçmiş"
                       : "Yaklaşan";
                     const statusColor =
@@ -700,7 +726,7 @@ export default function EventsPage() {
             )}
 
             <DrawerFooter className="p-0 mt-6">
-              {selectedEvent && !isExpired(selectedEvent.date) ? (
+              {selectedEvent && !isExpired(selectedEvent.date, selectedEvent.time) ? (
                 user ? (
                   hasSignedUp ? (
                     <button
@@ -779,5 +805,15 @@ export default function EventsPage() {
         theme="dark"
       />
     </motion.div>
+  );
+}
+
+export default function EventsPage() {
+  return (
+    <Suspense fallback={<div className="font-sans bg-gradient-to-b from-[#0a0a19] to-black text-white min-h-screen flex items-center justify-center">
+      <div className="text-2xl">Loading...</div>
+    </div>}>
+      <EventsPageContent />
+    </Suspense>
   );
 }
