@@ -43,6 +43,7 @@ export default function AdminEventsPage() {
     location: "",
     sponsors: [],
     category: "Konferans",
+    file_url: "",
   });
 
   const router = useRouter();
@@ -176,6 +177,7 @@ export default function AdminEventsPage() {
       location: "",
       sponsors: [],
       category: "Konferans",
+      file_url: "",
     });
   };
 
@@ -419,6 +421,14 @@ export default function AdminEventsPage() {
             value={formData.location}
             onChange={handleChange}
             required
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="url"
+            name="file_url"
+            placeholder="Etkinlik Dokümanları URL'si"
+            value={formData.file_url}
+            onChange={handleChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 

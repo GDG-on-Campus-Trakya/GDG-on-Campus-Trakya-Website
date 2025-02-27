@@ -328,10 +328,14 @@ export default function EventsPage() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       filtered = filtered.filter((event) => new Date(event.date) >= today);
+      // Sort upcoming events from oldest to newest
+      filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
     } else if (filterStatus === "past") {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       filtered = filtered.filter((event) => new Date(event.date) < today);
+      // Sort past events from newest to oldest
+      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
     return filtered;
