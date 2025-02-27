@@ -55,7 +55,13 @@ export default function EventsPage() {
     return `${year}-${month}-${day}`;
   };
 
-  const isExpired = (eventDate) => new Date(eventDate) < new Date();
+  const isExpired = (eventDate, eventTime) => {
+    const now = new Date();
+    const [hours, minutes] = eventTime.split(':').map(Number);
+    const eventDateTime = new Date(eventDate);
+    eventDateTime.setHours(hours, minutes, 0, 0);
+    return now > eventDateTime;
+  };
 
   useEffect(() => {
     const checkSignupStatus = async () => {
@@ -325,15 +331,23 @@ export default function EventsPage() {
         (event) => formatDate(event.date) === selectedDateStr
       );
     } else if (filterStatus === "upcoming") {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      filtered = filtered.filter((event) => new Date(event.date) >= today);
+      const now = new Date();
+      filtered = filtered.filter((event) => {
+        const [hours, minutes] = event.time.split(':').map(Number);
+        const eventDateTime = new Date(event.date);
+        eventDateTime.setHours(hours, minutes, 0, 0);
+        return eventDateTime >= now;
+      });
       // Sort upcoming events from oldest to newest
       filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
     } else if (filterStatus === "past") {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      filtered = filtered.filter((event) => new Date(event.date) < today);
+      const now = new Date();
+      filtered = filtered.filter((event) => {
+        const [hours, minutes] = event.time.split(':').map(Number);
+        const eventDateTime = new Date(event.date);
+        eventDateTime.setHours(hours, minutes, 0, 0);
+        return eventDateTime < now;
+      });
       // Sort past events from newest to oldest
       filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
     }
@@ -468,7 +482,7 @@ export default function EventsPage() {
                   className="space-y-6"
                 >
                   {filteredEvents.map((event, index) => {
-                    const status = isExpired(event.date)
+                    const status = isExpired(event.date, event.time)
                       ? "Geçmiş"
                       : "Yaklaşan";
                     const statusColor =
@@ -700,7 +714,7 @@ export default function EventsPage() {
             )}
 
             <DrawerFooter className="p-0 mt-6">
-              {selectedEvent && !isExpired(selectedEvent.date) ? (
+              {selectedEvent && !isExpired(selectedEvent.date, selectedEvent.time) ? (
                 user ? (
                   hasSignedUp ? (
                     <button
