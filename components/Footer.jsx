@@ -18,29 +18,29 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-gradient-to-t from-black to-gray-900 text-gray-300 py-12">
+    <footer className="bg-gradient-to-t from-black to-gray-900 text-gray-300 py-8 sm:py-12">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
           {/* Left Section */}
-          <div className="space-y-4">
+          <div className="space-y-4 text-center sm:text-left">
             <img
               src="/landing-Photoroom.png"
               alt="GDG Logo"
-              className="w-24 h-24"
+              className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 mx-auto sm:mx-0"
             />
-            <p className="text-sm max-w-xs">
+            <p className="text-xs sm:text-sm max-w-xs mx-auto sm:mx-0">
               Teknoloji tutkunlarını bir araya getiren, geleceği şekillendiren topluluk.
             </p>
           </div>
 
           {/* Middle Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">Hızlı Bağlantılar</h3>
+          <div className="space-y-4 text-center sm:text-left">
+            <h3 className="text-base sm:text-lg font-semibold text-white">Hızlı Bağlantılar</h3>
             <div className="flex flex-col space-y-2">
               <Link href="/about">
                 <motion.span
                   whileHover={{ x: 5, color: "#60A5FA" }}
-                  className="hover:text-blue-400 transition cursor-pointer"
+                  className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
                 >
                   Hakkımızda
                 </motion.span>
@@ -48,7 +48,7 @@ export default function Footer() {
               <Link href="/events">
                 <motion.span
                   whileHover={{ x: 5, color: "#60A5FA" }}
-                  className="hover:text-blue-400 transition cursor-pointer"
+                  className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
                 >
                   Etkinlikler
                 </motion.span>
@@ -57,15 +57,15 @@ export default function Footer() {
           </div>
 
           {/* Right Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">Bizi Takip Edin</h3>
-            <div className="flex space-x-4">
+          <div className="space-y-4 text-center sm:text-left sm:col-span-2 md:col-span-1">
+            <h3 className="text-base sm:text-lg font-semibold text-white">Bizi Takip Edin</h3>
+            <div className="flex space-x-4 justify-center sm:justify-start">
               {socialLinks.map((social) => (
                 <motion.button
                   key={social.name}
                   whileHover={{ scale: 1.1, y: -2 }}
                   onClick={() => window.open(social.url, "_blank")}
-                  className="w-10 h-10 rounded-full bg-gray-800 p-2 hover:bg-gray-700 transition-colors"
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-800 p-1.5 sm:p-2 hover:bg-gray-700 transition-colors"
                 >
                   <img
                     src={social.icon}
@@ -82,7 +82,7 @@ export default function Footer() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="border-t border-gray-800 mt-8 pt-8 text-center text-sm"
+          className="border-t border-gray-800 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-xs sm:text-sm"
         >
           © 2025 GDG On Campus Trakya. Her hakkı saklıdır.
         </motion.div>

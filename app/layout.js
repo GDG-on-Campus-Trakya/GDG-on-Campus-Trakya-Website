@@ -12,10 +12,10 @@ export const metadata = {
 export default async function RootLayout({ children }) {
   return (
     <html className="h-full">
-      <body className="flex flex-col min-h-screen custom-scrollbar">
+      <body className="flex flex-col min-h-screen custom-scrollbar overflow-x-hidden">
         <AuthProvider>
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 w-full">{children}</main>
           <Footer />
         </AuthProvider>
       </body>

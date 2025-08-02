@@ -8,6 +8,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '320px',
+        '2xs': '280px',
+      },
       colors: {
         "purple-500": "#9b5de5",
         "pink-500": "#f15bb5",

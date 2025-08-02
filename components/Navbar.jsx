@@ -12,7 +12,9 @@ import { motion, AnimatePresence } from "framer-motion";
 function NavbarContent() {
   const [user, loading] = useAuthState(auth);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const profileMenuRef = useRef(null);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -48,55 +50,95 @@ function NavbarContent() {
   };
 
   const handleProfileClick = () => {
-    setMenuOpen(false);
+    setProfileMenuOpen(false);
     router.push("/profile");
   };
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
+  const toggleProfileMenu = () => setProfileMenuOpen(!profileMenuOpen);
   const isLandingPage = pathname === "/";
 
   const handleOutsideClick = (event) => {
     if (menuRef.current && !menuRef.current.contains(event.target)) {
       setMenuOpen(false);
     }
+    if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+      setProfileMenuOpen(false);
+    }
   };
 
   useEffect(() => {
-    if (menuOpen) {
+    if (menuOpen || profileMenuOpen) {
       document.addEventListener("mousedown", handleOutsideClick);
     } else {
       document.removeEventListener("mousedown", handleOutsideClick);
     }
 
     return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [menuOpen]);
+  }, [menuOpen, profileMenuOpen]);
 
   return (
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className={`flex items-center justify-between px-8 h-20 ${
+      className={`flex items-center px-4 sm:px-6 lg:px-8 h-14 sm:h-16 md:h-20 ${
         isLandingPage
           ? "bg-gradient-to-b from-gray-900 to-gray-900"
           : "bg-black/70 backdrop-blur-md"
       } text-white sticky top-0 z-50 transition-all duration-300`}
     >
-      {/* Left Side - Logo */}
-      <motion.div 
-        whileHover={{ scale: 1.05 }}
-        className="flex items-center"
-      >
-        <Link href="/">
-          <img
-            src="/landing-Photoroom.png"
-            alt="Home"
-            className="w-20 h-20 cursor-pointer"
-          />
-        </Link>
-      </motion.div>
+      {/* Left Side - Mobile Menu Button on small screens, Logo on larger screens */}
+      <div className="flex items-center">
+        {/* Mobile Menu Button - Visible only on small screens for ALL users */}
+        <div className="md:hidden">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleMenu}
+            className="p-2 text-white focus:outline-none"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              {menuOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              )}
+            </svg>
+          </motion.button>
+        </div>
 
-      {/* Middle Links */}
-      <div className="flex gap-8 text-base font-medium">
+        {/* Logo - Hidden on small screens */}
+        <motion.div 
+          whileHover={{ scale: 1.05 }}
+          className="hidden md:flex items-center"
+        >
+          <Link href="/">
+            <img
+              src="/landing-Photoroom.png"
+              alt="Home"
+              className="w-16 h-16 lg:w-20 lg:h-20 cursor-pointer"
+            />
+          </Link>
+        </motion.div>
+      </div>
+
+      {/* Middle Links - Hidden on small screens */}
+      <div className="hidden md:flex gap-8 text-base font-medium flex-1 justify-center">
         <Link href="/about">
           <motion.span
             whileHover={{ scale: 1.1, color: "#60A5FA" }}
@@ -115,6 +157,9 @@ function NavbarContent() {
         </Link>
       </div>
 
+      {/* Spacer for mobile to push right side content to the right */}
+      <div className="md:hidden flex-1"></div>
+
       {/* Right Side - User Menu */}
       <div className="flex items-center gap-4">
         {user ? (
@@ -123,32 +168,33 @@ function NavbarContent() {
               whileHover={{ scale: 1.1 }}
               src={user.photoURL || "/default-profile.png"}
               alt="Profile"
-              className="w-10 h-10 rounded-full shadow cursor-pointer border-2 border-blue-500"
-              onClick={toggleMenu}
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow cursor-pointer border-2 border-blue-500"
+              onClick={toggleProfileMenu}
             />
             <AnimatePresence>
-              {menuOpen && (
+              {profileMenuOpen && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  ref={menuRef}
-                  className="absolute top-12 right-0 bg-gradient-to-b from-gray-800 to-gray-900 text-white rounded-lg shadow-lg py-2 w-56 z-50"
+                  ref={profileMenuRef}
+                  className="absolute top-10 sm:top-12 right-0 bg-gradient-to-b from-gray-800 to-gray-900 text-white rounded-lg shadow-lg py-2 w-48 sm:w-56 z-[60]"
                 >
-                  <div className="px-4 py-2 border-b border-gray-700">
-                    <p className="font-bold text-blue-400">{user.displayName || "User"}</p>
-                    <p className="text-sm text-gray-400">{user.email}</p>
+                  <div className="px-3 sm:px-4 py-2 border-b border-gray-700">
+                    <p className="font-bold text-blue-400 text-sm sm:text-base truncate">{user.displayName || "User"}</p>
+                    <p className="text-xs sm:text-sm text-gray-400 truncate">{user.email}</p>
                   </div>
+                  
                   <motion.button
                     whileHover={{ backgroundColor: "#374151" }}
-                    className="block w-full text-left px-4 py-2 hover:bg-gray-700 transition-colors"
+                    className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm"
                     onClick={handleProfileClick}
                   >
                     Profili Görüntüle
                   </motion.button>
                   <motion.button
                     whileHover={{ backgroundColor: "#374151" }}
-                    className="block w-full text-left px-4 py-2 hover:bg-gray-700 transition-colors"
+                    className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm"
                     onClick={handleSignOut}
                   >
                     Çıkış Yap
@@ -162,12 +208,44 @@ function NavbarContent() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleGoogleSignIn}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg text-white font-semibold transition duration-300"
+            className="px-3 sm:px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg text-white font-semibold transition duration-300 text-sm sm:text-base"
           >
             Giriş Yap
           </motion.button>
         )}
       </div>
+
+      {/* Mobile Menu Overlay for all users */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            ref={menuRef}
+            className="md:hidden absolute top-full left-0 right-0 bg-gradient-to-b from-gray-800 to-gray-900 shadow-lg z-50"
+          >
+            <div className="px-4 py-4 space-y-2">
+              <Link href="/about" onClick={() => setMenuOpen(false)}>
+                <motion.div
+                  whileHover={{ backgroundColor: "#374151" }}
+                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
+                >
+                  Hakkımızda
+                </motion.div>
+              </Link>
+              <Link href="/events" onClick={() => setMenuOpen(false)}>
+                <motion.div
+                  whileHover={{ backgroundColor: "#374151" }}
+                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
+                >
+                  Etkinlikler
+                </motion.div>
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.nav>
   );
 }
