@@ -41,6 +41,7 @@ Projeyi çalıştırmak için aşağıdaki adımları izleyin:
    EMAIL_APP_PASSWORD="password"
 
    NEXT_PUBLIC_BASE_URL="url"
+   IS_DEV=true
 4. Geliştirme sunucusunu başlatın:
    ```bash  
    npm run dev
