@@ -2,6 +2,8 @@
 // admin/events/page.js
 import { useEffect, useState } from "react";
 import { auth, db } from "../../../firebase";
+import ImageUpload from "../../../components/ImageUpload";
+import { StoragePaths } from "../../../utils/storageUtils";
 import { useAuthState } from "react-firebase-hooks/auth";
 import {
   collection,
@@ -106,6 +108,15 @@ export default function AdminEventsPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle image upload
+  const handleImageUpload = (imageData) => {
+    setFormData((prev) => ({ 
+      ...prev, 
+      imageUrl: imageData.url,
+      imagePath: imageData.path 
+    }));
   };
 
   // Add event
@@ -405,15 +416,16 @@ export default function AdminEventsPage() {
             required
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <input
-            type="url"
-            name="imageUrl"
-            placeholder="Resim URL'si"
-            value={formData.imageUrl}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <div>
+            <label className="block text-gray-700 mb-2">Etkinlik Resmi</label>
+            <ImageUpload
+              onImageUpload={handleImageUpload}
+              currentImageUrl={formData.imageUrl}
+              folder={StoragePaths.EVENTS}
+              prefix="event_"
+              placeholder="Etkinlik Resmi Yükle"
+            />
+          </div>
           <input
             type="text"
             name="location"

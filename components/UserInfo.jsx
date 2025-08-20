@@ -7,6 +7,8 @@ import { toast } from "react-toastify";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { faculties, departments } from "@/constants";
+import ProfileImageUpload from "./ProfileImageUpload";
+import { StoragePaths } from "../utils/storageUtils";
 import {
   Select,
   SelectContent,
@@ -20,6 +22,8 @@ const UserInfo = ({ user }) => {
     name: "",
     faculty: "",
     department: "",
+    photoURL: "",
+    imagePath: "", // Store Firebase Storage path for deletion
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,12 +38,47 @@ const UserInfo = ({ user }) => {
             name: data.name || "",
             faculty: data.faculty || "",
             department: data.department || "",
+            photoURL: data.photoURL || user.photoURL || "",
+            imagePath: data.imagePath || "", // Load stored image path
           });
         }
       }
     };
     fetchProfileData();
   }, [user]);
+
+  const handleImageUpload = async (imageData) => {
+    // Delete old profile image if it exists
+    if (profileData.imagePath) {
+      try {
+        const { deleteImage } = await import('../utils/storageUtils');
+        await deleteImage(profileData.imagePath);
+        console.log('Old profile image deleted:', profileData.imagePath);
+      } catch (error) {
+        console.warn('Failed to delete old profile image:', error);
+      }
+    } else if (profileData.photoURL && profileData.photoURL.includes('firebasestorage.googleapis.com')) {
+      // Fallback: Extract path from URL if no stored path
+      try {
+        const { deleteImage } = await import('../utils/storageUtils');
+        const url = new URL(profileData.photoURL);
+        const pathMatch = url.pathname.match(/\/o\/(.+)\?/);
+        if (pathMatch) {
+          const imagePath = decodeURIComponent(pathMatch[1]);
+          await deleteImage(imagePath);
+          console.log('Old profile image deleted from URL:', imagePath);
+        }
+      } catch (error) {
+        console.warn('Failed to delete old profile image from URL:', error);
+      }
+    }
+    
+    setProfileData(prev => ({
+      ...prev,
+      photoURL: imageData.url,
+      imagePath: imageData.path // Store the path for future deletion
+    }));
+  };
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -49,7 +88,6 @@ const UserInfo = ({ user }) => {
         {
           ...profileData,
           email: user.email,
-          photoURL: user.photoURL,
         },
         { merge: true }
       );
@@ -64,17 +102,27 @@ const UserInfo = ({ user }) => {
   };
 
   const isProfileComplete = () => {
-    return Object.values(profileData).every((value) => value.trim() !== "");
+    const requiredFields = ['name', 'faculty', 'department'];
+    return requiredFields.every((field) => profileData[field]?.trim() !== "");
   };
 
   return (
     <div className="flex flex-col items-center gap-5 justify-center mb-10 w-full max-w-2xl mx-auto">
       <div className="flex items-center gap-5 justify-center">
-        <img
-          src={user.photoURL || "/landing.jpg"}
-          alt="Profile"
-          className="w-32 h-32 rounded-full object-cover border-4 border-blue-400"
-        />
+        <div className="relative">
+          <img
+            src={profileData.photoURL || user.photoURL || "/landing.jpg"}
+            alt="Profile"
+            className="w-32 h-32 rounded-full object-cover border-4 border-blue-400"
+          />
+          <ProfileImageUpload
+            onImageUpload={handleImageUpload}
+            currentImageUrl={profileData.photoURL}
+            folder={StoragePaths.PROFILES}
+            prefix={`profile_${user.uid}_`}
+            isEditing={isEditing}
+          />
+        </div>
         <div className="flex flex-col text-left">
           <h2 className="text-2xl font-semibold">
             {profileData.name || "İsim girilmemiş"}
