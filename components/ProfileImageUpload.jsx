@@ -1,14 +1,14 @@
 "use client";
-import { useState, useRef } from 'react';
-import { uploadImage } from '../utils/storageUtils';
-import { toast } from 'react-toastify';
+import { useState, useRef } from "react";
+import { uploadImage } from "../utils/storageUtils";
+import { toast } from "react-toastify";
 
-const ProfileImageUpload = ({ 
-  onImageUpload, 
-  currentImageUrl = '', 
-  folder = 'profiles', 
-  prefix = '',
-  isEditing = false
+const ProfileImageUpload = ({
+  onImageUpload,
+  currentImageUrl = "",
+  folder = "profiles",
+  prefix = "",
+  isEditing = false,
 }) => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
@@ -19,37 +19,39 @@ const ProfileImageUpload = ({
 
     try {
       setUploading(true);
-      
-      console.log('Selected file:', file.name, 'Size:', (file.size / 1024).toFixed(2) + 'KB');
-      
+
       // Validate file size and type before upload
       if (file.size > 10 * 1024 * 1024) {
-        throw new Error('Dosya boyutu 10MB\'dan küçük olmalıdır.');
+        throw new Error("Dosya boyutu 10MB'dan küçük olmalıdır.");
       }
-      
-      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-        throw new Error('Sadece JPEG, PNG ve WebP formatları desteklenir.');
+
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        throw new Error("Sadece JPEG, PNG ve WebP formatları desteklenir.");
       }
-      
+
       const result = await uploadImage(file, folder, prefix);
       onImageUpload(result);
-      toast.success('Profil fotoğrafı başarıyla güncellendi!');
+      toast.success("Profil fotoğrafı başarıyla güncellendi!");
     } catch (error) {
-      console.error('Profil fotoğrafı yükleme hatası:', error);
-      
+      console.error("Profil fotoğrafı yükleme hatası:", error);
+
       // More specific error messages
-      if (error.code === 'storage/unauthorized') {
-        toast.error('Firebase Storage izin hatası. Lütfen yöneticiye başvurun.');
-      } else if (error.code === 'storage/unknown') {
-        toast.error('Firebase Storage bağlantı hatası. Lütfen tekrar deneyin.');
+      if (error.code === "storage/unauthorized") {
+        toast.error(
+          "Firebase Storage izin hatası. Lütfen yöneticiye başvurun."
+        );
+      } else if (error.code === "storage/unknown") {
+        toast.error("Firebase Storage bağlantı hatası. Lütfen tekrar deneyin.");
       } else {
-        toast.error(error.message || 'Profil fotoğrafı yüklenirken hata oluştu');
+        toast.error(
+          error.message || "Profil fotoğrafı yüklenirken hata oluştu"
+        );
       }
     } finally {
       setUploading(false);
       // Clear file input
       if (event.target) {
-        event.target.value = '';
+        event.target.value = "";
       }
     }
   };
@@ -71,9 +73,9 @@ const ProfileImageUpload = ({
         className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-full flex items-center justify-center text-sm transition-colors shadow-lg"
         title="Profil fotoğrafını değiştir"
       >
-        {uploading ? '⏳' : '📷'}
+        {uploading ? "⏳" : "📷"}
       </button>
-      
+
       <input
         ref={fileInputRef}
         type="file"

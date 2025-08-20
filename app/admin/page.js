@@ -215,6 +215,12 @@ export default function AdminPage() {
           >
             Etkinlik İstatistikleri
           </Link>
+          <Link
+            href="/admin/projects"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md text-center hover:bg-blue-600 transition-colors"
+          >
+            Projeler Yönetimi
+          </Link>
         </div>
       </section>
 

@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import "./globals.css";
 import AuthProvider from "./AuthProvider";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata = {
   title: "GDG on Campus Trakya",
@@ -18,6 +19,7 @@ export default async function RootLayout({ children }) {
           <main className="flex-1 w-full">{children}</main>
           <Footer />
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );

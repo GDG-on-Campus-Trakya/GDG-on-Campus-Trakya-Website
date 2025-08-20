@@ -2,6 +2,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { updateProfile } from "firebase/auth";
 import { db } from "../firebase";
 import { toast } from "react-toastify";
 import { Input } from "@/components/ui/input";
@@ -51,38 +52,51 @@ const UserInfo = ({ user }) => {
     // Delete old profile image if it exists
     if (profileData.imagePath) {
       try {
-        const { deleteImage } = await import('../utils/storageUtils');
+        const { deleteImage } = await import("../utils/storageUtils");
         await deleteImage(profileData.imagePath);
-        console.log('Old profile image deleted:', profileData.imagePath);
       } catch (error) {
-        console.warn('Failed to delete old profile image:', error);
+        console.warn("Failed to delete old profile image:", error);
       }
-    } else if (profileData.photoURL && profileData.photoURL.includes('firebasestorage.googleapis.com')) {
+    } else if (
+      profileData.photoURL &&
+      profileData.photoURL.includes("firebasestorage.googleapis.com")
+    ) {
       // Fallback: Extract path from URL if no stored path
       try {
-        const { deleteImage } = await import('../utils/storageUtils');
+        const { deleteImage } = await import("../utils/storageUtils");
         const url = new URL(profileData.photoURL);
         const pathMatch = url.pathname.match(/\/o\/(.+)\?/);
         if (pathMatch) {
           const imagePath = decodeURIComponent(pathMatch[1]);
           await deleteImage(imagePath);
-          console.log('Old profile image deleted from URL:', imagePath);
         }
       } catch (error) {
-        console.warn('Failed to delete old profile image from URL:', error);
+        console.warn("Failed to delete old profile image from URL:", error);
       }
     }
-    
-    setProfileData(prev => ({
+
+    setProfileData((prev) => ({
       ...prev,
       photoURL: imageData.url,
-      imagePath: imageData.path // Store the path for future deletion
+      imagePath: imageData.path, // Store the path for future deletion
     }));
+
+    // Update Firebase Auth profile immediately with new photo
+    try {
+      if (user) {
+        await updateProfile(user, {
+          photoURL: imageData.url,
+        });
+      }
+    } catch (error) {
+      console.warn("Failed to update Firebase Auth profile photo:", error);
+    }
   };
 
   const handleSave = async () => {
     setIsLoading(true);
     try {
+      // Update Firestore
       await setDoc(
         doc(db, "users", user.uid),
         {
@@ -91,6 +105,14 @@ const UserInfo = ({ user }) => {
         },
         { merge: true }
       );
+
+      // Update Firebase Auth profile (for photoURL and displayName)
+      if (user) {
+        await updateProfile(user, {
+          displayName: profileData.name,
+          photoURL: profileData.photoURL,
+        });
+      }
 
       toast.success("Profil bilgileri başarıyla güncellendi");
       setIsEditing(false);
@@ -102,7 +124,7 @@ const UserInfo = ({ user }) => {
   };
 
   const isProfileComplete = () => {
-    const requiredFields = ['name', 'faculty', 'department'];
+    const requiredFields = ["name", "faculty", "department"];
     return requiredFields.every((field) => profileData[field]?.trim() !== "");
   };
 

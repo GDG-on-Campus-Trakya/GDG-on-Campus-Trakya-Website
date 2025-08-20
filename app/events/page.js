@@ -217,7 +217,6 @@ function EventsPageContent() {
           eventsData.sort((a, b) => new Date(a.date) - new Date(b.date));
           setEvents(eventsData);
         } else {
-          console.log("No events found");
           setEvents([]);
         }
 
@@ -229,7 +228,6 @@ function EventsPageContent() {
           }));
           setSponsors(sponsorsData);
         } else {
-          console.log("No sponsors found");
           setSponsors([]);
         }
       } catch (error) {

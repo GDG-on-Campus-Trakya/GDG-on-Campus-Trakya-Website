@@ -1,6 +1,5 @@
 export const compressImage = (file, maxSizeKB = 300, quality = 0.7) => {
   return new Promise((resolve, reject) => {
-    console.log('Original file size:', (file.size / 1024).toFixed(2) + 'KB');
     
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -8,7 +7,6 @@ export const compressImage = (file, maxSizeKB = 300, quality = 0.7) => {
     
     img.onload = () => {
       let { width, height } = img;
-      console.log('Original dimensions:', width + 'x' + height);
       
       // More aggressive dimension reduction for compression
       const maxWidth = 800;  // Reduced from 1200
@@ -21,7 +19,6 @@ export const compressImage = (file, maxSizeKB = 300, quality = 0.7) => {
         height = Math.round(height * ratio);
       }
       
-      console.log('New dimensions:', width + 'x' + height);
       
       canvas.width = width;
       canvas.height = height;
@@ -57,14 +54,12 @@ export const compressImage = (file, maxSizeKB = 300, quality = 0.7) => {
           }
           
           const sizeKB = blob.size / 1024;
-          console.log(`Compression attempt - Quality: ${currentQuality.toFixed(2)}, Size: ${sizeKB.toFixed(2)}KB, Type: ${outputType}`);
           
           if (sizeKB <= maxSizeKB || currentQuality <= 0.1) {
             const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
               type: outputType,
               lastModified: Date.now(),
             });
-            console.log('Final compressed size:', (compressedFile.size / 1024).toFixed(2) + 'KB');
             resolve(compressedFile);
           } else {
             // More aggressive quality reduction

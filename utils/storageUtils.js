@@ -42,7 +42,6 @@ export const uploadImage = async (file, folder = "images", prefix = "") => {
         (snapshot) => {
           const progress =
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log("Upload progress:", progress + "%");
         },
         (error) => {
           console.error("Upload error:", error);
@@ -83,4 +82,5 @@ export const StoragePaths = {
   EVENTS: "events",
   PROFILES: "profiles",
   SPONSORS: "sponsors",
+  PROJECTS: "projects",
 };

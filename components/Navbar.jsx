@@ -13,6 +13,7 @@ function NavbarContent() {
   const [user, loading] = useAuthState(auth);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [userProfilePhoto, setUserProfilePhoto] = useState(null);
   const menuRef = useRef(null);
   const profileMenuRef = useRef(null);
   const router = useRouter();
@@ -34,7 +35,6 @@ function NavbarContent() {
           name: name,
           wantsToGetEmails: true,
         });
-        console.log("New user saved to Firestore");
       }
     } catch (error) {
       console.error("Error during sign-in:", error);
@@ -66,6 +66,30 @@ function NavbarContent() {
       setProfileMenuOpen(false);
     }
   };
+
+  // Fetch user profile photo from Firestore
+  useEffect(() => {
+    const fetchUserProfilePhoto = async () => {
+      if (user?.uid) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setUserProfilePhoto(userData.photoURL || user.photoURL || "/default-profile.png");
+          } else {
+            setUserProfilePhoto(user.photoURL || "/default-profile.png");
+          }
+        } catch (error) {
+          console.error("Error fetching user profile photo:", error);
+          setUserProfilePhoto(user.photoURL || "/default-profile.png");
+        }
+      } else {
+        setUserProfilePhoto(null);
+      }
+    };
+
+    fetchUserProfilePhoto();
+  }, [user]);
 
   useEffect(() => {
     if (menuOpen || profileMenuOpen) {
@@ -155,6 +179,14 @@ function NavbarContent() {
             Etkinlikler
           </motion.span>
         </Link>
+        <Link href="/projects">
+          <motion.span
+            whileHover={{ scale: 1.1, color: "#60A5FA" }}
+            className="hover:text-blue-400 transition cursor-pointer"
+          >
+            Projeler
+          </motion.span>
+        </Link>
       </div>
 
       {/* Spacer for mobile to push right side content to the right */}
@@ -166,7 +198,7 @@ function NavbarContent() {
           <div className="relative">
             <motion.img
               whileHover={{ scale: 1.1 }}
-              src={user.photoURL || "/default-profile.png"}
+              src={userProfilePhoto || "/default-profile.png"}
               alt="Profile"
               className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow cursor-pointer border-2 border-blue-500"
               onClick={toggleProfileMenu}
@@ -240,6 +272,14 @@ function NavbarContent() {
                   className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
                 >
                   Etkinlikler
+                </motion.div>
+              </Link>
+              <Link href="/projects" onClick={() => setMenuOpen(false)}>
+                <motion.div
+                  whileHover={{ backgroundColor: "#374151" }}
+                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
+                >
+                  Projeler
                 </motion.div>
               </Link>
             </div>
