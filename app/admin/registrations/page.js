@@ -147,25 +147,42 @@ export default function AdminRegistrationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 p-4 sm:p-6">
       {/* Back to Admin Panel Button */}
-      <div className="mb-4 sm:mb-6">
+      <div className="mb-6 sm:mb-8">
         <Link
           href="/admin"
-          className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+          className="inline-flex items-center px-4 py-3 text-sm sm:text-base bg-white/70 backdrop-blur-lg text-gray-700 rounded-2xl hover:bg-white/90 transition-all duration-300 border border-white/20 shadow-lg hover:shadow-xl transform hover:scale-105"
         >
-          ← Admin Paneline Geri Dön
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Admin Paneline Geri Dön
         </Link>
       </div>
 
-      <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-gray-800">
-        Admin Paneli - Etkinlik Kayıtları
-      </h1>
+      {/* Header */}
+      <div className="text-center mb-8 sm:mb-12">
+        <div className="inline-block">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">
+            Etkinlik Kayıtları
+          </h1>
+          <div className="h-1 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-full"></div>
+        </div>
+        <p className="text-gray-600 mt-4 text-lg">Tüm etkinlik kayıtlarını görüntüleyin ve yönetin</p>
+      </div>
 
-      <section className="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
-        <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
-          Etkinlik Kayıtlarını Yönet
-        </h2>
+      <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-white/20 shadow-xl">
+        <div className="flex items-center mb-6">
+          <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg mr-3">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            Etkinlik Kayıtlarını Yönet
+          </h2>
+        </div>
         {events.length === 0 ? (
           <p className="text-gray-500">Etkinlik bulunamadı.</p>
         ) : (

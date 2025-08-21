@@ -31,6 +31,9 @@ export default function AdminEventsPage() {
   // Events & Sponsors
   const [events, setEvents] = useState([]);
   const [sponsors, setSponsors] = useState([]);
+  
+  // Auto-refresh
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Event form management
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -75,33 +78,44 @@ export default function AdminEventsPage() {
   }, [user, loading, router]);
 
   // Fetch events & sponsors
+  const fetchData = async () => {
+    try {
+      const eventsSnapshot = await getDocs(collection(db, "events"));
+      const sponsorSnapshot = await getDocs(collection(db, "sponsors"));
+
+      setEvents(
+        eventsSnapshot.docs.map((doc) => ({
+          firestoreId: doc.id,
+          ...doc.data(),
+        }))
+      );
+
+      setSponsors(
+        sponsorSnapshot.docs.map((doc) => ({
+          firestoreId: doc.id,
+          ...doc.data(),
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const eventsSnapshot = await getDocs(collection(db, "events"));
-        const sponsorSnapshot = await getDocs(collection(db, "sponsors"));
-
-        setEvents(
-          eventsSnapshot.docs.map((doc) => ({
-            firestoreId: doc.id,
-            ...doc.data(),
-          }))
-        );
-
-        setSponsors(
-          sponsorSnapshot.docs.map((doc) => ({
-            firestoreId: doc.id,
-            ...doc.data(),
-          }))
-        );
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
     if (isAdmin) {
       fetchData();
     }
+  }, [isAdmin, refreshKey]);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    if (!isAdmin) return;
+    
+    const interval = setInterval(() => {
+      setRefreshKey(prev => prev + 1);
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, [isAdmin]);
 
   // Form field changes
@@ -356,258 +370,465 @@ export default function AdminEventsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-purple-50 p-4 sm:p-6">
       {/* Back to Admin Panel Button */}
-      <div className="mb-4 sm:mb-6">
+      <div className="mb-6 sm:mb-8">
         <Link
           href="/admin"
-          className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+          className="inline-flex items-center px-4 py-3 text-sm sm:text-base bg-white/70 backdrop-blur-lg text-gray-700 rounded-2xl hover:bg-white/90 transition-all duration-300 border border-white/20 shadow-lg hover:shadow-xl transform hover:scale-105"
         >
-          ← Admin Paneline Geri Dön
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Admin Paneline Geri Dön
         </Link>
       </div>
 
-      <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-gray-800">
-        Admin Paneli - Etkinlikler
-      </h1>
+      {/* Header */}
+      <div className="text-center mb-8 sm:mb-12">
+        <div className="inline-block">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 via-cyan-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            Etkinlik Yönetimi
+          </h1>
+          <div className="h-1 bg-gradient-to-r from-blue-600 via-cyan-600 to-purple-600 rounded-full"></div>
+        </div>
+        <p className="text-gray-600 mt-4 text-lg">Tüm etkinlikleri görüntüleyin ve yönetin</p>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-6 mb-8">
+        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Toplam Etkinlik</p>
+              <p className="text-3xl font-bold text-blue-600">{events.length}</p>
+            </div>
+            <div className="p-3 bg-blue-100 rounded-xl">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Aktif QR Kod</p>
+              <p className="text-3xl font-bold text-green-600">{events.filter(e => e.date >= new Date().toISOString().split('T')[0]).length}</p>
+            </div>
+            <div className="p-3 bg-green-100 rounded-xl">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V6a1 1 0 00-1-1H5a1 1 0 00-1 1v1a1 1 0 001 1zm12 0h2a1 1 0 001-1V6a1 1 0 00-1-1h-2a1 1 0 00-1 1v1a1 1 0 001 1zM5 20h2a1 1 0 001-1v-1a1 1 0 00-1-1H5a1 1 0 00-1 1v1a1 1 0 001 1z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Sponsorlu</p>
+              <p className="text-3xl font-bold text-purple-600">{events.filter(e => e.sponsors && e.sponsors.length > 0).length}</p>
+            </div>
+            <div className="p-3 bg-purple-100 rounded-xl">
+              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l5.5-3.5L16 21z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Kategoriler</p>
+              <p className="text-3xl font-bold text-cyan-600">{new Set(events.map(e => e.category)).size}</p>
+            </div>
+            <div className="p-3 bg-cyan-100 rounded-xl">
+              <svg className="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Add / Edit Event Form */}
-      <section className="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-700">
-          {isEditing ? "Etkinlik Düzenle" : "Etkinlik Ekle"}
-        </h2>
+      <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 mb-8 border border-white/20 shadow-xl">
+        <div className="flex items-center mb-6">
+          <div className="p-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg mr-3">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            {isEditing ? "Etkinlik Düzenle" : "Yeni Etkinlik Ekle"}
+          </h2>
+        </div>
         <form
           onSubmit={isEditing ? handleUpdateEvent : handleAddEvent}
-          className="space-y-4"
+          className="space-y-6"
         >
-          <input
-            type="text"
-            name="name"
-            placeholder="Etkinlik Adı"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="text"
-            name="description"
-            placeholder="Etkinlik Açıklaması"
-            value={formData.description}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="date"
-            name="date"
-            placeholder="Etkinlik Tarihi"
-            value={formData.date}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="time"
-            name="time"
-            placeholder="Etkinlik Saati"
-            value={formData.time}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <div>
-            <label className="block text-gray-700 mb-2">Etkinlik Resmi</label>
-            <ImageUpload
-              onImageUpload={handleImageUpload}
-              currentImageUrl={formData.imageUrl}
-              folder={StoragePaths.EVENTS}
-              prefix="event_"
-              placeholder="Etkinlik Resmi Yükle"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Etkinlik Adı *</label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Etkinlik adını girin..."
+                value={formData.name}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Kategori *</label>
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700"
+              >
+                <option value="Konferans">Konferans</option>
+                <option value="DevFest">DevFest</option>
+                <option value="Gezi">Gezi</option>
+                <option value="Eğitim">Eğitim</option>
+              </select>
+            </div>
           </div>
-          <input
-            type="text"
-            name="location"
-            placeholder="Konum"
-            value={formData.location}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="url"
-            name="file_url"
-            placeholder="Etkinlik Dokümanları URL'si"
-            value={formData.file_url}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-
-          {/* Category Dropdown */}
+          
           <div>
-            <label htmlFor="category" className="block text-gray-700 mb-2">
-              Kategori
-            </label>
-            <select
-              name="category"
-              value={formData.category}
+            <label className="block text-sm font-medium text-gray-700 mb-2">Açıklama *</label>
+            <textarea
+              name="description"
+              placeholder="Etkinlik açıklamasını girin..."
+              value={formData.description}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="Konferans">Konferans</option>
-              <option value="DevFest">DevFest</option>
-              <option value="Gezi">Gezi</option>
-              <option value="Eğitim">Eğitim</option>
-            </select>
+              rows={4}
+              className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500 resize-none"
+            />
           </div>
 
-          {/* Sponsors Dropdown */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Tarih *</label>
+              <input
+                type="date"
+                name="date"
+                value={formData.date}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Saat *</label>
+              <input
+                type="time"
+                name="time"
+                value={formData.time}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Konum *</label>
+              <input
+                type="text"
+                name="location"
+                placeholder="Etkinlik konumunu girin..."
+                value={formData.location}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500"
+              />
+            </div>
+          </div>
+          
           <div>
-            <label htmlFor="sponsors" className="block text-gray-700 mb-2">
-              Sponsorlar
-            </label>
-            <div className="relative">
-              <button
-                type="button"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white text-left"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              >
-                Sponsor Seç
-              </button>
-              {isDropdownOpen && (
-                <ul className="absolute z-10 mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 w-full overflow-auto">
-                  {sponsors.map((sponsor) => (
-                    <li
-                      key={sponsor.firestoreId}
-                      className="px-4 py-2 cursor-pointer hover:bg-gray-100"
-                      onClick={() => {
-                        if (!formData.sponsors.includes(sponsor.firestoreId)) {
-                          setFormData((prev) => ({
-                            ...prev,
-                            sponsors: [...prev.sponsors, sponsor.firestoreId],
-                          }));
-                        }
-                        setIsDropdownOpen(false);
-                      }}
-                    >
-                      {sponsor.name}
-                    </li>
-                  ))}
-                </ul>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Etkinlik Resmi</label>
+            <div className="bg-white/40 rounded-xl p-4">
+              <ImageUpload
+                onImageUpload={handleImageUpload}
+                currentImageUrl={formData.imageUrl}
+                folder={StoragePaths.EVENTS}
+                prefix="event_"
+                placeholder="Etkinlik Resmi Yükle"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Doküman URL'si</label>
+            <input
+              type="url"
+              name="file_url"
+              placeholder="https://example.com/document.pdf"
+              value={formData.file_url}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500"
+            />
+          </div>
+
+          {/* Sponsors Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Sponsorlar</label>
+            <div className="bg-white/40 rounded-xl p-4">
+              <div className="relative">
+                <button
+                  type="button"
+                  className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl text-left focus:outline-none focus:border-blue-400 transition-all duration-300"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  {formData.sponsors.length > 0 
+                    ? `${formData.sponsors.length} sponsor seçildi` 
+                    : "Sponsor seçin"}
+                  <svg className="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {isDropdownOpen && (
+                  <div className="absolute z-20 mt-2 bg-white border border-gray-200 rounded-2xl shadow-2xl max-h-60 w-full overflow-auto">
+                    {sponsors.map((sponsor) => (
+                      <div
+                        key={sponsor.firestoreId}
+                        className="px-4 py-3 cursor-pointer hover:bg-blue-50 transition-colors duration-200"
+                        onClick={() => {
+                          if (!formData.sponsors.includes(sponsor.firestoreId)) {
+                            setFormData((prev) => ({
+                              ...prev,
+                              sponsors: [...prev.sponsors, sponsor.firestoreId],
+                            }));
+                          }
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <img 
+                            src={sponsor.img_url} 
+                            alt={sponsor.name}
+                            className="w-8 h-8 object-contain rounded-lg"
+                            onError={(e) => e.target.style.display = 'none'}
+                          />
+                          <span className="font-medium">{sponsor.name}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* Display selected sponsors */}
+              {formData.sponsors.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {formData.sponsors.map((sponsorId, index) => {
+                    const sponsor = sponsors.find(
+                      (s) => s.firestoreId === sponsorId
+                    );
+                    return (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-3 py-2 bg-blue-100 text-blue-800 text-sm rounded-xl font-medium"
+                      >
+                        {sponsor?.name || "Bilinmeyen Sponsor"}
+                        <button
+                          type="button"
+                          className="ml-2 text-blue-600 hover:text-blue-800 font-bold"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              sponsors: prev.sponsors.filter(
+                                (id) => id !== sponsorId
+                              ),
+                            }))
+                          }
+                        >
+                          ×
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
               )}
             </div>
-            {/* Display selected sponsors */}
-            <div className="mt-2 flex flex-wrap gap-2">
-              {formData.sponsors.map((sponsorId, index) => {
-                const sponsor = sponsors.find(
-                  (s) => s.firestoreId === sponsorId
-                );
-                return (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-3 py-1 bg-gray-200 text-sm rounded-md"
-                  >
-                    {sponsor?.name || "Unknown Sponsor"}
-                    <button
-                      type="button"
-                      className="ml-2 text-red-500"
-                      onClick={() =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          sponsors: prev.sponsors.filter(
-                            (id) => id !== sponsorId
-                          ),
-                        }))
-                      }
-                    >
-                      &times;
-                    </button>
-                  </span>
-                );
-              })}
-            </div>
           </div>
 
-          <button
-            type="submit"
-            className={`w-full ${
-              isEditing ? "bg-yellow-500" : "bg-green-500"
-            } text-white py-2 rounded-md hover:bg-${
-              isEditing ? "yellow-600" : "green-600"
-            } transition-colors`}
-          >
-            {isEditing ? "Etkinlik Güncelle" : "Etkinlik Ekle"}
-          </button>
+          <div className="pt-4">
+            <button
+              type="submit"
+              className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] ${
+                isEditing 
+                  ? "bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600" 
+                  : "bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600"
+              }`}
+            >
+              {isEditing ? "Etkinlik Güncelle" : "Etkinlik Ekle"}
+            </button>
+          </div>
         </form>
       </section>
 
       {/* Manage Events */}
-      <section className="bg-white shadow-md rounded-lg p-4 sm:p-6">
-        <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
-          Etkinlikleri Yönet
-        </h2>
+      <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-white/20 shadow-xl">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg mr-3">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+              Tüm Etkinlikler ({events.length})
+            </h2>
+          </div>
+        </div>
+        
         {events.length === 0 ? (
-          <p className="text-gray-500">Etkinlik bulunamadı.</p>
+          <div className="text-center py-12">
+            <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <p className="text-lg text-gray-500 mb-2">Henüz etkinlik bulunmuyor</p>
+            <p className="text-sm text-gray-400">İlk etkinliği eklemek için yukarıdaki formu kullanın</p>
+          </div>
         ) : (
-          <ul className="space-y-4">
+          <div className="space-y-6">
             {events.map((event) => (
-              <li
+              <div
                 key={event.firestoreId}
-                className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-50 p-4 rounded-md shadow-sm gap-4 sm:gap-2"
+                className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/30 shadow-md hover:shadow-lg transition-all duration-300"
               >
-                <div className="w-full sm:w-auto">
-                  <p className="text-lg font-medium text-gray-800">
-                    {event.name}
-                  </p>
-                  <p className="text-sm text-gray-600">{event.description}</p>
+                <div className="flex flex-col lg:flex-row gap-6">
+                  {/* Event Info */}
+                  <div className="flex-1">
+                    <div className="flex items-start space-x-4">
+                      {event.imageUrl && (
+                        <img
+                          src={event.imageUrl}
+                          alt={event.name}
+                          className="w-16 h-16 rounded-xl object-cover border border-gray-200"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
+                          <h3 className="text-xl font-bold text-gray-800 mb-1">
+                            {event.name}
+                          </h3>
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                            event.category === 'DevFest' ? 'bg-purple-100 text-purple-800' :
+                            event.category === 'Konferans' ? 'bg-blue-100 text-blue-800' :
+                            event.category === 'Gezi' ? 'bg-green-100 text-green-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {event.category}
+                          </span>
+                        </div>
+                        <p className="text-gray-600 mb-3 line-clamp-2">{event.description}</p>
+                        <div className="flex flex-wrap gap-3 text-sm text-gray-500">
+                          <div className="flex items-center">
+                            <svg className="w-4 h-4 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            {event.date} - {event.time}
+                          </div>
+                          <div className="flex items-center">
+                            <svg className="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            {event.location}
+                          </div>
+                          {event.sponsors && event.sponsors.length > 0 && (
+                            <div className="flex items-center">
+                              <svg className="w-4 h-4 mr-1 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l5.5-3.5L16 21z" />
+                              </svg>
+                              {event.sponsors.length} sponsor
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row lg:flex-col gap-2 lg:w-48">
+                    <button
+                      onClick={() => handleEditEvent(event)}
+                      className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-xl hover:from-blue-600 hover:to-cyan-600 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm"
+                    >
+                      Düzenle
+                    </button>
+                    <button
+                      onClick={() => handleDeleteEvent(event.firestoreId)}
+                      className="flex-1 bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-xl hover:from-red-600 hover:to-pink-600 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm"
+                    >
+                      Sil
+                    </button>
+                    <button
+                      onClick={() => handleSendEmailToRegisteredUsers(event.id)}
+                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-xl hover:from-green-600 hover:to-emerald-600 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm"
+                    >
+                      Email Gönder
+                    </button>
+                    <button
+                      onClick={() => handleGenerateQRCode(event.id)}
+                      className="flex-1 bg-gradient-to-r from-purple-500 to-violet-500 text-white px-4 py-2 rounded-xl hover:from-purple-600 hover:to-violet-600 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm"
+                    >
+                      QR Kodu
+                    </button>
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                  <button
-                    onClick={() => handleEditEvent(event)}
-                    className="flex-1 sm:flex-none bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition-colors text-sm"
-                  >
-                    Düzenle
-                  </button>
-                  <button
-                    onClick={() => handleDeleteEvent(event.firestoreId)}
-                    className="flex-1 sm:flex-none bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors text-sm"
-                  >
-                    Sil
-                  </button>
-                  <button
-                    onClick={() => handleSendEmailToRegisteredUsers(event.id)}
-                    className="flex-1 sm:flex-none bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition-colors text-sm"
-                  >
-                    Email Gönder
-                  </button>
-                  <button
-                    onClick={() => handleGenerateQRCode(event.id)}
-                    className="flex-1 sm:flex-none bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition-colors text-sm"
-                  >
-                    QR Kodu Oluştur
-                  </button>
-                </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </section>
 
       {/* QR Code Modal */}
       {qrCodeModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
-            <h2 className="text-xl font-semibold mb-4">QR Kodu</h2>
-            <img src={currentQRCodeDataURL} alt="QR Kodu" className="w-full" />
-            <p className="mt-4 text-gray-600">QR Kodu ID: {currentQRCodeId}</p>
-            <button
-              onClick={() => setQRCodeModalOpen(false)}
-              className="mt-6 w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
-            >
-              Kapat
-            </button>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+          <div className="bg-white/90 backdrop-blur-lg p-8 rounded-3xl shadow-2xl max-w-md w-full border border-white/20">
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-6">
+                <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mr-3">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V6a1 1 0 00-1-1H5a1 1 0 00-1 1v1a1 1 0 001 1zm12 0h2a1 1 0 001-1V6a1 1 0 00-1-1h-2a1 1 0 00-1 1v1a1 1 0 001 1zM5 20h2a1 1 0 001-1v-1a1 1 0 00-1-1H5a1 1 0 00-1 1v1a1 1 0 001 1z" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800">QR Kodu</h2>
+              </div>
+              
+              <div className="bg-white rounded-2xl p-6 mb-6 shadow-inner border border-gray-100">
+                <img 
+                  src={currentQRCodeDataURL} 
+                  alt="QR Kodu" 
+                  className="w-full max-w-xs mx-auto rounded-xl shadow-lg" 
+                />
+              </div>
+              
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-4 mb-6">
+                <p className="text-sm text-gray-600 font-medium">
+                  QR Kodu ID:
+                </p>
+                <p className="text-lg font-bold text-gray-800 font-mono">
+                  {currentQRCodeId}
+                </p>
+              </div>
+              
+              <button
+                onClick={() => setQRCodeModalOpen(false)}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-4 rounded-2xl hover:from-blue-600 hover:to-purple-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold text-lg"
+              >
+                Kapat
+              </button>
+            </div>
           </div>
         </div>
       )}

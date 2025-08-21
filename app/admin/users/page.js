@@ -28,6 +28,9 @@ export default function AdminUsersPage() {
 
   // Users array
   const [usersList, setUsersList] = useState([]);
+  
+  // Auto-refresh
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // User form state
   const [userFormData, setUserFormData] = useState({
@@ -64,32 +67,43 @@ export default function AdminUsersPage() {
     }
   }, [user, loading, router]);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const usersSnapshot = await getDocs(collection(db, "users"));
-        setUsersList(
-          usersSnapshot.docs.map((doc) => {
-            const data = doc.data();
-            return {
-              firestoreId: doc.id,
-              ...data,
-              // Convert Timestamp to string when displaying
-              createdAt:
-                data.createdAt instanceof Timestamp
-                  ? data.createdAt.toDate().toLocaleString()
-                  : data.createdAt,
-            };
-          })
-        );
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
+  const fetchUsers = async () => {
+    try {
+      const usersSnapshot = await getDocs(collection(db, "users"));
+      setUsersList(
+        usersSnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            firestoreId: doc.id,
+            ...data,
+            // Convert Timestamp to string when displaying
+            createdAt:
+              data.createdAt instanceof Timestamp
+                ? data.createdAt.toDate().toLocaleString()
+                : data.createdAt,
+          };
+        })
+      );
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
 
+  useEffect(() => {
     if (isAdmin) {
       fetchUsers();
     }
+  }, [isAdmin, refreshKey]);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    if (!isAdmin) return;
+    
+    const interval = setInterval(() => {
+      setRefreshKey(prev => prev + 1);
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, [isAdmin]);
 
   const isEditing = !!userFormData.firestoreId;
@@ -236,133 +250,257 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4 sm:p-6">
       {/* Back to Admin Panel Button */}
-      <div className="mb-4 sm:mb-6">
+      <div className="mb-6 sm:mb-8">
         <Link
           href="/admin"
-          className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+          className="inline-flex items-center px-4 py-3 text-sm sm:text-base bg-white/70 backdrop-blur-lg text-gray-700 rounded-2xl hover:bg-white/90 transition-all duration-300 border border-white/20 shadow-lg hover:shadow-xl transform hover:scale-105"
         >
-          ← Admin Paneline Geri Dön
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Admin Paneline Geri Dön
         </Link>
       </div>
 
-      <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-gray-800">
-        Admin Paneli - Kullanıcılar
-      </h1>
+      {/* Header */}
+      <div className="text-center mb-8 sm:mb-12">
+        <div className="inline-block">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            Kullanıcı Yönetimi
+          </h1>
+          <div className="h-1 bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 rounded-full"></div>
+        </div>
+        <p className="text-gray-600 mt-4 text-lg">Tüm kullanıcıları görüntüleyin ve yönetin</p>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Toplam Kullanıcı</p>
+              <p className="text-3xl font-bold text-blue-600">{usersList.length}</p>
+            </div>
+            <div className="p-3 bg-blue-100 rounded-xl">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Email Almak İsteyen</p>
+              <p className="text-3xl font-bold text-green-600">{usersList.filter(u => u.wantsToGetEmails).length}</p>
+            </div>
+            <div className="p-3 bg-green-100 rounded-xl">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Bu Ay Kayıt</p>
+              <p className="text-3xl font-bold text-purple-600">{usersList.filter(u => {
+                const createdAt = u.createdAt;
+                if (!createdAt) return false;
+                const userDate = typeof createdAt === 'string' ? new Date(createdAt) : createdAt;
+                const now = new Date();
+                return userDate.getMonth() === now.getMonth() && userDate.getFullYear() === now.getFullYear();
+              }).length}</p>
+            </div>
+            <div className="p-3 bg-purple-100 rounded-xl">
+              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Add / Edit User Form */}
-      <section className="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
-        <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
-          {isEditing ? "Kullanıcı Düzenle" : "Kullanıcı Ekle"}
-        </h2>
+      <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 mb-8 border border-white/20 shadow-xl">
+        <div className="flex items-center mb-6">
+          <div className="p-2 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg mr-3">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            {isEditing ? "Kullanıcı Düzenle" : "Yeni Kullanıcı Ekle"}
+          </h2>
+        </div>
+        
         <form
           onSubmit={isEditing ? handleUpdateUser : handleAddUser}
-          className="space-y-4"
+          className="space-y-6"
         >
-          <input
-            type="text"
-            name="name"
-            placeholder="Kullanıcı Adı"
-            value={userFormData.name}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md"
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Kullanıcı Email'i"
-            value={userFormData.email}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md"
-          />
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              name="wantsToGetEmails"
-              checked={userFormData.wantsToGetEmails}
-              onChange={handleChange}
-              id="wantsEmails"
-              className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-            />
-            <label
-              htmlFor="wantsEmails"
-              className="text-gray-700 select-none cursor-pointer"
-            >
-              Email almak istiyor mu?
-            </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Kullanıcı Adı *</label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Kullanıcı adını girin..."
+                value={userFormData.name}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email Adresi *</label>
+              <input
+                type="email"
+                name="email"
+                placeholder="Email adresini girin..."
+                value={userFormData.email}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500"
+              />
+            </div>
+          </div>
+          
+          <div className="bg-white/40 rounded-xl p-4">
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                name="wantsToGetEmails"
+                checked={userFormData.wantsToGetEmails}
+                onChange={handleChange}
+                id="wantsEmails"
+                className="h-5 w-5 text-blue-600 border-2 border-gray-300 rounded-lg focus:ring-blue-500 focus:ring-2"
+              />
+              <label
+                htmlFor="wantsEmails"
+                className="text-gray-700 select-none cursor-pointer font-medium"
+              >
+                Email bildirimleri almak istiyor
+              </label>
+            </div>
+            <p className="text-xs text-gray-500 mt-1 ml-8">Etkinlik duyuruları ve önemli güncellemeler için</p>
           </div>
 
-          <button
-            type="submit"
-            className={`w-full ${
-              isEditing ? "bg-yellow-500" : "bg-green-500"
-            } text-white py-2 rounded-md`}
-          >
-            {isEditing ? "Kullanıcı Güncelle" : "Kullanıcı Ekle"}
-          </button>
-          {isEditing && (
+          <div className="flex flex-col sm:flex-row gap-4">
             <button
-              type="button"
-              onClick={resetUserForm}
-              className="w-full mt-2 bg-gray-500 text-white py-2 rounded-md"
+              type="submit"
+              className={`flex-1 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] ${
+                isEditing 
+                  ? "bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600" 
+                  : "bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600"
+              }`}
             >
-              İptal Et
+              {isEditing ? "Kullanıcı Güncelle" : "Kullanıcı Ekle"}
             </button>
-          )}
+            {isEditing && (
+              <button
+                type="button"
+                onClick={resetUserForm}
+                className="flex-1 py-4 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-2xl font-semibold text-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+              >
+                İptal Et
+              </button>
+            )}
+          </div>
         </form>
       </section>
 
       {/* Display / Manage Users */}
-      <section className="bg-white shadow-md rounded-lg p-4 sm:p-6">
-        <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
-          Kullanıcıları Yönet
-        </h2>
+      <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-white/20 shadow-xl">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg mr-3">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+              Tüm Kullanıcılar ({usersList.length})
+            </h2>
+          </div>
+        </div>
+        
         {usersList.length === 0 ? (
-          <p className="text-sm sm:text-base text-gray-500">
-            Kullanıcı bulunamadı.
-          </p>
+          <div className="text-center py-12">
+            <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+              </svg>
+            </div>
+            <p className="text-lg text-gray-500 mb-2">Henüz kullanıcı bulunmuyor</p>
+            <p className="text-sm text-gray-400">İlk kullanıcıyı eklemek için yukarıdaki formu kullanın</p>
+          </div>
         ) : (
-          <ul className="space-y-4">
+          <div className="space-y-4">
             {usersList.map((usr) => (
-              <li
+              <div
                 key={usr.firestoreId}
-                className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-50 p-4 rounded-md shadow-sm gap-3 sm:gap-0"
+                className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/30 shadow-md hover:shadow-lg transition-all duration-300"
               >
-                <div className="w-full sm:w-auto">
-                  <p className="text-base sm:text-lg font-medium text-gray-800">
-                    {usr.name}
-                  </p>
-                  <p className="text-sm text-gray-600">{usr.email}</p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Created: {usr.createdAt}
-                  </p>
-                  <p className="text-xs">
-                    Wants Emails:{" "}
-                    <span className="font-semibold">
-                      {usr.wantsToGetEmails ? "Yes" : "No"}
-                    </span>
-                  </p>
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                  <div className="flex items-center space-x-4 flex-1">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center">
+                      <span className="text-white font-semibold text-lg">
+                        {usr.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
+                        <h3 className="text-lg font-bold text-gray-800">
+                          {usr.name}
+                        </h3>
+                        <div className="flex items-center space-x-2">
+                          {usr.wantsToGetEmails ? (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                              Email Alıyor
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                              </svg>
+                              Email Almıyor
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-gray-600 mb-1">{usr.email}</p>
+                      <p className="text-xs text-gray-400">
+                        Kayıt Tarihi: {usr.createdAt}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3 w-full lg:w-auto">
+                    <button
+                      onClick={() => handleEditUser(usr)}
+                      className="flex-1 lg:flex-none bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-2 rounded-xl hover:from-blue-600 hover:to-cyan-600 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg font-medium"
+                    >
+                      Düzenle
+                    </button>
+                    <button
+                      onClick={() => handleDeleteUser(usr.firestoreId)}
+                      className="flex-1 lg:flex-none bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-2 rounded-xl hover:from-red-600 hover:to-pink-600 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg font-medium"
+                    >
+                      Sil
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <button
-                    onClick={() => handleEditUser(usr)}
-                    className="flex-1 sm:flex-none bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition-colors text-sm"
-                  >
-                    Düzenle
-                  </button>
-                  <button
-                    onClick={() => handleDeleteUser(usr.firestoreId)}
-                    className="flex-1 sm:flex-none bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors text-sm"
-                  >
-                    Sil
-                  </button>
-                </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </section>
       <ToastContainer theme="dark" />
