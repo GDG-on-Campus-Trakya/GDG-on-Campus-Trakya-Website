@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { socialUtils } from "../../../utils/socialUtils";
 import PostCard from "../../../components/PostCard";
 import PostModal from "../../../components/PostModal";
-import { Search, Filter, BarChart3, Eye, EyeOff, Trash2 } from "lucide-react";
+import { Search, Filter, BarChart3, Eye, EyeOff, Trash2, ArrowLeft } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -178,12 +178,24 @@ export default function AdminSocialPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Sosyal Platform Yönetimi
-          </h1>
-          <p className="text-gray-600">
-            Kullanıcı postlarını yönetin ve moderasyon yapın
-          </p>
+          <div className="flex items-center space-x-4 mb-4">
+            <button
+              onClick={() => router.push('/admin')}
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span>Admin Panel</span>
+            </button>
+            <div className="border-l border-gray-300 h-8"></div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                Sosyal Platform Yönetimi
+              </h1>
+              <p className="text-gray-600">
+                Kullanıcı postlarını yönetin ve moderasyon yapın
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}

@@ -1,12 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Plus, Filter, Heart, Calendar } from "lucide-react";
+import { Plus, Filter, Heart, Calendar, Trophy } from "lucide-react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../../firebase";
 import { socialUtils } from "../../utils/socialUtils";
 import PostCard from "../../components/PostCard";
 import PostModal from "../../components/PostModal";
 import PostUpload from "../../components/PostUpload";
+import AnnouncementCard from "../../components/AnnouncementCard";
 import ErrorBoundary from "../../components/ErrorBoundary";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
@@ -15,10 +16,12 @@ import "react-toastify/dist/ReactToastify.css";
 export default function SocialPage() {
   const [user, loading] = useAuthState(auth);
   const [posts, setPosts] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
   const [showUpload, setShowUpload] = useState(false);
   const [filter, setFilter] = useState("all"); // "all", "by-event"
+  const [currentTab, setCurrentTab] = useState("posts"); // "posts", "results"
   const [isLoading, setIsLoading] = useState(true);
   const [lastDoc, setLastDoc] = useState(null);
   const [hasMore, setHasMore] = useState(true);
@@ -33,9 +36,13 @@ export default function SocialPage() {
   }, [user, loading, router]);
 
   useEffect(() => {
-    loadPosts();
+    if (currentTab === "posts") {
+      loadPosts();
+    } else {
+      loadAnnouncements();
+    }
     loadActiveEvents();
-  }, []);
+  }, [currentTab]);
 
   const loadActiveEvents = async () => {
     setLoadingEvents(true);
@@ -73,10 +80,36 @@ export default function SocialPage() {
     setIsLoading(false);
   };
 
+  const loadAnnouncements = async (loadMore = false) => {
+    if (!loadMore) setIsLoading(true);
+
+    const result = await socialUtils.getAnnouncements({
+      limit: 20, 
+      startAfter: loadMore ? lastDoc : null
+    });
+
+    if (result.success) {
+      // Filter only raffle results
+      const raffleResults = result.announcements.filter(a => a.type === "raffle_result");
+      
+      if (loadMore) {
+        setAnnouncements(prev => [...prev, ...raffleResults]);
+      } else {
+        setAnnouncements(raffleResults);
+      }
+      setLastDoc(result.lastDoc);
+      setHasMore(raffleResults.length === 20);
+    } else {
+      toast.error("Çekiliş sonuçları yüklenirken hata oluştu!");
+    }
+
+    setIsLoading(false);
+  };
+
   const applyFilter = () => {
     let filtered = posts;
     
-    // All posts are event posts now, so filter by specific event or show all
+    // Filter by specific event or show all
     if (filter !== "all") {
       filtered = posts.filter(post => post.eventId === filter);
     }
@@ -94,7 +127,9 @@ export default function SocialPage() {
 
   const handleUploadComplete = () => {
     setShowUpload(false);
-    loadPosts(); // Reload posts
+    if (currentTab === "posts") {
+      loadPosts(); // Reload posts
+    }
     toast.success("Post başarıyla paylaşıldı!");
   };
 
@@ -141,60 +176,91 @@ export default function SocialPage() {
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-white">GDG Social</h1>
             
-            {loadingEvents ? (
-              <div className="bg-gray-600 p-2 sm:p-3 rounded-lg">
-                <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-2 border-white border-t-transparent"></div>
-              </div>
-            ) : activeEvents.length > 0 ? (
-              <button
-                onClick={() => setShowUpload(true)}
-                className="bg-blue-600 text-white p-2 sm:p-3 rounded-lg hover:bg-blue-700 transition-all shadow-lg"
-                title={`${activeEvents.length} aktif etkinlik mevcut`}
-              >
-                <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
-              </button>
-            ) : (
-              <div className="bg-gray-600/50 p-2 sm:p-3 rounded-lg cursor-not-allowed" title="Aktif etkinlik yok">
-                <Plus className="w-5 h-5 sm:w-6 sm:w-6 text-gray-400" />
-              </div>
+            {currentTab === "posts" && (
+              loadingEvents ? (
+                <div className="bg-gray-600 p-2 sm:p-3 rounded-lg">
+                  <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-2 border-white border-t-transparent"></div>
+                </div>
+              ) : activeEvents.length > 0 ? (
+                <button
+                  onClick={() => setShowUpload(true)}
+                  className="bg-blue-600 text-white p-2 sm:p-3 rounded-lg hover:bg-blue-700 transition-all shadow-lg"
+                  title={`${activeEvents.length} aktif etkinlik mevcut`}
+                >
+                  <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
+                </button>
+              ) : (
+                <div className="bg-gray-600/50 p-2 sm:p-3 rounded-lg cursor-not-allowed" title="Aktif etkinlik yok">
+                  <Plus className="w-5 h-5 sm:w-6 sm:w-6 text-gray-400" />
+                </div>
+              )
             )}
           </div>
 
-          {/* Filter Tabs - Event Based */}
-          <div className="flex flex-wrap gap-2 bg-gray-700 rounded-lg p-2">
+          {/* Tab Navigation */}
+          <div className="flex space-x-1 bg-gray-700 rounded-lg p-1 mb-6">
             <button
-              onClick={() => setFilter("all")}
-              className={`py-2 px-4 rounded text-sm font-medium transition-all ${
-                filter === "all"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-700 text-gray-400 hover:bg-blue-500 hover:text-white"
+              onClick={() => setCurrentTab("posts")}
+              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-md text-sm font-medium transition-all ${
+                currentTab === "posts"
+                  ? "bg-blue-500 text-white shadow-lg"
+                  : "text-gray-400 hover:bg-gray-600 hover:text-white"
               }`}
             >
-              <div className="flex items-center space-x-2">
-                <Calendar className="w-4 h-4" />
-                <span>Tüm Etkinlikler ({stats.total})</span>
-              </div>
+              <Calendar className="w-4 h-4" />
+              <span>Etkinlik Fotoğrafları</span>
             </button>
             
-            {Object.entries(stats.eventGroups).map(([eventId, eventData]) => (
+            <button
+              onClick={() => setCurrentTab("results")}
+              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-md text-sm font-medium transition-all ${
+                currentTab === "results"
+                  ? "bg-yellow-500 text-white shadow-lg"
+                  : "text-gray-400 hover:bg-gray-600 hover:text-white"
+              }`}
+            >
+              <Trophy className="w-4 h-4" />
+              <span>Çekiliş Sonuçları</span>
+            </button>
+          </div>
+
+          {/* Filter Tabs - Event Based (only for posts) */}
+          {currentTab === "posts" && (
+            <div className="flex flex-wrap gap-2 bg-gray-700 rounded-lg p-2">
               <button
-                key={eventId}
-                onClick={() => setFilter(eventId)}
+                onClick={() => setFilter("all")}
                 className={`py-2 px-4 rounded text-sm font-medium transition-all ${
-                  filter === eventId
+                  filter === "all"
                     ? "bg-blue-500 text-white"
                     : "bg-gray-700 text-gray-400 hover:bg-blue-500 hover:text-white"
                 }`}
               >
-                {eventData.name} ({eventData.count})
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>Tüm Etkinlikler ({stats.total})</span>
+                </div>
               </button>
-            ))}
-          </div>
+              
+              {Object.entries(stats.eventGroups).map(([eventId, eventData]) => (
+                <button
+                  key={eventId}
+                  onClick={() => setFilter(eventId)}
+                  className={`py-2 px-4 rounded text-sm font-medium transition-all ${
+                    filter === eventId
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-700 text-gray-400 hover:bg-blue-500 hover:text-white"
+                  }`}
+                >
+                  {eventData.name} ({eventData.count})
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-lg mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mb-4"></div>
@@ -202,9 +268,9 @@ export default function SocialPage() {
           </div>
         ) : (
           <>
-            {/* Posts Feed - Instagram Style Single Column */}
-            {filteredPosts.length > 0 ? (
-              <div className="space-y-8">
+            {/* Posts Tab */}
+            {currentTab === "posts" && filteredPosts.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredPosts.map((post) => (
                   <ErrorBoundary key={post.id}>
                     <PostCard
@@ -215,42 +281,73 @@ export default function SocialPage() {
                   </ErrorBoundary>
                 ))}
               </div>
-            ) : (
+            )}
+
+            {/* Raffle Results Tab */}
+            {currentTab === "results" && announcements.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {announcements.map((announcement) => (
+                  <ErrorBoundary key={announcement.id}>
+                    <AnnouncementCard announcement={announcement} />
+                  </ErrorBoundary>
+                ))}
+              </div>
+            )}
+
+            {/* Empty States */}
+            {((currentTab === "posts" && filteredPosts.length === 0) || (currentTab === "results" && announcements.length === 0)) && (
               <div className="text-center py-12">
                 <div className="relative mx-auto rounded-xl bg-gray-800/50 backdrop-blur-sm p-8 shadow-xl max-w-md">
-                  {activeEvents.length > 0 ? (
-                    <>
-                      <h3 className="text-xl font-semibold text-white mb-2">
-                        {filter === "all" 
-                          ? "Henüz etkinlik fotoğrafı yok" 
-                          : "Bu etkinlikten henüz fotoğraf yok"
-                        }
-                      </h3>
-                      <p className="text-[#d1d1e0] mb-4">
-                        İlk etkinlik fotoğrafını sen paylaş ve çekilişe katıl!
-                      </p>
-                      <button
-                        onClick={() => setShowUpload(true)}
-                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all"
-                      >
-                        Etkinlik Fotoğrafı Paylaş
-                      </button>
-                      <div className="mt-4 text-sm text-gray-400">
-                        🎯 {activeEvents.length} aktif etkinlik mevcut
-                      </div>
-                    </>
+                  {currentTab === "posts" ? (
+                    activeEvents.length > 0 ? (
+                      <>
+                        <h3 className="text-xl font-semibold text-white mb-2">
+                          {filter === "all" 
+                            ? "Henüz etkinlik fotoğrafı yok" 
+                            : "Bu etkinlikten henüz fotoğraf yok"
+                          }
+                        </h3>
+                        <p className="text-[#d1d1e0] mb-4">
+                          İlk etkinlik fotoğrafını sen paylaş ve çekilişe katıl!
+                        </p>
+                        <button
+                          onClick={() => setShowUpload(true)}
+                          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all"
+                        >
+                          Etkinlik Fotoğrafı Paylaş
+                        </button>
+                        <div className="mt-4 text-sm text-gray-400">
+                          🎯 {activeEvents.length} aktif etkinlik mevcut
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-6xl mb-4">📅</div>
+                        <h3 className="text-xl font-semibold text-white mb-2">
+                          Şu anda aktif etkinlik yok
+                        </h3>
+                        <p className="text-[#d1d1e0] mb-4">
+                          Yeni etkinlikler başladığında burada fotoğraflarını paylaşabilirsin!
+                        </p>
+                        <div className="bg-blue-600/20 border border-blue-500/30 rounded-lg p-4 mt-4">
+                          <p className="text-blue-300 text-sm">
+                            💡 Etkinlikler genellikle başladıktan sonra 3 gün boyunca fotoğraf paylaşımına açık kalır
+                          </p>
+                        </div>
+                      </>
+                    )
                   ) : (
                     <>
-                      <div className="text-6xl mb-4">📅</div>
+                      <div className="text-6xl mb-4">🏆</div>
                       <h3 className="text-xl font-semibold text-white mb-2">
-                        Şu anda aktif etkinlik yok
+                        Henüz çekiliş sonucu yok
                       </h3>
                       <p className="text-[#d1d1e0] mb-4">
-                        Yeni etkinlikler başladığında burada fotoğraflarını paylaşabilirsin!
+                        Etkinlik çekilişleri tamamlandığında sonuçlar burada ilan edilecek!
                       </p>
-                      <div className="bg-blue-600/20 border border-blue-500/30 rounded-lg p-4 mt-4">
-                        <p className="text-blue-300 text-sm">
-                          💡 Etkinlikler genellikle başladıktan sonra 3 gün boyunca fotoğraf paylaşımına açık kalır
+                      <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-lg p-4 mt-4">
+                        <p className="text-yellow-300 text-sm">
+                          🎉 Çekilişlere katılmak için etkinlik fotoğrafı paylaş
                         </p>
                       </div>
                     </>
@@ -260,10 +357,10 @@ export default function SocialPage() {
             )}
 
             {/* Load More Button */}
-            {filteredPosts.length > 0 && hasMore && (
+            {((currentTab === "posts" && filteredPosts.length > 0) || (currentTab === "results" && announcements.length > 0)) && hasMore && (
               <div className="flex justify-center py-6 mt-6">
                 <button
-                  onClick={() => loadPosts(true)}
+                  onClick={() => currentTab === "posts" ? loadPosts(true) : loadAnnouncements(true)}
                   className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all shadow-lg"
                 >
                   Daha Fazla Yükle

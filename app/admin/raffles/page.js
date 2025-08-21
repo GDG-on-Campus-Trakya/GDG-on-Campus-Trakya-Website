@@ -2,9 +2,10 @@
 import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../../firebase";
-import { doc, getDoc, collection, getDocs, query, orderBy } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, query, orderBy, where } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { raffleUtils } from "../../../utils/raffleUtils";
+import { socialUtils } from "../../../utils/socialUtils";
 import { 
   Trophy, 
   Users, 
@@ -16,7 +17,9 @@ import {
   BarChart3,
   Clock,
   CheckCircle,
-  XCircle
+  XCircle,
+  Edit3,
+  ArrowLeft
 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -31,6 +34,10 @@ export default function AdminRafflesPage() {
   const [participants, setParticipants] = useState([]);
   const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showChangeWinnerModal, setShowChangeWinnerModal] = useState(false);
+  const [changeWinnerRaffle, setChangeWinnerRaffle] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editRaffle, setEditRaffle] = useState(null);
   const router = useRouter();
 
   // Check admin privileges
@@ -79,13 +86,44 @@ export default function AdminRafflesPage() {
 
   const loadEvents = async () => {
     try {
-      const eventsQuery = query(collection(db, "events"), orderBy("startDate", "desc"));
-      const querySnapshot = await getDocs(eventsQuery);
-      const eventsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setEvents(eventsData);
+      // Get events that are postable (within 3 days) using socialUtils
+      const activeEventsResult = await socialUtils.getActiveEventsForPosting();
+      
+      if (!activeEventsResult.success) {
+        console.error("Error loading active events:", activeEventsResult.error);
+        return;
+      }
+
+      const postableEvents = activeEventsResult.events.filter(event => event.canPost);
+
+      // For each postable event, check if it has posts
+      const eventsWithPosts = [];
+      
+      for (const event of postableEvents) {
+        try {
+          // Count posts for this event
+          const postsQuery = query(
+            collection(db, "posts"), 
+            where("eventId", "==", event.id)
+          );
+          const postsSnapshot = await getDocs(postsQuery);
+          const posts = postsSnapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+          const postCount = postsSnapshot.size;
+          
+
+          if (postCount > 0) {
+            eventsWithPosts.push({
+              ...event,
+              postCount
+            });
+          }
+        } catch (error) {
+          console.error(`Error counting posts for event ${event.name}:`, error);
+        }
+      }
+
+      setEvents(eventsWithPosts);
+                  
     } catch (error) {
       console.error("Error loading events:", error);
     }
@@ -110,7 +148,7 @@ export default function AdminRafflesPage() {
     
     const raffleData = {
       eventId: formData.eventId,
-      eventName: selectedEvent?.title || "Bilinmeyen Etkinlik",
+      eventName: selectedEvent?.name || "Bilinmeyen Etkinlik",
       title: formData.title,
       description: formData.description,
       prize: formData.prize,
@@ -129,7 +167,32 @@ export default function AdminRafflesPage() {
     const result = await raffleUtils.createRaffle(raffleData);
     if (result.success) {
       toast.success("Çekiliş başarıyla oluşturuldu!");
-      loadRaffles();
+      
+      // Add the new raffle to state instead of refetching
+      const newRaffle = {
+        id: result.id,
+        ...raffleData,
+        isActive: true,
+        isCompleted: false,
+        participants: result.participants || [],
+        winner: null,
+        createdAt: new Date(),
+      };
+      
+      setRaffles(prevRaffles => [newRaffle, ...prevRaffles]);
+      
+      // Update stats
+      if (stats) {
+        const participantCount = result.participantCount || 0;
+        setStats(prevStats => ({
+          ...prevStats,
+          totalRaffles: prevStats.totalRaffles + 1,
+          activeRaffles: prevStats.activeRaffles + 1,
+          totalParticipants: prevStats.totalParticipants + participantCount,
+          averageParticipantsPerRaffle: (prevStats.totalParticipants + participantCount) / (prevStats.totalRaffles + 1),
+        }));
+      }
+      
       setShowCreateModal(false);
     } else {
       toast.error("Çekiliş oluşturulurken hata oluştu!");
@@ -142,7 +205,32 @@ export default function AdminRafflesPage() {
     const result = await raffleUtils.drawWinner(raffleId);
     if (result.success) {
       toast.success(`Kazanan: ${result.winner.userEmail}`);
-      loadRaffles();
+      
+      // Update raffles state
+      setRaffles(prevRaffles => 
+        prevRaffles.map(raffle => 
+          raffle.id === raffleId 
+            ? { 
+                ...raffle, 
+                isCompleted: true, 
+                isActive: false, 
+                winner: result.winner.userEmail,
+                winnerId: result.winner.userId,
+                winnerName: result.winner.userName,
+                completedAt: new Date(),
+              }
+            : raffle
+        )
+      );
+      
+      // Update stats
+      if (stats) {
+        setStats(prevStats => ({
+          ...prevStats,
+          activeRaffles: Math.max(0, prevStats.activeRaffles - 1),
+          completedRaffles: prevStats.completedRaffles + 1,
+        }));
+      }
     } else {
       toast.error(result.error || "Kazanan seçilirken hata oluştu!");
     }
@@ -154,9 +242,149 @@ export default function AdminRafflesPage() {
     const result = await raffleUtils.endRaffle(raffleId);
     if (result.success) {
       toast.success("Çekiliş sonlandırıldı!");
-      loadRaffles();
+      
+      // Update raffles state
+      setRaffles(prevRaffles => 
+        prevRaffles.map(raffle => 
+          raffle.id === raffleId 
+            ? { 
+                ...raffle, 
+                isActive: false,
+                endedAt: new Date(),
+              }
+            : raffle
+        )
+      );
+      
+      // Update stats
+      if (stats) {
+        setStats(prevStats => ({
+          ...prevStats,
+          activeRaffles: Math.max(0, prevStats.activeRaffles - 1),
+        }));
+      }
     } else {
       toast.error("Çekiliş sonlandırılırken hata oluştu!");
+    }
+  };
+
+  const handleChangeWinner = async (raffleId, newWinnerId) => {
+    const result = await raffleUtils.changeWinner(raffleId, newWinnerId);
+    if (result.success) {
+      toast.success(`Yeni kazanan: ${result.winner.userEmail}`);
+      
+      // Update raffles state
+      setRaffles(prevRaffles => 
+        prevRaffles.map(raffle => 
+          raffle.id === raffleId 
+            ? { 
+                ...raffle, 
+                winner: result.winner.userEmail,
+                winnerId: result.winner.userId,
+                winnerName: result.winner.userName,
+                isCompleted: true,
+                isActive: false,
+                completedAt: new Date(),
+              }
+            : raffle
+        )
+      );
+      
+      setShowChangeWinnerModal(false);
+      setChangeWinnerRaffle(null);
+    } else {
+      toast.error(result.error || "Kazanan değiştirilirken hata oluştu!");
+    }
+  };
+
+  const handleAnnounceResult = async (raffleId) => {
+    if (!confirm("Çekiliş sonucunu sosyal kısımda ilan etmek istediğinizden emin misiniz?")) return;
+
+    const result = await raffleUtils.announceRaffleResult(raffleId);
+    if (result.success) {
+      toast.success("Çekiliş sonucu başarıyla ilan edildi!");
+      
+      // Update raffles state
+      setRaffles(prevRaffles => 
+        prevRaffles.map(raffle => 
+          raffle.id === raffleId 
+            ? { 
+                ...raffle, 
+                isAnnounced: true,
+                announcedAt: new Date(),
+                announcementId: result.announcementId,
+              }
+            : raffle
+        )
+      );
+    } else {
+      toast.error(result.error || "Çekiliş sonucu ilan edilirken hata oluştu!");
+    }
+  };
+
+  const handleEditRaffle = async (raffleId, updatedData) => {
+    const result = await raffleUtils.updateRaffle(raffleId, updatedData);
+    if (result.success) {
+      toast.success("Çekiliş başarıyla güncellendi!");
+      
+      // Update raffles state
+      setRaffles(prevRaffles => 
+        prevRaffles.map(raffle => 
+          raffle.id === raffleId 
+            ? { ...raffle, ...updatedData }
+            : raffle
+        )
+      );
+      
+      setShowEditModal(false);
+      setEditRaffle(null);
+    } else {
+      toast.error(result.error || "Çekiliş güncellenirken hata oluştu!");
+    }
+  };
+
+  const handleDeleteRaffle = async (raffleId) => {
+    if (!confirm("Bu çekilişi ve tüm ilgili verileri silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!")) return;
+    
+    if (!confirm("Son kez soruyoruz: Çekiliş tamamen silinecek, emin misiniz?")) return;
+
+    // Find the raffle to be deleted for stats calculation
+    const raffleToDelete = raffles.find(r => r.id === raffleId);
+    
+    const result = await raffleUtils.deleteRaffle(raffleId);
+    if (result.success) {
+      toast.success("Çekiliş başarıyla silindi!");
+      
+      // Update raffles state by removing the deleted raffle
+      setRaffles(prevRaffles => prevRaffles.filter(r => r.id !== raffleId));
+      
+      // Update stats state
+      if (stats && raffleToDelete) {
+        setStats(prevStats => {
+          const newStats = { ...prevStats };
+          newStats.totalRaffles = Math.max(0, newStats.totalRaffles - 1);
+          
+          if (raffleToDelete.isActive) {
+            newStats.activeRaffles = Math.max(0, newStats.activeRaffles - 1);
+          }
+          
+          if (raffleToDelete.isCompleted) {
+            newStats.completedRaffles = Math.max(0, newStats.completedRaffles - 1);
+          }
+          
+          // Reduce total participants by the number of participants in this raffle
+          const participantCount = raffleToDelete.participants?.length || 0;
+          newStats.totalParticipants = Math.max(0, newStats.totalParticipants - participantCount);
+          
+          // Recalculate average
+          newStats.averageParticipantsPerRaffle = newStats.totalRaffles > 0 ? 
+            newStats.totalParticipants / newStats.totalRaffles : 0;
+          
+          return newStats;
+        });
+      }
+    } else {
+      toast.error(result.error || "Çekiliş silinirken hata oluştu!");
     }
   };
 
@@ -193,21 +421,37 @@ export default function AdminRafflesPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              Çekiliş Yönetimi
-            </h1>
-            <p className="text-gray-600">
-              Etkinlik çekilişlerini oluşturun ve yönetin
-            </p>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => router.push('/admin')}
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span>Admin Panel</span>
+            </button>
+            <div className="border-l border-gray-300 h-8"></div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                Çekiliş Yönetimi
+              </h1>
+              <p className="text-gray-600">
+                Etkinlik çekilişlerini oluşturun ve yönetin
+              </p>
+            </div>
           </div>
           
           <button
             onClick={() => setShowCreateModal(true)}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+            disabled={events.length === 0}
+            className={`px-6 py-3 rounded-lg transition-colors flex items-center space-x-2 ${
+              events.length === 0 
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
+            title={events.length === 0 ? "Çekiliş için uygun etkinlik yok (3 gün içinde ve en az 1 post)" : ""}
           >
             <Plus className="w-5 h-5" />
-            <span>Yeni Çekiliş</span>
+            <span>{events.length === 0 ? "Uygun Etkinlik Yok" : "Yeni Çekiliş"}</span>
           </button>
         </div>
 
@@ -274,6 +518,17 @@ export default function AdminRafflesPage() {
                     setSelectedRaffle(raffle);
                     loadParticipants(raffle.id);
                   }}
+                  onChangeWinner={() => {
+                    setChangeWinnerRaffle(raffle);
+                    loadParticipants(raffle.id);
+                    setShowChangeWinnerModal(true);
+                  }}
+                  onEditRaffle={() => {
+                    setEditRaffle(raffle);
+                    setShowEditModal(true);
+                  }}
+                  onAnnounceResult={() => handleAnnounceResult(raffle.id)}
+                  onDeleteRaffle={() => handleDeleteRaffle(raffle.id)}
                   formatDate={formatDate}
                 />
               ))
@@ -318,6 +573,31 @@ export default function AdminRafflesPage() {
           />
         )}
 
+        {/* Change Winner Modal */}
+        {showChangeWinnerModal && changeWinnerRaffle && (
+          <ChangeWinnerModal
+            raffle={changeWinnerRaffle}
+            participants={participants}
+            onClose={() => {
+              setShowChangeWinnerModal(false);
+              setChangeWinnerRaffle(null);
+            }}
+            onChangeWinner={handleChangeWinner}
+          />
+        )}
+
+        {/* Edit Raffle Modal */}
+        {showEditModal && editRaffle && (
+          <EditRaffleModal
+            raffle={editRaffle}
+            onClose={() => {
+              setShowEditModal(false);
+              setEditRaffle(null);
+            }}
+            onUpdate={handleEditRaffle}
+          />
+        )}
+
         <ToastContainer
           position="top-right"
           autoClose={3000}
@@ -336,7 +616,7 @@ export default function AdminRafflesPage() {
 }
 
 // Raffle Card Component
-function RaffleCard({ raffle, onDrawWinner, onEndRaffle, onViewParticipants, formatDate }) {
+function RaffleCard({ raffle, onDrawWinner, onEndRaffle, onViewParticipants, onChangeWinner, onEditRaffle, onAnnounceResult, onDeleteRaffle, formatDate }) {
   const getStatusColor = () => {
     if (raffle.isCompleted) return "bg-green-500";
     if (raffle.isActive) return "bg-blue-500";
@@ -380,33 +660,75 @@ function RaffleCard({ raffle, onDrawWinner, onEndRaffle, onViewParticipants, for
       {raffle.winner && (
         <div className="bg-green-50 border border-green-200 rounded p-3 mb-4">
           <p className="text-green-800 font-medium">🎉 Kazanan: {raffle.winner}</p>
+          {raffle.isAnnounced && (
+            <p className="text-green-600 text-sm mt-1">📢 Sonuç ilan edildi</p>
+          )}
         </div>
       )}
 
-      <div className="flex space-x-2">
-        <button
-          onClick={onViewParticipants}
-          className="flex-1 bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 transition-colors text-sm"
-        >
-          Katılımcıları Gör
-        </button>
-        
-        {raffle.isActive && !raffle.isCompleted && (
-          <>
+      <div className="flex flex-col space-y-2">
+        <div className="flex space-x-2">
+          <button
+            onClick={onViewParticipants}
+            className="flex-1 bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 transition-colors text-sm"
+          >
+            Katılımcıları Gör
+          </button>
+          
+          <button
+            onClick={onEditRaffle}
+            className="bg-blue-600 text-white py-2 px-3 rounded hover:bg-blue-700 transition-colors text-sm flex items-center"
+            title="Çekiliş Detaylarını Düzenle"
+          >
+            <Edit3 className="w-4 h-4" />
+          </button>
+          
+          {raffle.isActive && !raffle.isCompleted && (
+            <>
+              <button
+                onClick={onDrawWinner}
+                className="flex-1 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors text-sm"
+              >
+                Kazanan Seç
+              </button>
+              <button
+                onClick={onEndRaffle}
+                className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 transition-colors text-sm"
+              >
+                Sonlandır
+              </button>
+            </>
+          )}
+        </div>
+
+        {raffle.isCompleted && raffle.winner && (
+          <div className="flex space-x-2">
             <button
-              onClick={onDrawWinner}
-              className="flex-1 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors text-sm"
+              onClick={onChangeWinner}
+              className="flex-1 bg-orange-600 text-white py-2 px-4 rounded hover:bg-orange-700 transition-colors text-sm"
             >
-              Kazanan Seç
+              Kazananı Değiştir
             </button>
-            <button
-              onClick={onEndRaffle}
-              className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 transition-colors text-sm"
-            >
-              Sonlandır
-            </button>
-          </>
+            {!raffle.isAnnounced && (
+              <button
+                onClick={onAnnounceResult}
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors text-sm"
+              >
+                Sonucu İlan Et
+              </button>
+            )}
+          </div>
         )}
+        
+        {/* Delete button - always available for admins */}
+        <div className="mt-2 pt-2 border-t border-gray-200">
+          <button
+            onClick={onDeleteRaffle}
+            className="w-full bg-red-700 text-white py-2 px-4 rounded hover:bg-red-800 transition-colors text-sm font-medium"
+          >
+            🗑️ Çekilişi Sil
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -446,10 +768,12 @@ function CreateRaffleModal({ events, onClose, onCreate }) {
               required
               className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Etkinlik seçin</option>
+              <option value="">
+                {events.length > 0 ? "Etkinlik seçin" : "Çekiliş için uygun etkinlik yok"}
+              </option>
               {events.map(event => (
                 <option key={event.id} value={event.id}>
-                  {event.title}
+                  {event.name} ({event.postCount} post)
                 </option>
               ))}
             </select>
@@ -503,9 +827,14 @@ function CreateRaffleModal({ events, onClose, onCreate }) {
             </button>
             <button
               type="submit"
-              className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-colors"
+              disabled={events.length === 0}
+              className={`flex-1 py-2 rounded transition-colors ${
+                events.length === 0 
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
             >
-              Oluştur
+              {events.length === 0 ? "Uygun Etkinlik Yok" : "Oluştur"}
             </button>
           </div>
         </form>
@@ -552,6 +881,191 @@ function ParticipantsModal({ raffle, participants, onClose, formatDate }) {
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Change Winner Modal
+function ChangeWinnerModal({ raffle, participants, onClose, onChangeWinner }) {
+  const [selectedWinnerId, setSelectedWinnerId] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!selectedWinnerId) {
+      toast.error("Lütfen bir kazanan seçin!");
+      return;
+    }
+    
+    if (!confirm("Seçilen kişiyi yeni kazanan yapmak istediğinizden emin misiniz?")) return;
+    
+    onChangeWinner(raffle.id, selectedWinnerId);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Kazananı Değiştir</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="mb-4">
+          <p className="text-sm text-gray-600 mb-2">
+            <strong>Çekiliş:</strong> {raffle.title}
+          </p>
+          <p className="text-sm text-gray-600 mb-4">
+            <strong>Mevcut Kazanan:</strong> {raffle.winner || "Henüz seçilmedi"}
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Yeni Kazanan Seçin
+            </label>
+            <select
+              value={selectedWinnerId}
+              onChange={(e) => setSelectedWinnerId(e.target.value)}
+              required
+              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 max-h-40"
+            >
+              <option value="">Katılımcı seçin...</option>
+              {participants.map((participant) => (
+                <option key={participant.id} value={participant.userId}>
+                  {participant.userEmail} ({participant.userName || "İsim yok"})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex space-x-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400 transition-colors"
+            >
+              İptal
+            </button>
+            <button
+              type="submit"
+              className="flex-1 bg-orange-600 text-white py-2 rounded hover:bg-orange-700 transition-colors"
+            >
+              Kazananı Değiştir
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// Edit Raffle Modal
+function EditRaffleModal({ raffle, onClose, onUpdate }) {
+  const [formData, setFormData] = useState({
+    title: raffle.title || "",
+    description: raffle.description || "",
+    prize: raffle.prize || "",
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.title.trim() || !formData.prize.trim()) {
+      toast.error("Başlık ve ödül alanları zorunludur!");
+      return;
+    }
+    
+    if (!confirm("Çekiliş detaylarını güncellemek istediğinizden emin misiniz?")) return;
+    
+    onUpdate(raffle.id, {
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      prize: formData.prize.trim(),
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Çekiliş Düzenle</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="mb-4">
+          <p className="text-sm text-gray-600 mb-4">
+            <strong>Etkinlik:</strong> {raffle.eventName}
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Çekiliş Başlığı *
+            </label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({...formData, title: e.target.value})}
+              required
+              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Çekiliş başlığını girin"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Ödül *
+            </label>
+            <input
+              type="text"
+              value={formData.prize}
+              onChange={(e) => setFormData({...formData, prize: e.target.value})}
+              required
+              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Ödülü girin"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Açıklama (İsteğe Bağlı)
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              rows={3}
+              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Çekiliş açıklamasını girin"
+            />
+          </div>
+
+          <div className="flex space-x-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400 transition-colors"
+            >
+              İptal
+            </button>
+            <button
+              type="submit"
+              className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-colors"
+            >
+              Güncelle
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

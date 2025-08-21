@@ -28,7 +28,48 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
     }
   };
 
-  const handleImageSelect = (event) => {
+  const compressImage = (file, maxWidth = 1200, maxHeight = 1200, quality = 0.8) => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions while maintaining aspect ratio
+        let { width, height } = img;
+        
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob(
+          (blob) => {
+            resolve(blob);
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleImageSelect = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -44,18 +85,34 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
       return;
     }
 
-    setSelectedImage(file);
-    
-    // Create preview with error handling
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setImagePreview(e.target.result);
-    };
-    reader.onerror = () => {
-      toast.error("Resim yüklenirken hata oluştu!");
-      setSelectedImage(null);
-    };
-    reader.readAsDataURL(file);
+    try {
+      // Compress the image
+      toast.info("Resim sıkıştırılıyor...");
+      const compressedBlob = await compressImage(file);
+      
+      // Convert blob to file with original name
+      const compressedFile = new File([compressedBlob], file.name, {
+        type: 'image/jpeg',
+        lastModified: Date.now()
+      });
+
+      setSelectedImage(compressedFile);
+      
+      // Create preview with error handling
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+        toast.success(`Resim sıkıştırıldı! Boyut: ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+      };
+      reader.onerror = () => {
+        toast.error("Resim yüklenirken hata oluştu!");
+        setSelectedImage(null);
+      };
+      reader.readAsDataURL(compressedFile);
+    } catch (error) {
+      toast.error("Resim sıkıştırılırken hata oluştu!");
+      console.error("Compression error:", error);
+    }
   };
 
   const handleDrop = (event) => {
@@ -120,7 +177,7 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
         imageUrl: uploadResult.url,
         description: description.trim(),
         eventId: selectedEvent,
-        eventName: eventData?.title,
+        eventName: eventData?.name,
       };
 
       // Create post
@@ -223,7 +280,7 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
             <option value="">Etkinlik seçin</option>
             {activeEvents.map((event) => (
               <option key={event.id} value={event.id} disabled={!event.canPost}>
-                {event.title} {!event.canPost && "(Süresi dolmuş)"}
+                {event.name} {!event.canPost && "(Süresi dolmuş)"}
               </option>
             ))}
           </select>

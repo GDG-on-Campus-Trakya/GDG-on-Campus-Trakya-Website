@@ -181,10 +181,7 @@ export const socialUtils = {
       const threeDaysAgo = new Date(now.getTime() - (3 * 24 * 60 * 60 * 1000));
 
       // Simple query without range filters to avoid index issues
-      const eventsQuery = query(
-        collection(db, "events"),
-        orderBy("startDate", "desc")
-      );
+      const eventsQuery = collection(db, "events");
 
       const querySnapshot = await getDocs(eventsQuery);
       let events = querySnapshot.docs.map((doc) => ({
@@ -192,17 +189,37 @@ export const socialUtils = {
         ...doc.data(),
       }));
 
-      // Filter in memory
+
+      // Filter events that started within last 3 days (so they're still postable)
       events = events.filter(event => {
-        const startDate = event.startDate?.toDate ? event.startDate.toDate() : new Date(event.startDate);
-        return startDate >= threeDaysAgo && startDate <= now;
+        // Fix field names: title -> name, startDate -> date+time
+        if (!event.date || !event.time) {
+          return false;
+        }
+        
+        // Combine date and time strings to create proper Date object
+        const dateTimeString = `${event.date}T${event.time}:00`;
+        const startDate = new Date(dateTimeString);
+        
+        if (isNaN(startDate.getTime())) {
+          return false;
+        }
+        
+        const threeDaysAfterStart = new Date(startDate.getTime() + (3 * 24 * 60 * 60 * 1000));
+        
+        const isPostable = startDate <= now && now <= threeDaysAfterStart;
+        
+        // Event should have started already and posting window should still be open
+        return isPostable;
       });
 
-      // Add canPost check
+
+      // Add canPost check (should all be true now, but keeping for consistency)
       events = events.map(event => ({
         ...event,
-        canPost: socialUtils.canPostForEvent(event.startDate),
+        canPost: socialUtils.canPostForEvent(event),
       }));
+
 
       return { success: true, events };
     } catch (error) {
@@ -211,9 +228,26 @@ export const socialUtils = {
     }
   },
 
-  canPostForEvent(eventStartDate) {
+  canPostForEvent(eventData) {
     const now = new Date();
-    const eventStart = new Date(eventStartDate.toDate ? eventStartDate.toDate() : eventStartDate);
+    
+    // Handle both old format (startDate) and new format (date + time)
+    let eventStart;
+    if (eventData.startDate) {
+      // Old format
+      eventStart = new Date(eventData.startDate.toDate ? eventData.startDate.toDate() : eventData.startDate);
+    } else if (eventData.date && eventData.time) {
+      // New format
+      const dateTimeString = `${eventData.date}T${eventData.time}:00`;
+      eventStart = new Date(dateTimeString);
+    } else {
+      return false;
+    }
+    
+    if (isNaN(eventStart.getTime())) {
+      return false;
+    }
+    
     const threeDaysAfter = new Date(eventStart.getTime() + (3 * 24 * 60 * 60 * 1000));
 
     return now >= eventStart && now <= threeDaysAfter;
@@ -329,6 +363,83 @@ export const socialUtils = {
       return { success: true };
     } catch (error) {
       console.error("Error deleting comment:", error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Announcements Operations
+  async getAnnouncements(pagination = {}) {
+    try {
+      let q = collection(db, "announcements");
+
+      // Order by creation date (newest first)
+      q = query(q, orderBy("createdAt", "desc"));
+
+      // Apply pagination
+      if (pagination.limit) {
+        q = query(q, limit(pagination.limit));
+      }
+      if (pagination.startAfter) {
+        q = query(q, startAfter(pagination.startAfter));
+      }
+
+      const querySnapshot = await getDocs(q);
+      const announcements = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      return { 
+        success: true, 
+        announcements, 
+        lastDoc: querySnapshot.docs[querySnapshot.docs.length - 1] 
+      };
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Get combined feed of posts and announcements
+  async getCombinedFeed(filters = {}, pagination = {}) {
+    try {
+      // Get posts
+      const postsResult = await this.getPosts(filters, pagination);
+      if (!postsResult.success) {
+        return postsResult;
+      }
+
+      // Get announcements
+      const announcementsResult = await this.getAnnouncements(pagination);
+      if (!announcementsResult.success) {
+        return announcementsResult;
+      }
+
+      // Combine and sort by timestamp/createdAt
+      const combinedFeed = [
+        ...postsResult.posts.map(post => ({ ...post, type: 'post' })),
+        ...announcementsResult.announcements.map(announcement => ({ ...announcement, type: 'announcement' }))
+      ];
+
+      // Sort by timestamp (posts) or createdAt (announcements)
+      combinedFeed.sort((a, b) => {
+        const aTime = a.type === 'post' 
+          ? (a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp))
+          : (a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt));
+        const bTime = b.type === 'post' 
+          ? (b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp))
+          : (b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt));
+        
+        return bTime - aTime; // Newest first
+      });
+
+      return { 
+        success: true, 
+        feed: combinedFeed,
+        lastDoc: postsResult.lastDoc // Use posts lastDoc for pagination
+      };
+    } catch (error) {
+      console.error("Error fetching combined feed:", error);
       return { success: false, error: error.message };
     }
   },
