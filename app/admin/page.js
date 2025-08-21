@@ -221,6 +221,18 @@ export default function AdminPage() {
           >
             Projeler Yönetimi
           </Link>
+          <Link
+            href="/admin/social"
+            className="bg-purple-500 text-white px-4 py-2 rounded-md text-center hover:bg-purple-600 transition-colors"
+          >
+            Sosyal Platform Yönetimi
+          </Link>
+          <Link
+            href="/admin/raffles"
+            className="bg-yellow-500 text-white px-4 py-2 rounded-md text-center hover:bg-yellow-600 transition-colors"
+          >
+            Çekiliş Yönetimi
+          </Link>
         </div>
       </section>
 

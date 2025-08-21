@@ -187,6 +187,16 @@ function NavbarContent() {
             Projeler
           </motion.span>
         </Link>
+        {user && (
+          <Link href="/social">
+            <motion.span
+              whileHover={{ scale: 1.1, color: "#F59E0B" }}
+              className="hover:text-yellow-400 transition cursor-pointer"
+            >
+              Sosyal
+            </motion.span>
+          </Link>
+        )}
       </div>
 
       {/* Spacer for mobile to push right side content to the right */}
@@ -282,6 +292,16 @@ function NavbarContent() {
                   Projeler
                 </motion.div>
               </Link>
+              {user && (
+                <Link href="/social" onClick={() => setMenuOpen(false)}>
+                  <motion.div
+                    whileHover={{ backgroundColor: "#374151" }}
+                    className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
+                  >
+                    Sosyal
+                  </motion.div>
+                </Link>
+              )}
             </div>
           </motion.div>
         )}
