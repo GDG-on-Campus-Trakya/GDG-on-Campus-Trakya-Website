@@ -4,7 +4,8 @@ import Image from "next/image";
 import { X, Heart, MessageCircle, Calendar, User, MoreHorizontal } from "lucide-react";
 import { socialUtils } from "../utils/socialUtils";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 
 export default function PostModal({ post, isOpen, onClose, onDelete, showAdminActions = false }) {
@@ -18,6 +19,7 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [isAddingComment, setIsAddingComment] = useState(false);
   const [showCommentsDrawer, setShowCommentsDrawer] = useState(false);
+  const [userProfileData, setUserProfileData] = useState(null);
 
   useEffect(() => {
     if (post) {
@@ -25,7 +27,23 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
       setLikeCount(post.likeCount || 0);
       loadComments();
     }
+    if (user) {
+      loadUserProfile();
+    }
   }, [post, user?.uid]);
+
+  const loadUserProfile = async () => {
+    if (user) {
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          setUserProfileData(userDoc.data());
+        }
+      } catch (error) {
+        console.error("Error loading user profile:", error);
+      }
+    }
+  };
 
   const loadComments = async () => {
     if (!post?.id) return;
@@ -85,8 +103,8 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
       post.id,
       user.uid,
       user.email,
-      user.displayName || user.email,
-      user.photoURL,
+      userProfileData?.name || user.displayName || user.email,
+      userProfileData?.photoURL || user.photoURL,
       newComment
     );
 
@@ -334,18 +352,23 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
           {/* Header */}
           <div className="p-4 border-b border-gray-700 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                {post.userPhoto ? (
-                  <Image
-                    src={post.userPhoto}
-                    alt={post.userName}
-                    width={40}
-                    height={40}
-                    className="rounded-full object-cover"
-                  />
-                ) : (
-                  <User className="w-6 h-6 text-white" />
-                )}
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center overflow-hidden">
+                {(() => {
+                  const profilePhoto = userProfileData?.photoURL || post.userPhoto;
+                  if (profilePhoto && !profilePhoto.includes('googleusercontent.com')) {
+                    return (
+                      <Image
+                        src={profilePhoto}
+                        alt={userProfileData?.name || post.userName}
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-cover"
+                      />
+                    );
+                  } else {
+                    return <User className="w-6 h-6 text-white" />;
+                  }
+                })()}
               </div>
               <div>
                 <h3 className="text-white font-semibold text-sm">
@@ -525,18 +548,23 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
                   {comments.length > 0 ? (
                     comments.map((comment) => (
                       <div key={`drawer-${comment.id}`} className="flex space-x-3">
-                        <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
-                          {comment.userPhoto ? (
-                            <Image
-                              src={comment.userPhoto}
-                              alt={comment.userName}
-                              width={32}
-                              height={32}
-                              className="rounded-full object-cover"
-                            />
-                          ) : (
-                            <User className="w-4 h-4 text-white" />
-                          )}
+                        <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {(() => {
+                            // Yorumlarda da Google fotoğraflarını filtrele
+                            if (comment.userPhoto && !comment.userPhoto.includes('googleusercontent.com')) {
+                              return (
+                                <Image
+                                  src={comment.userPhoto}
+                                  alt={comment.userName}
+                                  width={32}
+                                  height={32}
+                                  className="w-full h-full object-cover"
+                                />
+                              );
+                            } else {
+                              return <User className="w-4 h-4 text-white" />;
+                            }
+                          })()}
                         </div>
                         <div className="flex-1">
                           <div className="text-white text-sm">
@@ -573,18 +601,23 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
             {/* Comment Input */}
             <div className="border-t border-gray-700 p-4">
               <form onSubmit={handleAddComment} className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  {user?.photoURL ? (
-                    <Image
-                      src={user.photoURL}
-                      alt="Your profile"
-                      width={32}
-                      height={32}
-                      className="rounded-full object-cover"
-                    />
-                  ) : (
-                    <User className="w-4 h-4 text-white" />
-                  )}
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {(() => {
+                    const profilePhoto = userProfileData?.photoURL || user?.photoURL;
+                    if (profilePhoto && !profilePhoto.includes('googleusercontent.com')) {
+                      return (
+                        <Image
+                          src={profilePhoto}
+                          alt="Your profile"
+                          width={32}
+                          height={32}
+                          className="w-full h-full object-cover"
+                        />
+                      );
+                    } else {
+                      return <User className="w-4 h-4 text-white" />;
+                    }
+                  })()}
                 </div>
                 <input
                   type="text"

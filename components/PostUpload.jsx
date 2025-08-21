@@ -4,7 +4,8 @@ import Image from "next/image";
 import { Upload, X, Calendar, ImageIcon } from "lucide-react";
 import { socialUtils } from "../utils/socialUtils";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 
 export default function PostUpload({ onUploadComplete, onCancel }) {
@@ -15,11 +16,26 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
   const [selectedEvent, setSelectedEvent] = useState("");
   const [activeEvents, setActiveEvents] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [userProfileData, setUserProfileData] = useState(null);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     loadActiveEvents();
-  }, []);
+    if (user) {
+      loadUserProfile();
+    }
+  }, [user]);
+
+  const loadUserProfile = async () => {
+    try {
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        setUserProfileData(userDoc.data());
+      }
+    } catch (error) {
+      console.error("Error loading user profile:", error);
+    }
+  };
 
   const loadActiveEvents = async () => {
     const result = await socialUtils.getActiveEventsForPosting();
@@ -172,8 +188,8 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
       const postData = {
         userId: user.uid,
         userEmail: user.email,
-        userName: user.displayName || user.email,
-        userPhoto: user.photoURL || null,
+        userName: userProfileData?.name || user.displayName || user.email,
+        userPhoto: userProfileData?.photoURL || user.photoURL || null,
         imageUrl: uploadResult.url,
         description: description.trim(),
         eventId: selectedEvent,

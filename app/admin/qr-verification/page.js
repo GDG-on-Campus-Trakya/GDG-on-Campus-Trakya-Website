@@ -13,7 +13,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { Html5Qrcode } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import Link from "next/link";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -108,7 +108,7 @@ export default function AdminQRVerificationPage() {
   };
 
   const stopScanning = async () => {
-    if (scanner && scanner.getState() !== Html5Qrcode.state.NOT_STARTED) {
+    if (scanner && scanner.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
       await scanner.stop();
       setScanner(null);
     }

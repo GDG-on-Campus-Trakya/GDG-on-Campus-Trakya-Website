@@ -4,7 +4,8 @@ import Image from "next/image";
 import { Heart, MessageCircle, Calendar, User } from "lucide-react";
 import { socialUtils } from "../utils/socialUtils";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 
 export default function PostCard({ post, onPostClick, onDelete, showAdminActions = false }) {
@@ -12,6 +13,7 @@ export default function PostCard({ post, onPostClick, onDelete, showAdminActions
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likeCount || 0);
   const [isLiking, setIsLiking] = useState(false);
+  const [postUserProfile, setPostUserProfile] = useState(null);
 
   // Initialize like state after user loads
   useEffect(() => {
@@ -19,6 +21,25 @@ export default function PostCard({ post, onPostClick, onDelete, showAdminActions
       setIsLiked(post.likes.includes(user.uid));
     }
   }, [user, post.likes]);
+
+  // Load post user profile data if not already in post
+  useEffect(() => {
+    const loadPostUserProfile = async () => {
+      // Eğer post'ta userPhoto yoksa veya default foto ise, kullanıcının güncel profilini al
+      if (post.userId && (!post.userPhoto || post.userPhoto.includes('googleusercontent.com'))) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", post.userId));
+          if (userDoc.exists()) {
+            setPostUserProfile(userDoc.data());
+          }
+        } catch (error) {
+          console.error("Error loading post user profile:", error);
+        }
+      }
+    };
+
+    loadPostUserProfile();
+  }, [post.userId, post.userPhoto]);
 
   const handleLike = async (e) => {
     e.stopPropagation();
@@ -76,24 +97,33 @@ export default function PostCard({ post, onPostClick, onDelete, showAdminActions
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-pink-500">
-            {post.userPhoto || (post.userId === user?.uid && user?.photoURL) ? (
-              <Image
-                src={post.userPhoto || user?.photoURL}
-                alt={post.userName || post.userEmail}
-                width={32}
-                height={32}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-                <User className="w-4 h-4 text-white" />
-              </div>
-            )}
+            {(() => {
+              // Öncelik sırası: Firestore profil fotoğrafı > Post'ta kaydedilen foto > Firebase Auth foto
+              const profilePhoto = postUserProfile?.photoURL || post.userPhoto || (post.userId === user?.uid && user?.photoURL);
+              
+              if (profilePhoto && !profilePhoto.includes('googleusercontent.com')) {
+                return (
+                  <Image
+                    src={profilePhoto}
+                    alt={postUserProfile?.name || post.userName || post.userEmail}
+                    width={32}
+                    height={32}
+                    className="w-full h-full object-cover"
+                  />
+                );
+              } else {
+                return (
+                  <div className="w-full h-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                    <User className="w-4 h-4 text-white" />
+                  </div>
+                );
+              }
+            })()}
           </div>
           <div className="flex-1">
             <div className="flex items-center space-x-2">
               <h3 className="text-white font-semibold text-sm">
-                {post.userName || post.userEmail?.split('@')[0]}
+                {postUserProfile?.name || post.userName || post.userEmail?.split('@')[0]}
               </h3>
               {post.eventName && (
                 <span className="text-blue-400 text-xs">• {post.eventName}</span>
