@@ -38,3 +38,7 @@ next-env.d.ts
 .env
 
 .vercel
+
+firestore.rules
+
+event_feed.md

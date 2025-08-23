@@ -25,8 +25,8 @@ const ProfileImageUpload = ({
         throw new Error("Dosya boyutu 10MB'dan küçük olmalıdır.");
       }
 
-      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-        throw new Error("Sadece JPEG, PNG ve WebP formatları desteklenir.");
+      if (!["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"].includes(file.type)) {
+        throw new Error("Sadece JPEG, PNG, WebP ve HEIC formatları desteklenir.");
       }
 
       const result = await uploadImage(file, folder, prefix);
@@ -79,7 +79,7 @@ const ProfileImageUpload = ({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
         onChange={handleFileSelect}
         className="hidden"
       />

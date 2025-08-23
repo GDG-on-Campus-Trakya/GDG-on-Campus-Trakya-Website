@@ -78,7 +78,7 @@ const ImageUpload = ({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
         onChange={handleFileSelect}
         className="hidden"
       />
@@ -94,7 +94,7 @@ const ImageUpload = ({
       )}
       
       <p className="text-xs text-gray-500">
-        JPEG, PNG, WebP formatları desteklenir. Maksimum 10MB.
+        JPEG, PNG, WebP, HEIC formatları desteklenir. Maksimum 10MB.
       </p>
     </div>
   );

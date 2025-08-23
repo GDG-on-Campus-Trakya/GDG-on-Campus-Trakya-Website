@@ -48,7 +48,7 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      const img = new Image();
+      const img = new window.Image();
       
       img.onload = () => {
         // Calculate new dimensions while maintaining aspect ratio
@@ -103,7 +103,6 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
 
     try {
       // Compress the image
-      toast.info("Resim sıkıştırılıyor...");
       const compressedBlob = await compressImage(file);
       
       // Convert blob to file with original name
@@ -118,7 +117,7 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target.result);
-        toast.success(`Resim sıkıştırıldı! Boyut: ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+        toast.success("Resim yüklendi!");
       };
       reader.onerror = () => {
         toast.error("Resim yüklenirken hata oluştu!");
@@ -253,11 +252,11 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
             >
               <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-[#d1d1e0] text-lg mb-2">Resim seç veya sürükle</p>
-              <p className="text-gray-400 text-sm">JPG, PNG (Max 5MB)</p>
+              <p className="text-gray-400 text-sm">JPG, PNG, HEIC (Max 5MB)</p>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,image/heic,image/heif"
                 onChange={handleImageSelect}
                 className="hidden"
               />
