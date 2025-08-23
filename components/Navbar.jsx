@@ -197,6 +197,16 @@ function NavbarContent() {
             </motion.span>
           </Link>
         )}
+        {user && (
+          <Link href="/tickets">
+            <motion.span
+              whileHover={{ scale: 1.1, color: "#EF4444" }}
+              className="hover:text-red-400 transition cursor-pointer"
+            >
+              Şikayetler/Öneriler
+            </motion.span>
+          </Link>
+        )}
       </div>
 
       {/* Spacer for mobile to push right side content to the right */}
@@ -299,6 +309,16 @@ function NavbarContent() {
                     className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
                   >
                     Sosyal
+                  </motion.div>
+                </Link>
+              )}
+              {user && (
+                <Link href="/tickets" onClick={() => setMenuOpen(false)}>
+                  <motion.div
+                    whileHover={{ backgroundColor: "#374151" }}
+                    className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
+                  >
+                    Şikayetler/Öneriler
                   </motion.div>
                 </Link>
               )}

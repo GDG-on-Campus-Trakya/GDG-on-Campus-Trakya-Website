@@ -397,6 +397,20 @@ export default function AdminPage() {
               <span className="font-semibold text-lg">Çekilişler</span>
             </div>
           </Link>
+          
+          <Link
+            href="/admin/tickets"
+            className="group bg-gradient-to-r from-red-500 to-pink-500 text-white p-6 rounded-2xl text-center hover:from-red-600 hover:to-pink-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+          >
+            <div className="flex flex-col items-center space-y-3">
+              <div className="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-300">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+              </div>
+              <span className="font-semibold text-lg">Şikayetler</span>
+            </div>
+          </Link>
         </div>
       </section>
 
