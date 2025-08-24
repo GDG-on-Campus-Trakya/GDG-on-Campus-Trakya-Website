@@ -20,7 +20,7 @@ export default function Footer() {
   return (
     <footer className="bg-gradient-to-t from-black to-gray-900 text-gray-300 py-8 sm:py-12">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           {/* Left Section */}
           <div className="space-y-4 text-center sm:text-left">
             <img
@@ -33,9 +33,9 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Middle Section */}
+          {/* Middle Section - Split into two columns */}
           <div className="space-y-4 text-center sm:text-left">
-            <h3 className="text-base sm:text-lg font-semibold text-white">Hızlı Bağlantılar</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-white">Sayfalar</h3>
             <div className="flex flex-col space-y-2">
               <Link href="/about">
                 <motion.span
@@ -53,11 +53,66 @@ export default function Footer() {
                   Etkinlikler
                 </motion.span>
               </Link>
+              <Link href="/projects">
+                <motion.span
+                  whileHover={{ x: 5, color: "#60A5FA" }}
+                  className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
+                >
+                  Projeler
+                </motion.span>
+              </Link>
+              <Link href="/social">
+                <motion.span
+                  whileHover={{ x: 5, color: "#60A5FA" }}
+                  className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
+                >
+                  Sosyal Medya
+                </motion.span>
+              </Link>
+              <Link href="/faq">
+                <motion.span
+                  whileHover={{ x: 5, color: "#60A5FA" }}
+                  className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
+                >
+                  S.S.S.
+                </motion.span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Legal Section */}
+          <div className="space-y-4 text-center sm:text-left">
+            <h3 className="text-base sm:text-lg font-semibold text-white">Yasal</h3>
+            <div className="flex flex-col space-y-2">
+              <Link href="/privacy">
+                <motion.span
+                  whileHover={{ x: 5, color: "#60A5FA" }}
+                  className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
+                >
+                  Gizlilik Politikası
+                </motion.span>
+              </Link>
+              <Link href="/terms">
+                <motion.span
+                  whileHover={{ x: 5, color: "#60A5FA" }}
+                  className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
+                >
+                  Kullanım Şartları
+                </motion.span>
+              </Link>
+              <Link href="/tickets">
+                <motion.span
+                  whileHover={{ x: 5, color: "#60A5FA" }}
+                  className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
+                >
+                  Destek & Şikayetler
+                </motion.span>
+              </Link>
             </div>
           </div>
 
           {/* Right Section */}
-          <div className="space-y-4 text-center sm:text-left sm:col-span-2 md:col-span-1">
+          <div className="space-y-4 text-center sm:text-left">
             <h3 className="text-base sm:text-lg font-semibold text-white">Bizi Takip Edin</h3>
             <div className="flex space-x-4 justify-center sm:justify-start">
               {socialLinks.map((social) => (
