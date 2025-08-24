@@ -133,14 +133,21 @@ export default function TicketsPage() {
       const oneDayAgo = new Date();
       oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
+      // Basitleştirilmiş rate limit - sadece userEmail'e göre filtrele
       const userTicketsQuery = query(
         collection(db, "tickets"),
-        where("userEmail", "==", userEmail),
-        where("createdAt", ">=", Timestamp.fromDate(oneDayAgo))
+        where("userEmail", "==", userEmail)
       );
 
       const snapshot = await getDocs(userTicketsQuery);
-      return snapshot.docs.length < 5; // Max 5 tickets per day
+      
+      // Client-side'da son 24 saat içindeki ticket'ları say
+      const recentTickets = snapshot.docs.filter(doc => {
+        const ticketDate = new Date(doc.data().createdAt);
+        return ticketDate >= oneDayAgo;
+      });
+      
+      return recentTickets.length < 5; // Max 5 tickets per day
     } catch (error) {
       console.error("Error checking rate limit:", error);
       return true; // Allow if check fails
@@ -157,15 +164,21 @@ export default function TicketsPage() {
       const oneDayAgo = new Date();
       oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
-      // Check for reopen activities in the last 24 hours
+      // Basitleştirilmiş reopen rate limit
       const userReopenQuery = query(
         collection(db, "ticketReopens"),
-        where("userEmail", "==", userEmail),
-        where("reopenedAt", ">=", Timestamp.fromDate(oneDayAgo))
+        where("userEmail", "==", userEmail)
       );
 
       const snapshot = await getDocs(userReopenQuery);
-      return snapshot.docs.length < 5; // Max 5 reopens per day
+      
+      // Client-side'da son 24 saat içindeki reopen'ları say
+      const recentReopens = snapshot.docs.filter(doc => {
+        const reopenDate = new Date(doc.data().reopenedAt);
+        return reopenDate >= oneDayAgo;
+      });
+      
+      return recentReopens.length < 5; // Max 5 reopens per day
     } catch (error) {
       console.error("Error checking reopen rate limit:", error);
       return true; // Allow if check fails
@@ -351,10 +364,8 @@ export default function TicketsPage() {
       });
 
       toast.success("Yanıtınız başarıyla gönderildi!");
-      setShowReplyModal(false);
-      setSelectedTicketForReply(null);
       setReplyMessage("");
-      fetchUserTickets(); // Refresh tickets
+      // fetchUserTickets(); // Modal açık kalacak, ticket güncellenmesi live olacak
     } catch (error) {
       console.error("Error sending reply:", error);
       toast.error("Yanıt gönderilirken bir hata oluştu");

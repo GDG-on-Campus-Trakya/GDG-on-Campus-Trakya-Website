@@ -36,9 +36,33 @@ yarn-error.log*
 next-env.d.ts
 
 .env
+# Firebase sensitive files
+service-account.json
+firebase-service-account-*.json
+*-firebase-adminsdk-*.json
+firebase-debug.log
+ui-debug.log
+firestore-debug.log
 
 .vercel
+# Firebase emulator data
+.firebase/
+firebase-export-*
+firestore-data/
+
+# Security sensitive
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Logs
+*.log
+logs/
 
 firestore.rules
+# Temporary files
+*.tmp
+*.temp
 
 event_feed.md

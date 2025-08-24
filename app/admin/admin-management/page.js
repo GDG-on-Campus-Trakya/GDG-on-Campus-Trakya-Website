@@ -77,7 +77,8 @@ export default function AdminManagementPage() {
       const adminRef = doc(db, "admins", newAdminEmail);
       await setDoc(adminRef, { 
         email: newAdminEmail, 
-        role: newAdminRole 
+        role: newAdminRole,
+        createdAt: new Date().toISOString()
       });
       setAdmins((prev) => [
         ...prev,

@@ -216,7 +216,7 @@ const Profile = () => {
         prevEvents.filter((event) => uniqueRemainingEventIds.includes(event.id))
       );
 
-      toast.success("Kayıt başarıyla silindi.");
+      // Toast will be shown from handleConfirmDelete
     } catch (error) {
       console.error("Error removing registration:", error);
       toast.error("Kayıt silinirken bir hata oluştu. Lütfen tekrar deneyin.");
@@ -406,7 +406,18 @@ const Profile = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </motion.div>
   );
 };
