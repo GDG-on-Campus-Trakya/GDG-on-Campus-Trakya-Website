@@ -1,5 +1,4 @@
 "use client";
-// admin/users/page.js
 import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../../firebase";
@@ -21,18 +20,12 @@ import {
 import Link from "next/link";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AdminProtection from "../../../components/AdminProtection";
 
 export default function AdminUsersPage() {
-  const [user, loading] = useAuthState(auth);
-  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Users array
   const [usersList, setUsersList] = useState([]);
-
-  // Auto-refresh
   const [refreshKey, setRefreshKey] = useState(0);
-
-  // User form state
   const [userFormData, setUserFormData] = useState({
     firestoreId: "",
     name: "",
@@ -40,32 +33,6 @@ export default function AdminUsersPage() {
     wantsToGetEmails: false,
     createdAt: "",
   });
-
-  const router = useRouter();
-
-  // Check if user is admin
-  useEffect(() => {
-    const checkAdminPrivileges = async () => {
-      if (!user) return;
-      try {
-        const adminRef = doc(db, "admins", user.email);
-        const adminSnap = await getDoc(adminRef);
-
-        if (adminSnap.exists()) {
-          setIsAdmin(true);
-        } else {
-          router.push("/");
-        }
-      } catch (error) {
-        console.error("Error checking admin privileges:", error);
-        router.push("/");
-      }
-    };
-
-    if (!loading && user) {
-      checkAdminPrivileges();
-    }
-  }, [user, loading, router]);
 
   const fetchUsers = async () => {
     try {
@@ -90,21 +57,16 @@ export default function AdminUsersPage() {
   };
 
   useEffect(() => {
-    if (isAdmin) {
-      fetchUsers();
-    }
-  }, [isAdmin, refreshKey]);
+    fetchUsers();
+  }, [refreshKey]);
 
-  // Auto-refresh every 30 seconds
   useEffect(() => {
-    if (!isAdmin) return;
-
     const interval = setInterval(() => {
       setRefreshKey((prev) => prev + 1);
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [isAdmin]);
+  }, []);
 
   const isEditing = !!userFormData.firestoreId;
 
@@ -242,23 +204,8 @@ export default function AdminUsersPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg text-gray-700">Loading...</p>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg text-red-500">Access Denied</p>
-      </div>
-    );
-  }
-
   return (
+    <AdminProtection>
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4 sm:p-6">
       {/* Back to Admin Panel Button */}
       <div className="mb-6 sm:mb-8">
@@ -630,5 +577,6 @@ export default function AdminUsersPage() {
       </section>
       <ToastContainer theme="dark" />
     </div>
+    </AdminProtection>
   );
 }
