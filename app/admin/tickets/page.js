@@ -14,9 +14,19 @@ export default function AdminTicketsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [responseMessage, setResponseMessage] = useState("");
+  const sanitizeInput = (input) => {
+    if (typeof input !== "string") return input;
+    return input
+      .replace(/<script[^>]*>.*?<\/script>/gi, "")
+      .replace(/<[^>]+>/g, "")
+      .replace(/javascript:/gi, "")
+      .replace(/on\w+\s*=/gi, "")
+      .trim();
+  };
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [availableAdmins, setAvailableAdmins] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -29,6 +39,7 @@ export default function AdminTicketsPage() {
         if (adminSnap.exists()) {
           setIsAdmin(true);
           fetchTickets();
+          fetchAvailableAdmins();
         } else {
           router.push("/");
         }
@@ -43,29 +54,63 @@ export default function AdminTicketsPage() {
     }
   }, [user, loading, router]);
 
+  // Live subscribe to selected ticket updates while modal is open
+  useEffect(() => {
+    if (!selectedTicket?.id) return;
+    let unsubscribe;
+    (async () => {
+      try {
+        const { doc, onSnapshot } = await import("firebase/firestore");
+        const { db } = await import("../../../firebase");
+        const ticketRef = doc(db, "tickets", selectedTicket.id);
+        unsubscribe = onSnapshot(ticketRef, (snap) => {
+          if (!snap.exists()) return;
+          const data = snap.data();
+          setSelectedTicket((prev) => ({
+            id: snap.id,
+            ...data,
+            createdAt:
+              data.createdAt?.toDate?.()?.toISOString() ||
+              prev?.createdAt ||
+              null,
+            updatedAt: data.updatedAt?.toDate?.()?.toISOString() || null,
+            closedAt: data.closedAt || null,
+          }));
+        });
+      } catch (err) {
+        console.error("Error subscribing to ticket:", err);
+      }
+    })();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [selectedTicket?.id]);
+
   const fetchTickets = async () => {
     try {
       setIsLoading(true);
-      const { collection, getDocs, query, orderBy } = await import("firebase/firestore");
+      const { collection, getDocs, query, orderBy } = await import(
+        "firebase/firestore"
+      );
       const { db } = await import("../../../firebase");
-      
+
       const ticketsCollection = collection(db, "tickets");
-      
+
       const snapshot = await getDocs(ticketsCollection);
-      const ticketsData = snapshot.docs.map(doc => {
+      const ticketsData = snapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
           updatedAt: data.updatedAt?.toDate?.()?.toISOString() || null,
-          closedAt: data.closedAt || null // Keep Firestore timestamp for proper display
+          closedAt: data.closedAt || null, // Keep Firestore timestamp for proper display
         };
       });
-      
+
       // Sort by createdAt in descending order (newest first)
       ticketsData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      
+
       setTickets(ticketsData);
     } catch (error) {
       console.error("Error fetching tickets:", error);
@@ -75,30 +120,47 @@ export default function AdminTicketsPage() {
     }
   };
 
+  const fetchAvailableAdmins = async () => {
+    try {
+      const { collection, getDocs } = await import("firebase/firestore");
+      const { db } = await import("../../../firebase");
+
+      const adminsSnapshot = await getDocs(collection(db, "admins"));
+      const adminsList = adminsSnapshot.docs.map((doc) => ({
+        email: doc.id,
+        ...doc.data(),
+      }));
+      setAvailableAdmins(adminsList);
+    } catch (error) {
+      console.error("Error fetching admins:", error);
+    }
+  };
+
   const handleResponse = async (e) => {
     e.preventDefault();
     if (!responseMessage.trim() || !selectedTicket) return;
 
     setIsSubmitting(true);
     try {
-      const { doc, updateDoc, serverTimestamp } = await import("firebase/firestore");
+      const { doc, updateDoc, serverTimestamp } = await import(
+        "firebase/firestore"
+      );
       const { db } = await import("../../../firebase");
-      
+
       const newResponse = {
-        message: responseMessage,
+        message: sanitizeInput(responseMessage),
         adminEmail: user.email,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
-      
+
       const ticketRef = doc(db, "tickets", selectedTicket.id);
       await updateDoc(ticketRef, {
         responses: [...(selectedTicket.responses || []), newResponse],
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
 
       toast.success("Yanıt başarıyla gönderildi!");
       setResponseMessage("");
-      setSelectedTicket(null);
       fetchTickets();
     } catch (error) {
       console.error("Error sending response:", error);
@@ -110,24 +172,28 @@ export default function AdminTicketsPage() {
 
   const handleStatusChange = async (ticketId, action) => {
     try {
-      const { doc, updateDoc, serverTimestamp } = await import("firebase/firestore");
+      const { doc, updateDoc, serverTimestamp } = await import(
+        "firebase/firestore"
+      );
       const { db } = await import("../../../firebase");
-      
+
       const updateData = {
-        status: action === 'close' ? 'closed' : 'open',
-        updatedAt: serverTimestamp()
+        status: action === "close" ? "closed" : "open",
+        updatedAt: serverTimestamp(),
       };
-      
+
       // Add closure date when closing
-      if (action === 'close') {
+      if (action === "close") {
         updateData.closedAt = serverTimestamp();
         updateData.closedBy = user.email;
       }
-      
+
       const ticketRef = doc(db, "tickets", ticketId);
       await updateDoc(ticketRef, updateData);
 
-      toast.success(`Bilet başarıyla ${action === 'close' ? 'kapatıldı' : 'açıldı'}!`);
+      toast.success(
+        `Bilet başarıyla ${action === "close" ? "kapatıldı" : "açıldı"}!`
+      );
       fetchTickets();
       if (selectedTicket?.id === ticketId) {
         setSelectedTicket(null);
@@ -139,14 +205,18 @@ export default function AdminTicketsPage() {
   };
 
   const handleDeleteTicket = async (ticketId) => {
-    if (!confirm("Bu bileti kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.")) {
+    if (
+      !confirm(
+        "Bu bileti kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+      )
+    ) {
       return;
     }
 
     try {
       const { doc, deleteDoc } = await import("firebase/firestore");
       const { db } = await import("../../../firebase");
-      
+
       const ticketRef = doc(db, "tickets", ticketId);
       await deleteDoc(ticketRef);
 
@@ -161,22 +231,28 @@ export default function AdminTicketsPage() {
     }
   };
 
-  const handlePriorityChange = async (ticketId, newPriority) => {
+  const handleAssignAdmin = async (ticketId, adminEmail) => {
     try {
-      const { doc, updateDoc, serverTimestamp } = await import("firebase/firestore");
+      const { doc, updateDoc, serverTimestamp } = await import(
+        "firebase/firestore"
+      );
       const { db } = await import("../../../firebase");
-      
+
       const ticketRef = doc(db, "tickets", ticketId);
       await updateDoc(ticketRef, {
-        priority: newPriority,
-        updatedAt: serverTimestamp()
+        assignedTo: adminEmail || null,
+        assignedAt: adminEmail ? serverTimestamp() : null,
+        assignedBy: adminEmail ? user.email : null,
+        updatedAt: serverTimestamp(),
       });
 
-      toast.success("Öncelik başarıyla güncellendi!");
+      toast.success(
+        adminEmail ? "Admin başarıyla atandı!" : "Admin ataması kaldırıldı!"
+      );
       fetchTickets();
     } catch (error) {
-      console.error("Error updating priority:", error);
-      toast.error("Öncelik güncellenirken bir hata oluştu");
+      console.error("Error assigning admin:", error);
+      toast.error("Admin ataması güncellenirken bir hata oluştu");
     }
   };
 
@@ -221,35 +297,11 @@ export default function AdminTicketsPage() {
     }
   };
 
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-900/50 text-red-300 border border-red-700";
-      case "medium":
-        return "bg-yellow-900/50 text-yellow-300 border border-yellow-700";
-      case "low":
-        return "bg-green-900/50 text-green-300 border border-green-700";
-      default:
-        return "bg-gray-700/50 text-gray-300 border border-gray-600";
-    }
-  };
-
-  const getPriorityText = (priority) => {
-    switch (priority) {
-      case "high":
-        return "Yüksek";
-      case "medium":
-        return "Orta";
-      case "low":
-        return "Düşük";
-      default:
-        return "Bilinmiyor";
-    }
-  };
-
-  const filteredTickets = tickets.filter(ticket => {
-    const statusMatch = filterStatus === "all" || ticket.status === filterStatus;
-    const categoryMatch = filterCategory === "all" || ticket.category === filterCategory;
+  const filteredTickets = tickets.filter((ticket) => {
+    const statusMatch =
+      filterStatus === "all" || ticket.status === filterStatus;
+    const categoryMatch =
+      filterCategory === "all" || ticket.category === filterCategory;
     return statusMatch && categoryMatch;
   });
 
@@ -278,7 +330,9 @@ export default function AdminTicketsPage() {
             Bilet Yönetimi
           </h1>
         </div>
-        <p className="text-gray-300 mt-4 text-lg">Kullanıcı şikayetleri ve önerilerini yönetin</p>
+        <p className="text-gray-300 mt-4 text-lg">
+          Kullanıcı şikayetleri ve önerilerini yönetin
+        </p>
       </div>
 
       {/* Stats */}
@@ -293,7 +347,7 @@ export default function AdminTicketsPage() {
           <div className="text-center">
             <p className="text-sm font-medium text-gray-300">Açık Biletler</p>
             <p className="text-3xl font-bold text-yellow-400">
-              {tickets.filter(t => t.status === 'open').length}
+              {tickets.filter((t) => t.status === "open").length}
             </p>
           </div>
         </div>
@@ -301,7 +355,7 @@ export default function AdminTicketsPage() {
           <div className="text-center">
             <p className="text-sm font-medium text-gray-300">Kapalı Biletler</p>
             <p className="text-3xl font-bold text-green-400">
-              {tickets.filter(t => t.status === 'closed').length}
+              {tickets.filter((t) => t.status === "closed").length}
             </p>
           </div>
         </div>
@@ -309,7 +363,7 @@ export default function AdminTicketsPage() {
           <div className="text-center">
             <p className="text-sm font-medium text-gray-300">Şikayetler</p>
             <p className="text-3xl font-bold text-red-400">
-              {tickets.filter(t => t.category === 'complaint').length}
+              {tickets.filter((t) => t.category === "complaint").length}
             </p>
           </div>
         </div>
@@ -356,13 +410,16 @@ export default function AdminTicketsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {filteredTickets.length === 0 ? (
           <div className="col-span-full bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg p-8 text-center">
-            <p className="text-gray-300 text-lg">Filtrelerinize uygun bilet bulunamadı.</p>
+            <p className="text-gray-300 text-lg">
+              Filtrelerinize uygun bilet bulunamadı.
+            </p>
           </div>
         ) : (
           filteredTickets.map((ticket) => (
             <div
               key={ticket.id}
-              className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg p-6"
+              className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg p-6 hover:border-gray-600/60 transition-colors cursor-pointer"
+              onClick={() => setSelectedTicket(ticket)}
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
@@ -370,85 +427,113 @@ export default function AdminTicketsPage() {
                     {ticket.subject}
                   </h3>
                   <div className="flex flex-wrap gap-2 mb-2">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(ticket.status)}`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                        ticket.status
+                      )}`}
+                    >
                       {getStatusText(ticket.status)}
                     </span>
                     <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-700 text-gray-300">
                       {getCategoryText(ticket.category)}
-                    </span>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(ticket.priority || 'medium')}`}>
-                      {getPriorityText(ticket.priority || 'medium')}
                     </span>
                   </div>
                   <p className="text-sm text-gray-400 mb-1">
                     <strong>Kullanıcı:</strong> {ticket.userName}
                   </p>
                   <p className="text-sm text-gray-400 mb-1">
-                    <strong>Oluşturulma:</strong> {new Date(ticket.createdAt).toLocaleDateString('tr-TR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
+                    <strong>Oluşturulma:</strong>{" "}
+                    {new Date(ticket.createdAt).toLocaleDateString("tr-TR", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })}
                   </p>
-                  {ticket.status === 'closed' && ticket.closedAt && (
+                  {ticket.status === "closed" && ticket.closedAt && (
                     <p className="text-sm text-green-400 mb-1">
-                      <strong>Kapatılma:</strong> {ticket.closedAt.toDate ? 
-                        new Date(ticket.closedAt.toDate()).toLocaleDateString('tr-TR', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        }) : 
-                        new Date(ticket.closedAt).toLocaleDateString('tr-TR', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })
-                      } {ticket.closedBy && `(${ticket.closedBy})`}
+                      <strong>Kapatılma:</strong>{" "}
+                      {ticket.closedAt.toDate
+                        ? new Date(ticket.closedAt.toDate()).toLocaleDateString(
+                            "tr-TR",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )
+                        : new Date(ticket.closedAt).toLocaleDateString(
+                            "tr-TR",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )}{" "}
+                      {ticket.closedBy && `(${ticket.closedBy})`}
                     </p>
+                  )}
+                  {ticket.reopenedAt && (
+                    <div className="mt-2 p-2 bg-orange-900/30 rounded-lg border border-orange-700/50">
+                      <p className="text-sm text-orange-300 mb-1">
+                        <strong>🔄 Yeniden Açıldı:</strong>{" "}
+                        {ticket.reopenedAt.toDate
+                          ? new Date(
+                              ticket.reopenedAt.toDate()
+                            ).toLocaleDateString("tr-TR", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : new Date(ticket.reopenedAt).toLocaleDateString(
+                              "tr-TR",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
+                      </p>
+                      {ticket.reopenReason && (
+                        <p className="text-sm text-orange-200">
+                          <strong>Gerekçe:</strong> {ticket.reopenReason}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {ticket.assignedTo && (
+                    <p className="text-sm text-purple-400 mb-1">
+                      <strong>Atanan Admin:</strong> {ticket.assignedTo}
+                    </p>
+                  )}
+                  {ticket.ticketNumber && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="px-2 py-1 bg-blue-600 text-white text-xs font-mono rounded">
+                        #{ticket.ticketNumber}
+                      </span>
+                    </div>
                   )}
                 </div>
               </div>
 
               <p className="text-gray-300 mb-4 text-sm">{ticket.message}</p>
 
-              {/* Responses */}
-              {ticket.responses && ticket.responses.length > 0 && (
-                <div className="border-t border-gray-700 pt-4 mb-4">
-                  <h4 className="font-semibold text-white mb-2 text-sm">Yanıtlar:</h4>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {ticket.responses.map((response, index) => (
-                      <div
-                        key={index}
-                        className="bg-blue-900/30 rounded-lg p-3 border-l-4 border-blue-500"
-                      >
-                        <div className="flex justify-between items-start mb-1">
-                          <span className="font-medium text-blue-300 text-sm">
-                            Admin
-                          </span>
-                          <span className="text-xs text-gray-400">
-                            {new Date(response.createdAt).toLocaleDateString('tr-TR', {
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </span>
-                        </div>
-                        <p className="text-gray-300 text-sm">{response.message}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Conversation moved into modal */}
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div
+                className="flex flex-wrap gap-2 mb-4"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <button
                   onClick={() => setSelectedTicket(ticket)}
                   className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
@@ -479,17 +564,22 @@ export default function AdminTicketsPage() {
                 </button>
               </div>
 
-              {/* Priority Selection */}
+              {/* Admin Assignment */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-400 font-medium">Öncelik:</span>
+                <span className="text-sm text-gray-400 font-medium">
+                  Admin:
+                </span>
                 <select
-                  value={ticket.priority || 'medium'}
-                  onChange={(e) => handlePriorityChange(ticket.id, e.target.value)}
+                  value={ticket.assignedTo || ""}
+                  onChange={(e) => handleAssignAdmin(ticket.id, e.target.value)}
                   className="px-2 py-1 bg-gray-700/50 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-blue-500"
                 >
-                  <option value="low">Düşük</option>
-                  <option value="medium">Orta</option>
-                  <option value="high">Yüksek</option>
+                  <option value="">Atanmamış</option>
+                  {availableAdmins.map((admin) => (
+                    <option key={admin.email} value={admin.email}>
+                      {admin.email}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -497,62 +587,305 @@ export default function AdminTicketsPage() {
         )}
       </div>
 
-      {/* Response Modal */}
+      {/* Chat Modal */}
       {selectedTicket && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">Bilete Yanıt Ver</h2>
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-2xl">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-gray-700 flex items-start justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-white">
+                  Bilet #{selectedTicket.ticketNumber || selectedTicket.id}
+                </h2>
+                <p className="text-sm text-gray-400">
+                  {selectedTicket.subject} — {selectedTicket.userName}
+                </p>
+              </div>
               <button
                 onClick={() => setSelectedTicket(null)}
                 className="text-gray-400 hover:text-gray-200"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
-
-            <div className="mb-4 p-4 bg-gray-700/50 rounded-lg">
-              <h3 className="font-semibold text-white mb-2">{selectedTicket.subject}</h3>
-              <p className="text-sm text-gray-300 mb-2">
-                <strong>Kullanıcı:</strong> {selectedTicket.userName}
-              </p>
-              <p className="text-gray-300">{selectedTicket.message}</p>
+            {/* Body */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
+              {/* Conversation */}
+              <div className="lg:col-span-2 flex flex-col h-[60vh]">
+                <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-900">
+                  {/* Original ticket message */}
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-green-700 flex items-center justify-center text-white text-xs font-bold">
+                      K
+                    </div>
+                    <div className="max-w-xl bg-gray-800/70 border border-gray-700 rounded-2xl px-4 py-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-semibold text-green-300">
+                          Kullanıcı
+                        </span>
+                        <span className="text-[10px] text-gray-400">
+                          {new Date(
+                            selectedTicket.createdAt
+                          ).toLocaleDateString("tr-TR", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-200 whitespace-pre-wrap">
+                        {selectedTicket.message}
+                      </p>
+                    </div>
+                  </div>
+                  {/* Replies */}
+                  {selectedTicket.responses?.map((response, idx) => {
+                    const isSystem = response.isSystemMessage;
+                    const isUser = response.isUserResponse === true;
+                    const isAdmin = !isSystem && !isUser;
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex items-start gap-3 ${
+                          isAdmin ? "justify-end" : ""
+                        }`}
+                      >
+                        {!isAdmin && (
+                          <div className="w-8 h-8 rounded-lg bg-green-700 flex items-center justify-center text-white text-xs font-bold">
+                            {isSystem ? "S" : "K"}
+                          </div>
+                        )}
+                        <div
+                          className={`max-w-xl ${
+                            isAdmin
+                              ? "bg-blue-900/40 border-blue-700"
+                              : isSystem
+                              ? "bg-gray-800/70 border-gray-600"
+                              : "bg-gray-800/70 border-gray-700"
+                          } border rounded-2xl px-4 py-3`}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <span
+                              className={`text-xs font-semibold ${
+                                isSystem
+                                  ? "text-gray-300"
+                                  : isUser
+                                  ? "text-green-300"
+                                  : "text-blue-300"
+                              }`}
+                            >
+                              {isSystem
+                                ? "Sistem"
+                                : isUser
+                                ? "Kullanıcı"
+                                : "Admin"}
+                            </span>
+                            <span className="text-[10px] text-gray-400">
+                              {new Date(response.createdAt).toLocaleDateString(
+                                "tr-TR",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-200 whitespace-pre-wrap">
+                            {response.message}
+                          </p>
+                        </div>
+                        {isAdmin && (
+                          <div className="w-8 h-8 rounded-lg bg-blue-700 flex items-center justify-center text-white text-xs font-bold">
+                            A
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Composer */}
+                <form
+                  onSubmit={handleResponse}
+                  className="p-4 border-t border-gray-700 bg-gray-900"
+                >
+                  <div className="flex gap-3">
+                    <textarea
+                      value={responseMessage}
+                      onChange={(e) => setResponseMessage(e.target.value)}
+                      rows={2}
+                      className="flex-1 px-4 py-3 bg-gray-800/70 border border-gray-700 rounded-xl focus:outline-none focus:border-blue-500 text-white placeholder-gray-400 resize-none"
+                      placeholder="Yanıt yazın..."
+                      required
+                    />
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || !responseMessage.trim()}
+                      className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? "Gönderiliyor..." : "Gönder"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+              {/* Sidebar */}
+              <div className="border-l border-gray-800 bg-gray-900 p-6 space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-200 mb-2">
+                    Bilet Bilgileri
+                  </h3>
+                  <div className="text-sm text-gray-300 space-y-1">
+                    <p>
+                      <span className="text-gray-400">Durum:</span>{" "}
+                      {getStatusText(selectedTicket.status)}
+                    </p>
+                    <p>
+                      <span className="text-gray-400">Kategori:</span>{" "}
+                      {getCategoryText(selectedTicket.category)}
+                    </p>
+                    {selectedTicket.assignedTo && (
+                      <p>
+                        <span className="text-gray-400">Atanan:</span>{" "}
+                        {selectedTicket.assignedTo}
+                      </p>
+                    )}
+                    <p>
+                      <span className="text-gray-400">Oluşturulma:</span>{" "}
+                      {new Date(selectedTicket.createdAt).toLocaleDateString(
+                        "tr-TR",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
+                    </p>
+                    {selectedTicket.closedAt && (
+                      <p className="text-green-400">
+                        <span className="text-gray-400">Kapatılma:</span>{" "}
+                        {selectedTicket.closedAt.toDate
+                          ? new Date(
+                              selectedTicket.closedAt.toDate()
+                            ).toLocaleDateString("tr-TR", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : new Date(
+                              selectedTicket.closedAt
+                            ).toLocaleDateString("tr-TR", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                      </p>
+                    )}
+                    {selectedTicket.reopenedAt && (
+                      <p className="text-orange-300">
+                        <span className="text-gray-400">Yeniden Açılma:</span>{" "}
+                        {selectedTicket.reopenedAt.toDate
+                          ? new Date(
+                              selectedTicket.reopenedAt.toDate()
+                            ).toLocaleDateString("tr-TR", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : new Date(
+                              selectedTicket.reopenedAt
+                            ).toLocaleDateString("tr-TR", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                      </p>
+                    )}
+                    {selectedTicket.reopenReason && (
+                      <p className="text-orange-200">
+                        <span className="text-gray-400">Gerekçe:</span>{" "}
+                        {selectedTicket.reopenReason}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-200 mb-2">
+                    Admin İşlemleri
+                  </h3>
+                  <div className="flex gap-2">
+                    {selectedTicket.status === "open" ? (
+                      <button
+                        onClick={() =>
+                          handleStatusChange(selectedTicket.id, "close")
+                        }
+                        className="px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium"
+                      >
+                        Kapat
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() =>
+                          handleStatusChange(selectedTicket.id, "reopen")
+                        }
+                        className="px-3 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-sm font-medium"
+                      >
+                        Tekrar Aç
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDeleteTicket(selectedTicket.id)}
+                      className="px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium"
+                    >
+                      Sil
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-200 mb-2">
+                    Admin Atama
+                  </h3>
+                  <select
+                    value={selectedTicket.assignedTo || ""}
+                    onChange={(e) =>
+                      handleAssignAdmin(selectedTicket.id, e.target.value)
+                    }
+                    className="w-full px-3 py-2 bg-gray-800/70 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="">Atanmamış</option>
+                    {availableAdmins.map((admin) => (
+                      <option key={admin.email} value={admin.email}>
+                        {admin.email}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
-
-            <form onSubmit={handleResponse}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Yanıtınız
-                </label>
-                <textarea
-                  value={responseMessage}
-                  onChange={(e) => setResponseMessage(e.target.value)}
-                  rows={4}
-                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white placeholder-gray-400 resize-none"
-                  placeholder="Kullanıcıya yanıt yazın..."
-                  required
-                />
-              </div>
-
-              <div className="flex gap-4">
-                <button
-                  type="submit"
-                  disabled={isSubmitting || !responseMessage.trim()}
-                  className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? "Gönderiliyor..." : "Yanıt Gönder"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedTicket(null)}
-                  className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg font-semibold hover:bg-gray-700 transition-colors"
-                >
-                  İptal
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

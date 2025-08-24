@@ -13,10 +13,20 @@ export default function TicketsPage() {
   const [formData, setFormData] = useState({
     subject: "",
     message: "",
-    category: "complaint"
+    category: "complaint",
   });
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showReopenModal, setShowReopenModal] = useState(false);
+  const [selectedTicketId, setSelectedTicketId] = useState(null);
+  const [reopenReason, setReopenReason] = useState("");
+  const [isReopening, setIsReopening] = useState(false);
+  const [showReplyModal, setShowReplyModal] = useState(false);
+  const [selectedTicketForReply, setSelectedTicketForReply] = useState(null);
+  const [replyMessage, setReplyMessage] = useState("");
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -24,34 +34,67 @@ export default function TicketsPage() {
       router.push("/");
       return;
     }
-    
+
     if (user) {
       fetchUserTickets();
     }
   }, [user, loading, router]);
 
+  // Live subscribe to selected ticket while chat modal is open
+  useEffect(() => {
+    if (!showReplyModal || !selectedTicketForReply?.id) return;
+    let unsubscribe;
+    (async () => {
+      try {
+        const { doc, onSnapshot } = await import("firebase/firestore");
+        const { db } = await import("../../firebase");
+        const ticketRef = doc(db, "tickets", selectedTicketForReply.id);
+        unsubscribe = onSnapshot(ticketRef, (snap) => {
+          if (!snap.exists()) return;
+          const data = snap.data();
+          setSelectedTicketForReply((prev) => ({
+            id: snap.id,
+            ...data,
+            createdAt:
+              data.createdAt?.toDate?.()?.toISOString() ||
+              prev?.createdAt ||
+              null,
+            updatedAt: data.updatedAt?.toDate?.()?.toISOString() || null,
+          }));
+        });
+      } catch (err) {
+        console.error("Error subscribing to ticket:", err);
+      }
+    })();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [showReplyModal, selectedTicketForReply?.id]);
+
   const fetchUserTickets = async () => {
     try {
       setIsLoading(true);
-      const { collection, getDocs, query, where, orderBy } = await import("firebase/firestore");
+      const { collection, getDocs, query, where, orderBy } = await import(
+        "firebase/firestore"
+      );
       const { db } = await import("../../firebase");
-      
+
       const ticketsQuery = query(
         collection(db, "tickets"),
         where("userEmail", "==", user.email)
       );
-      
+
       const snapshot = await getDocs(ticketsQuery);
-      const ticketsData = snapshot.docs.map(doc => ({
+      const ticketsData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || null,
-        updatedAt: doc.data().updatedAt?.toDate?.()?.toISOString() || null
+        updatedAt: doc.data().updatedAt?.toDate?.()?.toISOString() || null,
       }));
-      
+
       // Sort by createdAt in descending order (newest first)
       ticketsData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      
+
       setTickets(ticketsData);
     } catch (error) {
       console.error("Error fetching tickets:", error);
@@ -61,29 +104,334 @@ export default function TicketsPage() {
     }
   };
 
+  const generateTicketNumber = () => {
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+    const day = String(currentDate.getDate()).padStart(2, "0");
+    const timestamp = Date.now().toString().slice(-4);
+    return `TK${year}${month}${day}-${timestamp}`;
+  };
+
+  const sanitizeInput = (input) => {
+    if (typeof input !== "string") return input;
+    return input
+      .replace(/<script[^>]*>.*?<\/script>/gi, "")
+      .replace(/<[^>]+>/g, "")
+      .replace(/javascript:/gi, "")
+      .replace(/on\w+\s*=/gi, "")
+      .trim();
+  };
+
+  const checkRateLimit = async (userEmail) => {
+    try {
+      const { collection, query, where, getDocs, Timestamp } = await import(
+        "firebase/firestore"
+      );
+      const { db } = await import("../../firebase");
+
+      const oneDayAgo = new Date();
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+      const userTicketsQuery = query(
+        collection(db, "tickets"),
+        where("userEmail", "==", userEmail),
+        where("createdAt", ">=", Timestamp.fromDate(oneDayAgo))
+      );
+
+      const snapshot = await getDocs(userTicketsQuery);
+      return snapshot.docs.length < 5; // Max 5 tickets per day
+    } catch (error) {
+      console.error("Error checking rate limit:", error);
+      return true; // Allow if check fails
+    }
+  };
+
+  const checkReopenRateLimit = async (userEmail) => {
+    try {
+      const { collection, query, where, getDocs, Timestamp } = await import(
+        "firebase/firestore"
+      );
+      const { db } = await import("../../firebase");
+
+      const oneDayAgo = new Date();
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+      // Check for reopen activities in the last 24 hours
+      const userReopenQuery = query(
+        collection(db, "ticketReopens"),
+        where("userEmail", "==", userEmail),
+        where("reopenedAt", ">=", Timestamp.fromDate(oneDayAgo))
+      );
+
+      const snapshot = await getDocs(userReopenQuery);
+      return snapshot.docs.length < 5; // Max 5 reopens per day
+    } catch (error) {
+      console.error("Error checking reopen rate limit:", error);
+      return true; // Allow if check fails
+    }
+  };
+
+  const reopenTicket = async (ticketId, reason) => {
+    try {
+      const canReopen = await checkReopenRateLimit(user.email);
+      if (!canReopen) {
+        toast.error(
+          "Günlük bilet yeniden açma limitinize ulaştınız (5 açma). Lütfen yarın tekrar deneyin."
+        );
+        return false;
+      }
+
+      const { doc, updateDoc, addDoc, collection, serverTimestamp } =
+        await import("firebase/firestore");
+      const { db } = await import("../../firebase");
+
+      // Update ticket status
+      const ticketRef = doc(db, "tickets", ticketId);
+      await updateDoc(ticketRef, {
+        status: "open",
+        updatedAt: serverTimestamp(),
+        reopenedAt: serverTimestamp(),
+        reopenedBy: user.email,
+        reopenReason: sanitizeInput(reason),
+      });
+
+      // Log the reopen activity for rate limiting
+      await addDoc(collection(db, "ticketReopens"), {
+        ticketId,
+        userEmail: user.email,
+        reason: sanitizeInput(reason),
+        reopenedAt: serverTimestamp(),
+      });
+
+      // Add system response about reopening
+      const updatedTicket = tickets.find((t) => t.id === ticketId);
+      if (updatedTicket && updatedTicket.responses) {
+        updatedTicket.responses.push({
+          message: `Bilet kullanıcı tarafından yeniden açıldı.\nGerekçe: ${sanitizeInput(
+            reason
+          )}`,
+          createdAt: new Date().toISOString(),
+          isSystemMessage: true,
+        });
+      }
+
+      toast.success("Bilet başarıyla yeniden açıldı!");
+      fetchUserTickets(); // Refresh the tickets
+      return true;
+    } catch (error) {
+      console.error("Error reopening ticket:", error);
+      toast.error("Bilet yeniden açılırken bir hata oluştu");
+      return false;
+    }
+  };
+
+  const uploadFiles = async (files) => {
+    const attachments = [];
+    const { ref, uploadBytes, getDownloadURL } = await import(
+      "firebase/storage"
+    );
+    const { storage } = await import("../../firebase");
+
+    for (const file of files) {
+      const fileRef = ref(
+        storage,
+        `tickets/${user.uid}/${Date.now()}-${file.name}`
+      );
+      const snapshot = await uploadBytes(fileRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      attachments.push({
+        name: file.name,
+        url: downloadURL,
+        size: file.size,
+        type: file.type,
+        uploadedAt: new Date().toISOString(),
+      });
+    }
+
+    return attachments;
+  };
+
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "application/pdf",
+      "text/plain",
+    ];
+
+    const validFiles = files.filter((file) => {
+      if (file.size > maxSize) {
+        toast.error(`${file.name} çok büyük (max 5MB)`);
+        return false;
+      }
+      if (!allowedTypes.includes(file.type)) {
+        toast.error(`${file.name} desteklenmeyen dosya formatı`);
+        return false;
+      }
+      return true;
+    });
+
+    if (selectedFiles.length + validFiles.length > 3) {
+      toast.error("En fazla 3 dosya ekleyebilirsiniz");
+      return;
+    }
+
+    setSelectedFiles((prev) => [...prev, ...validFiles]);
+  };
+
+  const removeFile = (index) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleReopenClick = (ticketId) => {
+    setSelectedTicketId(ticketId);
+    setReopenReason("");
+    setShowReopenModal(true);
+  };
+
+  const handleReopenSubmit = async () => {
+    if (!reopenReason.trim()) {
+      toast.error("Lütfen bileti neden yeniden açmak istediğinizi belirtin.");
+      return;
+    }
+
+    setIsReopening(true);
+    const success = await reopenTicket(selectedTicketId, reopenReason);
+
+    if (success) {
+      setShowReopenModal(false);
+      setSelectedTicketId(null);
+      setReopenReason("");
+    }
+    setIsReopening(false);
+  };
+
+  const closeReopenModal = () => {
+    setShowReopenModal(false);
+    setSelectedTicketId(null);
+    setReopenReason("");
+  };
+
+  const handleReplyClick = (ticket) => {
+    setSelectedTicketForReply(ticket);
+    setReplyMessage("");
+    setShowReplyModal(true);
+  };
+
+  const handleReplySubmit = async () => {
+    if (!replyMessage.trim()) {
+      toast.error("Lütfen bir mesaj yazın.");
+      return;
+    }
+
+    setIsSubmittingReply(true);
+    try {
+      const { doc, updateDoc, serverTimestamp } = await import(
+        "firebase/firestore"
+      );
+      const { db } = await import("../../firebase");
+
+      const newResponse = {
+        message: sanitizeInput(replyMessage),
+        userEmail: user.email,
+        userName: user.displayName || user.email,
+        createdAt: new Date().toISOString(),
+        isUserResponse: true,
+      };
+
+      const ticketRef = doc(db, "tickets", selectedTicketForReply.id);
+      await updateDoc(ticketRef, {
+        responses: [...(selectedTicketForReply.responses || []), newResponse],
+        updatedAt: serverTimestamp(),
+      });
+
+      toast.success("Yanıtınız başarıyla gönderildi!");
+      setShowReplyModal(false);
+      setSelectedTicketForReply(null);
+      setReplyMessage("");
+      fetchUserTickets(); // Refresh tickets
+    } catch (error) {
+      console.error("Error sending reply:", error);
+      toast.error("Yanıt gönderilirken bir hata oluştu");
+    } finally {
+      setIsSubmittingReply(false);
+    }
+  };
+
+  const closeReplyModal = () => {
+    setShowReplyModal(false);
+    setSelectedTicketForReply(null);
+    setReplyMessage("");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      const { collection, addDoc, serverTimestamp } = await import("firebase/firestore");
+      // Rate limiting check
+      const canSubmit = await checkRateLimit(user.email);
+      if (!canSubmit) {
+        toast.error(
+          "Günlük bilet limitinize ulaştınız (5 bilet). Lütfen yarın tekrar deneyin."
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      const { collection, addDoc, serverTimestamp } = await import(
+        "firebase/firestore"
+      );
       const { db } = await import("../../firebase");
-      
+
+      // Input sanitization
+      const sanitizedData = {
+        subject: sanitizeInput(formData.subject),
+        message: sanitizeInput(formData.message),
+        category: formData.category,
+      };
+
+      // Validate sanitized inputs
+      if (!sanitizedData.subject || !sanitizedData.message) {
+        toast.error("Geçersiz içerik tespit edildi. Lütfen tekrar deneyin.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Upload files if any
+      let attachments = [];
+      if (selectedFiles.length > 0) {
+        setUploadingFiles(true);
+        attachments = await uploadFiles(selectedFiles);
+      }
+
+      const ticketNumber = generateTicketNumber();
+
       const ticketData = {
-        ...formData,
+        ...sanitizedData,
+        ticketNumber,
         userEmail: user.email,
         userName: user.displayName || user.email,
         status: "open",
-        priority: "medium",
+        assignedTo: null,
+        attachments,
         responses: [],
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       await addDoc(collection(db, "tickets"), ticketData);
-      
-      toast.success("Biletiniz başarıyla gönderildi!");
+
+      toast.success(
+        `Biletiniz başarıyla gönderildi! Bilet No: ${ticketNumber}`
+      );
       setFormData({ subject: "", message: "", category: "complaint" });
+      setSelectedFiles([]);
       setShowForm(false);
       fetchUserTickets();
     } catch (error) {
@@ -91,6 +439,7 @@ export default function TicketsPage() {
       toast.error("Bilet gönderilirken bir hata oluştu");
     } finally {
       setIsSubmitting(false);
+      setUploadingFiles(false);
     }
   };
 
@@ -146,187 +495,956 @@ export default function TicketsPage() {
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#000000] flex items-center justify-center">
-        <p className="text-lg text-red-400">Bu sayfaya erişim için giriş yapmanız gerekiyor</p>
+        <p className="text-lg text-red-400">
+          Bu sayfaya erişim için giriş yapmanız gerekiyor
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col min-h-screen font-sans bg-gradient-to-b from-[#1a1a2e] to-[#000000] text-white">
-      {/* Header */}
-      <div className="text-center mb-8 sm:mb-12 pt-8 sm:pt-12">
-        <div className="inline-block">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#DB4437] via-[#F4B400] to-[#0F9D58] animate-gradient-x mb-2">
+    <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#000000] text-white">
+      <div className="container mx-auto px-4 py-12">
+        {/* Header Section */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#DB4437] via-[#F4B400] to-[#0F9D58] mb-6">
             Şikayetler & Öneriler
           </h1>
-        </div>
-        <p className="text-gray-300 mt-4 text-lg">Görüşlerinizi bizimle paylaşın</p>
-      </div>
+          <p className="text-xl sm:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
+            Görüşlerinizi bizimle paylaşın ve deneyiminizi geliştirmemize
+            yardımcı olun
+          </p>
 
-      {/* Create Ticket Button */}
-      <div className="flex justify-center mb-8 px-4">
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
-        >
-          {showForm ? "Formu Gizle" : "Yeni Bilet Oluştur"}
-        </button>
-      </div>
-
-      {/* Ticket Form */}
-      {showForm && (
-        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg p-6 sm:p-8 mb-8 max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold text-white mb-6">Yeni Bilet Oluştur</h2>
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Kategori
-              </label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white"
-                required
-              >
-                <option value="complaint">Şikayet</option>
-                <option value="suggestion">Öneri</option>
-                <option value="technical">Teknik Destek</option>
-                <option value="other">Diğer</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Konu
-              </label>
-              <input
-                type="text"
-                value={formData.subject}
-                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white placeholder-gray-400"
-                placeholder="Bilet konusunu girin..."
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Mesaj
-              </label>
-              <textarea
-                value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                rows={6}
-                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white placeholder-gray-400 resize-none"
-                placeholder="Detaylı açıklama yazın..."
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          {/* Action Button */}
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 border border-blue-500/30"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              {isSubmitting ? "Gönderiliyor..." : "Bilet Gönder"}
-            </button>
-          </form>
+              {showForm ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              )}
+            </svg>
+            {showForm ? "Formu Gizle" : "Yeni Bilet Oluştur"}
+          </button>
         </div>
-      )}
 
-      {/* Tickets List */}
-      <div className="max-w-4xl mx-auto px-4">
-        <h2 className="text-2xl font-bold text-white mb-6 text-center">Biletleriniz</h2>
-        
-        {tickets.length === 0 ? (
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg p-8 text-center">
-            <p className="text-gray-300 text-lg">Henüz hiç bilet oluşturmadınız.</p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {tickets.map((ticket) => (
-              <div
-                key={ticket.id}
-                className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg p-6"
-              >
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-white mb-2">
-                      {ticket.subject}
-                    </h3>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(ticket.status)}`}>
-                        {getStatusText(ticket.status)}
-                      </span>
-                      <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-700 text-gray-300">
-                        {getCategoryText(ticket.category)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-400">
-                      {new Date(ticket.createdAt).toLocaleDateString('tr-TR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <p className="text-gray-300">{ticket.message}</p>
-                </div>
-
-                {/* Responses */}
-                {ticket.responses && ticket.responses.length > 0 && (
-                  <div className="border-t border-gray-700 pt-4">
-                    <h4 className="font-semibold text-white mb-3">Yanıtlar:</h4>
-                    <div className="space-y-3">
-                      {ticket.responses.map((response, index) => (
-                        <div
-                          key={index}
-                          className="bg-blue-900/30 rounded-lg p-4 border-l-4 border-blue-500"
-                        >
-                          <div className="flex justify-between items-start mb-2">
-                            <span className="font-medium text-blue-300">
-                              Admin
-                            </span>
-                            <span className="text-sm text-gray-400">
-                              {new Date(response.createdAt).toLocaleDateString('tr-TR', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </span>
-                          </div>
-                          <p className="text-gray-300">{response.message}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+        {/* Ticket Form */}
+        {showForm && (
+          <div className="bg-gray-800/30 backdrop-blur-md border border-gray-700/50 rounded-2xl p-8 mb-16 max-w-3xl mx-auto shadow-2xl">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                  />
+                </svg>
               </div>
-            ))}
+              <h2 className="text-3xl font-bold text-white">
+                Yeni Bilet Oluştur
+              </h2>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-200 mb-3 flex items-center gap-2">
+                    <svg
+                      className="w-4 h-4 text-blue-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a2 2 0 012-2z"
+                      />
+                    </svg>
+                    Kategori
+                  </label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) =>
+                      setFormData({ ...formData, category: e.target.value })
+                    }
+                    className="w-full px-4 py-4 bg-gray-700/30 border border-gray-600/50 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-white transition-all duration-200"
+                    required
+                  >
+                    <option value="complaint">🚨 Şikayet</option>
+                    <option value="suggestion">💡 Öneri</option>
+                    <option value="technical">🔧 Teknik Destek</option>
+                    <option value="other">📝 Diğer</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-200 mb-3 flex items-center gap-2">
+                    <svg
+                      className="w-4 h-4 text-blue-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                      />
+                    </svg>
+                    Konu
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.subject}
+                    onChange={(e) =>
+                      setFormData({ ...formData, subject: e.target.value })
+                    }
+                    className="w-full px-4 py-4 bg-gray-700/30 border border-gray-600/50 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-white placeholder-gray-400 transition-all duration-200"
+                    placeholder="Bilet konusunu girin..."
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-200 mb-3 flex items-center gap-2">
+                  <svg
+                    className="w-4 h-4 text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  Mesaj
+                </label>
+                <textarea
+                  value={formData.message}
+                  onChange={(e) =>
+                    setFormData({ ...formData, message: e.target.value })
+                  }
+                  rows={6}
+                  className="w-full px-4 py-4 bg-gray-700/30 border border-gray-600/50 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-white placeholder-gray-400 resize-none transition-all duration-200"
+                  placeholder="Detaylı açıklama yazın..."
+                  required
+                />
+              </div>
+
+              {/* File Upload */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-200 mb-3 flex items-center gap-2">
+                  <svg
+                    className="w-4 h-4 text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                    />
+                  </svg>
+                  Dosya Ekle (Opsiyonel)
+                </label>
+                <div className="border-2 border-dashed border-gray-600/50 rounded-xl p-6 bg-gray-700/20 hover:bg-gray-700/30 transition-all duration-200">
+                  <input
+                    type="file"
+                    multiple
+                    accept=".jpg,.jpeg,.png,.gif,.pdf,.txt"
+                    onChange={handleFileSelect}
+                    className="w-full px-4 py-3 bg-gray-700/30 border border-gray-600/50 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-blue-600 file:to-blue-700 file:text-white hover:file:from-blue-700 hover:file:to-blue-800 transition-all duration-200"
+                  />
+                  <div className="flex items-center justify-center mt-4 text-gray-400">
+                    <svg
+                      className="w-8 h-8 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                      />
+                    </svg>
+                    <span className="text-sm">
+                      Max 3 dosya, 5MB'a kadar. JPG, PNG, GIF, PDF, TXT
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Selected Files */}
+              {selectedFiles.length > 0 && (
+                <div className="bg-blue-900/10 rounded-xl p-6 border border-blue-500/20">
+                  <label className="block text-sm font-semibold text-blue-200 mb-4 flex items-center gap-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    Seçilen Dosyalar ({selectedFiles.length}/3)
+                  </label>
+                  <div className="space-y-3">
+                    {selectedFiles.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between bg-gray-800/50 rounded-xl p-4 border border-gray-700/30"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
+                            <svg
+                              className="w-5 h-5 text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                              />
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-white">
+                              {file.name}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {(file.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="w-8 h-8 flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all duration-200"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSubmitting || uploadingFiles}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-4 rounded-xl font-semibold text-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:transform-none flex items-center justify-center gap-3"
+              >
+                {uploadingFiles ? (
+                  <>
+                    <svg
+                      className="w-5 h-5 animate-spin"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
+                    </svg>
+                    Dosyalar Yükleniyor...
+                  </>
+                ) : isSubmitting ? (
+                  <>
+                    <svg
+                      className="w-5 h-5 animate-spin"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
+                    </svg>
+                    Gönderiliyor...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                      />
+                    </svg>
+                    Bilet Gönder
+                  </>
+                )}
+              </button>
+            </form>
           </div>
         )}
-      </div>
 
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-      />
+        {/* Tickets List */}
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white mb-4 flex items-center justify-center gap-3">
+              <svg
+                className="w-8 h-8 text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+              Biletleriniz
+            </h2>
+            {tickets.length > 0 && (
+              <p className="text-gray-400">
+                Toplam {tickets.length} bilet bulundu
+              </p>
+            )}
+          </div>
+
+          {tickets.length === 0 ? (
+            <div className="bg-gray-800/30 backdrop-blur-md border border-gray-700/50 rounded-2xl p-12 text-center">
+              <svg
+                className="w-16 h-16 text-gray-500 mx-auto mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+              <h3 className="text-xl font-semibold text-gray-300 mb-2">
+                Henüz bilet bulunmuyor
+              </h3>
+              <p className="text-gray-400 mb-6">
+                İlk biletinizi oluşturmak için yukarıdaki butonu kullanın.
+              </p>
+              <button
+                onClick={() => setShowForm(true)}
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+                Yeni Bilet Oluştur
+              </button>
+            </div>
+          ) : (
+            <div className="grid gap-6">
+              {tickets.map((ticket) => (
+                <div
+                  key={ticket.id}
+                  className="bg-gray-800/30 backdrop-blur-md border border-gray-700/50 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-gray-600/50 cursor-pointer"
+                  onClick={() => handleReplyClick(ticket)}
+                >
+                  {/* Ticket Header */}
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center flex-shrink-0">
+                          <svg
+                            className="w-6 h-6 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                            />
+                          </svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-3 mb-2">
+                            <h3 className="text-xl font-bold text-white truncate">
+                              {ticket.subject}
+                            </h3>
+                            {ticket.ticketNumber && (
+                              <span className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-mono rounded-lg border border-blue-500/30">
+                                #{ticket.ticketNumber}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-3 mb-3">
+                            <span
+                              className={`px-4 py-2 rounded-xl text-sm font-semibold ${getStatusColor(
+                                ticket.status
+                              )}`}
+                            >
+                              {getStatusText(ticket.status)}
+                            </span>
+                            <span className="px-4 py-2 rounded-xl text-sm font-semibold bg-gray-700/50 text-gray-200 border border-gray-600/30">
+                              {getCategoryText(ticket.category)}
+                            </span>
+                            {ticket.assignedTo && (
+                              <span className="px-4 py-2 rounded-xl text-sm font-semibold bg-purple-900/50 text-purple-200 border border-purple-600/30">
+                                👤 Admin Atandı
+                              </span>
+                            )}
+                          </div>
+                          {ticket.status === "closed" && (
+                            <div className="flex items-center gap-3 mt-3">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleReopenClick(ticket.id);
+                                }}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-semibold text-sm transition-all duration-200 shadow-md hover:shadow-lg"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                  />
+                                </svg>
+                                Yeniden Aç
+                              </button>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-4 text-sm text-gray-400">
+                            <div className="flex items-center gap-1">
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6v10a2 2 0 01-2 2H10a2 2 0 01-2-2V7z"
+                                />
+                              </svg>
+                              {new Date(ticket.createdAt).toLocaleDateString(
+                                "tr-TR",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </div>
+                            {ticket.responses?.length > 0 && (
+                              <div className="flex items-center gap-1 text-green-400">
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                                  />
+                                </svg>
+                                {ticket.responses.length} yanıt
+                              </div>
+                            )}
+                            {ticket.attachments?.length > 0 && (
+                              <div className="flex items-center gap-1 text-blue-400">
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                                  />
+                                </svg>
+                                {ticket.attachments.length} ek
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Ticket Content */}
+                  <div className="bg-gray-700/20 rounded-xl p-6 mb-6">
+                    <h4 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      Mesaj İçeriği
+                    </h4>
+                    <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">
+                      {ticket.message}
+                    </p>
+                  </div>
+
+                  {/* Attachments */}
+                  {ticket.attachments && ticket.attachments.length > 0 && (
+                    <div className="bg-blue-900/10 rounded-xl p-6 mb-6 border border-blue-500/20">
+                      <h4 className="text-sm font-semibold text-blue-200 mb-4 flex items-center gap-2">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                          />
+                        </svg>
+                        Ekli Dosyalar ({ticket.attachments.length})
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {ticket.attachments.map((attachment, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between bg-gray-800/50 rounded-xl p-4 border border-gray-700/30"
+                          >
+                            <div className="flex items-center space-x-4 flex-1 min-w-0">
+                              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center flex-shrink-0">
+                                {attachment.type.startsWith("image/") ? (
+                                  <svg
+                                    className="w-5 h-5 text-white"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    />
+                                  </svg>
+                                ) : (
+                                  <svg
+                                    className="w-5 h-5 text-white"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                    />
+                                  </svg>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-white truncate">
+                                  {attachment.name}
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                  {(attachment.size / 1024 / 1024).toFixed(2)}{" "}
+                                  MB
+                                </p>
+                              </div>
+                            </div>
+                            <a
+                              href={attachment.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="ml-3 inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors duration-200"
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                />
+                              </svg>
+                              İndir
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Conversation moved into modal */}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Reopen Modal */}
+        {showReopenModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-2xl p-8 max-w-md w-full border border-gray-700">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center">
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-white">
+                  Bileti Yeniden Aç
+                </h3>
+              </div>
+
+              <p className="text-gray-300 mb-6">
+                Bu bileti neden yeniden açmak istiyorsunuz? Gerekçenizi
+                belirtin:
+              </p>
+
+              <textarea
+                value={reopenReason}
+                onChange={(e) => setReopenReason(e.target.value)}
+                placeholder="Örn: Sorun henüz çözülmedi, ek bilgi paylaşmak istiyorum..."
+                rows={4}
+                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 text-white placeholder-gray-400 resize-none mb-6"
+                required
+              />
+
+              <div className="flex gap-3">
+                <button
+                  onClick={closeReopenModal}
+                  disabled={isReopening}
+                  className="flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-xl font-semibold transition-all duration-200 disabled:opacity-50"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={handleReopenSubmit}
+                  disabled={isReopening || !reopenReason.trim()}
+                  className="flex-1 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isReopening ? (
+                    <>
+                      <svg
+                        className="w-4 h-4 animate-spin"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
+                      </svg>
+                      Açılıyor...
+                    </>
+                  ) : (
+                    "Yeniden Aç"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Chat Modal */}
+        {showReplyModal && selectedTicketForReply && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-2xl">
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-gray-700 flex items-start justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-white">
+                    Bilet #
+                    {selectedTicketForReply.ticketNumber ||
+                      selectedTicketForReply.id}
+                  </h2>
+                  <p className="text-sm text-gray-400">
+                    {selectedTicketForReply.subject}
+                  </p>
+                </div>
+                <button
+                  onClick={closeReplyModal}
+                  className="text-gray-400 hover:text-gray-200"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Conversation */}
+              <div className="flex flex-col h-[60vh]">
+                <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-900">
+                  {/* Original ticket message (user) */}
+                  <div className="flex items-start gap-3 justify-end">
+                    <div className="w-8 h-8 rounded-lg bg-green-700 flex items-center justify-center text-white text-xs font-bold">
+                      S
+                    </div>
+                    <div className="max-w-xl bg-gray-800/70 border border-gray-700 rounded-2xl px-4 py-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-semibold text-green-300">
+                          Siz
+                        </span>
+                        {selectedTicketForReply.createdAt && (
+                          <span className="text-[10px] text-gray-400">
+                            {new Date(
+                              selectedTicketForReply.createdAt
+                            ).toLocaleDateString("tr-TR", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-200 whitespace-pre-wrap">
+                        {selectedTicketForReply.message}
+                      </p>
+                    </div>
+                  </div>
+                  {/* Replies */}
+                  {selectedTicketForReply.responses?.map((response, idx) => {
+                    const isSystem = response.isSystemMessage;
+                    const isUserR = response.isUserResponse === true;
+                    const isAdminR = !isSystem && !isUserR;
+                    // On user panel: user's messages should align right, admin left
+                    const alignRight = isUserR && !isSystem;
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex items-start gap-3 ${
+                          alignRight ? "justify-end" : "justify-start"
+                        }`}
+                      >
+                        {!alignRight && (
+                          <div
+                            className={`w-8 h-8 rounded-lg ${
+                              isAdminR ? "bg-blue-700" : "bg-gray-600"
+                            } flex items-center justify-center text-white text-xs font-bold`}
+                          >
+                            {isAdminR ? "A" : "S"}
+                          </div>
+                        )}
+                        <div
+                          className={`max-w-xl ${
+                            isSystem
+                              ? "bg-gray-800/70 border-gray-600"
+                              : alignRight
+                              ? "bg-green-900/30 border-green-700"
+                              : "bg-blue-900/40 border-blue-700"
+                          } border rounded-2xl px-4 py-3`}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <span
+                              className={`text-xs font-semibold ${
+                                isSystem
+                                  ? "text-gray-300"
+                                  : alignRight
+                                  ? "text-green-300"
+                                  : "text-blue-300"
+                              }`}
+                            >
+                              {isSystem
+                                ? "Sistem"
+                                : alignRight
+                                ? "Siz"
+                                : "Admin"}
+                            </span>
+                            <span className="text-[10px] text-gray-400">
+                              {new Date(response.createdAt).toLocaleDateString(
+                                "tr-TR",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-200 whitespace-pre-wrap">
+                            {response.message}
+                          </p>
+                        </div>
+                        {alignRight && (
+                          <div className="w-8 h-8 rounded-lg bg-green-700 flex items-center justify-center text-white text-xs font-bold">
+                            S
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Composer */}
+                <div className="p-4 border-t border-gray-700 bg-gray-900">
+                  <div className="flex gap-3">
+                    <textarea
+                      value={replyMessage}
+                      onChange={(e) => setReplyMessage(e.target.value)}
+                      rows={2}
+                      className="flex-1 px-4 py-3 bg-gray-800/70 border border-gray-700 rounded-xl focus:outline-none focus:border-green-500 text-white placeholder-gray-400 resize-none"
+                      placeholder="Yanıt yazın..."
+                      required
+                    />
+                    <button
+                      onClick={handleReplySubmit}
+                      disabled={isSubmittingReply || !replyMessage.trim()}
+                      className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmittingReply ? "Gönderiliyor..." : "Gönder"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="dark"
+          className="mt-16"
+        />
+      </div>
     </div>
   );
 }
