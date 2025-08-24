@@ -8,6 +8,7 @@ import {
   Calendar,
   User,
   MoreHorizontal,
+  Trash2,
 } from "lucide-react";
 import { socialUtils } from "../utils/socialUtils";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -166,6 +167,18 @@ export default function PostModal({
       onClose();
     } else {
       toast.error("Post silinirken hata oluştu!");
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!confirm("Bu yorumu silmek istediğinizden emin misiniz?")) return;
+
+    const result = await socialUtils.deleteComment(commentId, post.id);
+    if (result.success) {
+      setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+      toast.success("Yorum başarıyla silindi!");
+    } else {
+      toast.error("Yorum silinirken hata oluştu!");
     }
   };
 
@@ -620,8 +633,17 @@ export default function PostModal({
                               {comment.text}
                             </span>
                           </div>
-                          <div className="text-gray-500 text-xs mt-1">
+                          <div className="text-gray-500 text-xs mt-1 flex items-center justify-between">
                             <span>{formatDate(comment.timestamp)}</span>
+                            {showAdminActions && (
+                              <button
+                                onClick={() => handleDeleteComment(comment.id)}
+                                className="text-red-500 hover:text-red-400 ml-2"
+                                title="Yorumu Sil"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
