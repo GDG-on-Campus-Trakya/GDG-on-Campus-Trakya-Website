@@ -22,6 +22,7 @@ import "react-toastify/dist/ReactToastify.css";
 import QRCode from "qrcode";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import {
   AlertDialog,
@@ -33,6 +34,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import DeleteAccountModal from "../../components/DeleteAccountModal";
+import { Trash2 } from "lucide-react";
 
 const formatDate = (date) => {
   const d = new Date(date);
@@ -52,6 +55,8 @@ const Profile = () => {
   const [userWantsEmails, setUserWantsEmails] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [registrationToDelete, setRegistrationToDelete] = useState(null);
+  const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] =
+    useState(false);
 
   const router = useRouter();
   const profileRef = useRef(null);
@@ -368,13 +373,123 @@ const Profile = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
-          <EventList
-            registrations={registrations}
-            events={events}
-            removeRegistration={handleDeleteClick}
-            qrCodes={qrCodes}
-            downloadQRCode={downloadQRCode}
-          />
+          {/* Debug info */}
+          {/*
+          <div className="mb-4 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg text-sm">
+            <p>Debug: Registrations count: {registrations.length}</p>
+            <p>Debug: Events count: {events.length}</p>
+            <p>Debug: Loading: {loadingData ? "Yes" : "No"}</p>
+
+            {registrations.length > 0 && (
+              <div className="mt-4 p-3 bg-blue-800/30 rounded border border-blue-600/30">
+                <p className="font-semibold text-blue-200 mb-2">
+                  Registrations Data:
+                </p>
+                {registrations.map((reg, index) => (
+                  <div
+                    key={reg.id}
+                    className="mb-2 p-2 bg-blue-900/30 rounded text-xs"
+                  >
+                    <p>
+                      <strong>Registration {index + 1}:</strong>
+                    </p>
+                    <p>ID: {reg.id}</p>
+                    <p>Event ID: {reg.eventId}</p>
+                    <p>User ID: {reg.userId}</p>
+                    <p>QR Code ID: {reg.qrCodeId || "None"}</p>
+                    <p>
+                      Signed Up At:{" "}
+                      {reg.signedUpAt
+                        ? new Date(
+                            reg.signedUpAt.seconds * 1000
+                          ).toLocaleString("tr-TR")
+                        : "None"}
+                    </p>
+                    <p>All Data: {JSON.stringify(reg, null, 2)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {events.length > 0 && (
+              <div className="mt-4 p-3 bg-green-800/30 rounded border border-green-600/30">
+                <p className="font-semibold text-green-200 mb-2">
+                  Events Data:
+                </p>
+                {events.map((event, index) => (
+                  <div
+                    key={event.id}
+                    className="mb-2 p-2 bg-green-900/30 rounded text-xs"
+                  >
+                    <p>
+                      <strong>Event {index + 1}:</strong>
+                    </p>
+                    <p>ID: {event.id}</p>
+                    <p>Name: {event.name}</p>
+                    <p>Date: {event.date}</p>
+                    <p>Time: {event.time}</p>
+                    <p>Location: {event.location}</p>
+                    <p>Category: {event.category}</p>
+                    <p>All Data: {JSON.stringify(event, null, 2)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          */}
+          {registrations.length === 0 ? (
+            <div className="text-center py-12 bg-gray-800 rounded-lg border border-gray-700">
+              <div className="text-6xl mb-4">📅</div>
+              <h3 className="text-xl font-semibold text-gray-300 mb-2">
+                Henüz Kayıtlı Etkinlik Yok
+              </h3>
+              <p className="text-gray-400">
+                Yakın zamanda bir etkinliğe başvurmadınız
+              </p>
+            </div>
+          ) : (
+            <EventList
+              registrations={registrations}
+              events={events}
+              removeRegistration={handleDeleteClick}
+              qrCodes={qrCodes}
+              downloadQRCode={downloadQRCode}
+            />
+          )}
+        </motion.div>
+      </motion.div>
+
+      {/* Account Settings */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.6 }}
+        className="mt-10"
+      >
+        <h2 className="text-2xl border-b-2 border-red-400 pb-2 mb-5 inline-block">
+          Hesap Ayarları
+        </h2>
+        <motion.div
+          whileHover={{ scale: 1.01 }}
+          className="flex flex-col space-y-4 rounded-lg border border-red-500 p-4 bg-red-950/20"
+        >
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <h3 className="text-lg font-medium text-red-300">Hesabı Sil</h3>
+              <p className="text-sm text-gray-400">
+                Hesabınızı ve tüm verilerinizi kalıcı olarak silin. Bu işlem
+                geri alınamaz.
+              </p>
+            </div>
+            <Button
+              variant="destructive"
+              onClick={() => setIsDeleteAccountModalOpen(true)}
+              className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Hesabı Sil
+            </Button>
+          </div>
         </motion.div>
       </motion.div>
 
@@ -405,6 +520,12 @@ const Profile = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Delete Account Modal */}
+      <DeleteAccountModal
+        isOpen={isDeleteAccountModalOpen}
+        onClose={() => setIsDeleteAccountModalOpen(false)}
+      />
 
       <ToastContainer
         position="top-right"
