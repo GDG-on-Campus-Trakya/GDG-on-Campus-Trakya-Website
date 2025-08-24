@@ -194,6 +194,13 @@ export default function AdminEventsPage() {
 
   // Delete event
   const handleDeleteEvent = async (firestoreId) => {
+    if (
+      !confirm(
+        "Bu etkinliği silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+      )
+    )
+      return;
+
     try {
       await deleteDoc(doc(db, "events", firestoreId));
       toast.success("Etkinlik başarıyla silindi!");

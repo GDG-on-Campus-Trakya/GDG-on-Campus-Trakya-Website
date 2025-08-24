@@ -1,16 +1,31 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { X, Heart, MessageCircle, Calendar, User, MoreHorizontal } from "lucide-react";
+import {
+  X,
+  Heart,
+  MessageCircle,
+  Calendar,
+  User,
+  MoreHorizontal,
+} from "lucide-react";
 import { socialUtils } from "../utils/socialUtils";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 
-export default function PostModal({ post, isOpen, onClose, onDelete, showAdminActions = false }) {
+export default function PostModal({
+  post,
+  isOpen,
+  onClose,
+  onDelete,
+  showAdminActions = false,
+}) {
   const [user] = useAuthState(auth);
-  const [isLiked, setIsLiked] = useState(post?.likes?.includes(user?.uid) || false);
+  const [isLiked, setIsLiked] = useState(
+    post?.likes?.includes(user?.uid) || false
+  );
   const [likeCount, setLikeCount] = useState(post?.likeCount || 0);
   const [isLiking, setIsLiking] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -47,10 +62,10 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
 
   const loadComments = async () => {
     if (!post?.id) return;
-    
+
     setIsLoadingComments(true);
     const result = await socialUtils.getComments(post.id);
-    
+
     if (result.success) {
       setComments(result.comments);
     } else {
@@ -87,7 +102,7 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
 
     if (result.success) {
       setIsLiked(result.action === "liked");
-      setLikeCount(prev => result.action === "liked" ? prev + 1 : prev - 1);
+      setLikeCount((prev) => (result.action === "liked" ? prev + 1 : prev - 1));
     } else {
       toast.error("Beğeni işlemi başarısız!");
     }
@@ -110,9 +125,9 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
 
     if (result.success) {
       const newCommentData = { ...result.comment, timestamp: new Date() };
-      setComments(prev => [...prev, newCommentData]);
+      setComments((prev) => [...prev, newCommentData]);
       setNewComment("");
-      // Don't show toast in drawer to keep it clean like Instagram
+      toast.success("Yorum eklendi!");
     } else {
       toast.error("Yorum eklenirken hata oluştu!");
     }
@@ -172,7 +187,8 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
         <div className="flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-              {post.userPhoto || (post.userId === user?.uid && user?.photoURL) ? (
+              {post.userPhoto ||
+              (post.userId === user?.uid && user?.photoURL) ? (
                 <Image
                   src={post.userPhoto || user?.photoURL}
                   alt={post.userName}
@@ -196,7 +212,7 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
               )}
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {/* Admin/User Menu */}
             {(showAdminActions || post.userId === user?.uid) && (
@@ -207,7 +223,7 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
                 >
                   <MoreHorizontal className="w-5 h-5" />
                 </button>
-                
+
                 {showMenu && (
                   <div className="absolute right-0 top-8 bg-gray-700 rounded-lg shadow-lg border border-gray-600 py-1 min-w-[120px] z-10">
                     {showAdminActions && (
@@ -233,10 +249,7 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
               </div>
             )}
 
-            <button
-              onClick={onClose}
-              className="text-white p-1"
-            >
+            <button onClick={onClose} className="text-white p-1">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -263,17 +276,13 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
                 onClick={handleLike}
                 disabled={!user || isLiking}
                 className={`transition-colors ${
-                  isLiked 
-                    ? "text-red-500" 
-                    : "text-white hover:text-red-500"
+                  isLiked ? "text-red-500" : "text-white hover:text-red-500"
                 } ${!user ? "cursor-not-allowed opacity-50" : ""}`}
               >
-                <Heart 
-                  className={`w-7 h-7 ${isLiked ? "fill-current" : ""}`} 
-                />
+                <Heart className={`w-7 h-7 ${isLiked ? "fill-current" : ""}`} />
               </button>
-              
-              <button 
+
+              <button
                 onClick={() => setShowCommentsDrawer(true)}
                 className="text-white"
               >
@@ -302,7 +311,7 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
 
           {/* Comments Preview - Mobile Instagram Style */}
           {comments.length > 0 && (
-            <button 
+            <button
               onClick={() => setShowCommentsDrawer(true)}
               className="text-gray-400 text-sm mb-3 text-left"
             >
@@ -311,7 +320,10 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
           )}
 
           {/* Comment Input */}
-          <form onSubmit={handleAddComment} className="flex items-center space-x-3 border-t border-gray-700 pt-3">
+          <form
+            onSubmit={handleAddComment}
+            className="flex items-center space-x-3 border-t border-gray-700 pt-3"
+          >
             <input
               type="text"
               value={newComment}
@@ -349,173 +361,180 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
 
           {/* Details Section - Desktop */}
           <div className="w-96 flex flex-col bg-gray-800/50 backdrop-blur-sm">
-          {/* Header */}
-          <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center overflow-hidden">
-                {(() => {
-                  const profilePhoto = userProfileData?.photoURL || post.userPhoto;
-                  if (profilePhoto && !profilePhoto.includes('googleusercontent.com')) {
-                    return (
-                      <Image
-                        src={profilePhoto}
-                        alt={userProfileData?.name || post.userName}
-                        width={40}
-                        height={40}
-                        className="w-full h-full object-cover"
-                      />
-                    );
-                  } else {
-                    return <User className="w-6 h-6 text-white" />;
-                  }
-                })()}
+            {/* Header */}
+            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center overflow-hidden">
+                  {(() => {
+                    const profilePhoto =
+                      userProfileData?.photoURL || post.userPhoto;
+                    if (
+                      profilePhoto &&
+                      !profilePhoto.includes("googleusercontent.com")
+                    ) {
+                      return (
+                        <Image
+                          src={profilePhoto}
+                          alt={userProfileData?.name || post.userName}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                        />
+                      );
+                    } else {
+                      return <User className="w-6 h-6 text-white" />;
+                    }
+                  })()}
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-sm">
+                    {post.userName || post.userEmail}
+                  </h3>
+                  {post.eventName && (
+                    <div className="flex items-center space-x-1 text-blue-400 text-xs">
+                      <Calendar className="w-3 h-3" />
+                      <span>{post.eventName}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div>
-                <h3 className="text-white font-semibold text-sm">
-                  {post.userName || post.userEmail}
-                </h3>
-                {post.eventName && (
-                  <div className="flex items-center space-x-1 text-blue-400 text-xs">
-                    <Calendar className="w-3 h-3" />
-                    <span>{post.eventName}</span>
+
+              <div className="flex items-center space-x-2">
+                {/* Admin/User Menu */}
+                {(showAdminActions || post.userId === user?.uid) && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowMenu(!showMenu)}
+                      className="text-gray-400 hover:text-white p-1"
+                    >
+                      <MoreHorizontal className="w-5 h-5" />
+                    </button>
+
+                    {showMenu && (
+                      <div className="absolute right-0 top-8 bg-gray-700 rounded-lg shadow-lg border border-gray-600 py-1 min-w-[120px] z-10">
+                        {showAdminActions && (
+                          <button
+                            key="desktop-hide-button"
+                            onClick={handleHide}
+                            className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-600"
+                          >
+                            {post.isHidden ? "Göster" : "Gizle"}
+                          </button>
+                        )}
+                        {(showAdminActions || post.userId === user?.uid) && (
+                          <button
+                            key="desktop-delete-button"
+                            onClick={handleDelete}
+                            className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-gray-600"
+                          >
+                            Sil
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <button
+                  onClick={onClose}
+                  className="text-gray-400 hover:text-white p-1"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 p-4 overflow-y-auto">
+              {/* Description */}
+              {post.description && (
+                <div className="mb-4 pb-3 border-b border-gray-700">
+                  <div className="text-[#d1d1e0] text-sm leading-relaxed">
+                    <span className="font-semibold text-white">
+                      {post.userName || post.userEmail}
+                    </span>{" "}
+                    {post.description}
+                  </div>
+                  <div className="text-gray-500 text-xs mt-2">
+                    {formatDate(post.timestamp)}
+                  </div>
+                </div>
+              )}
+
+              {/* Comments Preview - Desktop */}
+              <div className="flex-1 py-4">
+                {comments.length > 0 ? (
+                  <button
+                    onClick={() => setShowCommentsDrawer(true)}
+                    className="text-gray-400 hover:text-white text-sm transition-colors"
+                  >
+                    {comments.length} yorumu gör
+                  </button>
+                ) : (
+                  <div className="text-center text-gray-400 text-sm py-8">
+                    Henüz yorum yok. İlk yorumu sen yap!
+                  </div>
+                )}
+              </div>
+
+              {/* Post Info */}
+              <div className="mt-4 pt-3 border-t border-gray-700 space-y-2 text-xs text-gray-400">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>Etkinlik: {post.eventName}</span>
+                </div>
+
+                {post.isAdminPost && (
+                  <div className="bg-green-600 px-2 py-1 rounded-full inline-block">
+                    <span className="text-white text-xs font-medium">
+                      Admin
+                    </span>
+                  </div>
+                )}
+
+                {post.isHidden && (
+                  <div className="bg-yellow-600 px-2 py-1 rounded-full inline-block">
+                    <span className="text-white text-xs font-medium">
+                      Gizli
+                    </span>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              {/* Admin/User Menu */}
-              {(showAdminActions || post.userId === user?.uid) && (
-                <div className="relative">
+            {/* Engagement Bar */}
+            <div className="p-4 border-t border-gray-700">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-4">
                   <button
-                    onClick={() => setShowMenu(!showMenu)}
-                    className="text-gray-400 hover:text-white p-1"
+                    onClick={handleLike}
+                    disabled={!user || isLiking}
+                    className={`flex items-center space-x-2 transition-colors ${
+                      isLiked
+                        ? "text-red-500"
+                        : "text-gray-400 hover:text-red-500"
+                    } ${!user ? "cursor-not-allowed opacity-50" : ""}`}
                   >
-                    <MoreHorizontal className="w-5 h-5" />
+                    <Heart
+                      className={`w-6 h-6 ${isLiked ? "fill-current" : ""}`}
+                    />
                   </button>
-                  
-                  {showMenu && (
-                    <div className="absolute right-0 top-8 bg-gray-700 rounded-lg shadow-lg border border-gray-600 py-1 min-w-[120px] z-10">
-                      {showAdminActions && (
-                        <button
-                          key="desktop-hide-button"
-                          onClick={handleHide}
-                          className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-600"
-                        >
-                          {post.isHidden ? "Göster" : "Gizle"}
-                        </button>
-                      )}
-                      {(showAdminActions || post.userId === user?.uid) && (
-                        <button
-                          key="desktop-delete-button"
-                          onClick={handleDelete}
-                          className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-gray-600"
-                        >
-                          Sil
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
 
-              <button
-                onClick={onClose}
-                className="text-gray-400 hover:text-white p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 p-4 overflow-y-auto">
-            {/* Description */}
-            {post.description && (
-              <div className="mb-4 pb-3 border-b border-gray-700">
-                <div className="text-[#d1d1e0] text-sm leading-relaxed">
-                  <span className="font-semibold text-white">
-                    {post.userName || post.userEmail}
-                  </span>{" "}
-                  {post.description}
-                </div>
-                <div className="text-gray-500 text-xs mt-2">
-                  {formatDate(post.timestamp)}
+                  <button
+                    onClick={() => setShowCommentsDrawer(true)}
+                    className="text-gray-400 hover:text-blue-500 transition-colors"
+                  >
+                    <MessageCircle className="w-6 h-6" />
+                  </button>
                 </div>
               </div>
-            )}
 
-            {/* Comments Preview - Desktop */}
-            <div className="flex-1 py-4">
-              {comments.length > 0 ? (
-                <button 
-                  onClick={() => setShowCommentsDrawer(true)}
-                  className="text-gray-400 hover:text-white text-sm transition-colors"
-                >
-                  {comments.length} yorumu gör
-                </button>
-              ) : (
-                <div className="text-center text-gray-400 text-sm py-8">
-                  Henüz yorum yok. İlk yorumu sen yap!
-                </div>
-              )}
-            </div>
-
-            {/* Post Info */}
-            <div className="mt-4 pt-3 border-t border-gray-700 space-y-2 text-xs text-gray-400">
-              <div className="flex items-center space-x-2">
-                <Calendar className="w-4 h-4" />
-                <span>Etkinlik: {post.eventName}</span>
-              </div>
-              
-              {post.isAdminPost && (
-                <div className="bg-green-600 px-2 py-1 rounded-full inline-block">
-                  <span className="text-white text-xs font-medium">Admin</span>
-                </div>
-              )}
-
-              {post.isHidden && (
-                <div className="bg-yellow-600 px-2 py-1 rounded-full inline-block">
-                  <span className="text-white text-xs font-medium">Gizli</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-
-          {/* Engagement Bar */}
-          <div className="p-4 border-t border-gray-700">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={handleLike}
-                  disabled={!user || isLiking}
-                  className={`flex items-center space-x-2 transition-colors ${
-                    isLiked 
-                      ? "text-red-500" 
-                      : "text-gray-400 hover:text-red-500"
-                  } ${!user ? "cursor-not-allowed opacity-50" : ""}`}
-                >
-                  <Heart 
-                    className={`w-6 h-6 ${isLiked ? "fill-current" : ""}`} 
-                  />
-                </button>
-                
-                <button 
-                  onClick={() => setShowCommentsDrawer(true)}
-                  className="text-gray-400 hover:text-blue-500 transition-colors"
-                >
-                  <MessageCircle className="w-6 h-6" />
-                </button>
+              <div className="text-white font-semibold text-sm space-y-1">
+                <div>{likeCount} beğeni</div>
+                <div>{comments.length} yorum</div>
               </div>
             </div>
-
-            <div className="text-white font-semibold text-sm space-y-1">
-              <div>{likeCount} beğeni</div>
-              <div>{comments.length} yorum</div>
-            </div>
           </div>
-        </div>
         </div>
       </div>
 
@@ -525,9 +544,7 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
           <div className="bg-gray-900 w-full md:w-96 md:max-w-lg md:rounded-t-2xl rounded-t-2xl md:rounded-2xl max-h-[80vh] md:max-h-[70vh] flex flex-col border border-gray-700">
             {/* Drawer Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-700">
-              <h3 className="text-lg font-semibold text-white">
-                Yorumlar
-              </h3>
+              <h3 className="text-lg font-semibold text-white">Yorumlar</h3>
               <button
                 onClick={() => setShowCommentsDrawer(false)}
                 className="text-gray-400 hover:text-gray-300"
@@ -547,11 +564,19 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
                 <>
                   {comments.length > 0 ? (
                     comments.map((comment) => (
-                      <div key={`drawer-${comment.id}`} className="flex space-x-3">
+                      <div
+                        key={`drawer-${comment.id}`}
+                        className="flex space-x-3"
+                      >
                         <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                           {(() => {
                             // Yorumlarda da Google fotoğraflarını filtrele
-                            if (comment.userPhoto && !comment.userPhoto.includes('googleusercontent.com')) {
+                            if (
+                              comment.userPhoto &&
+                              !comment.userPhoto.includes(
+                                "googleusercontent.com"
+                              )
+                            ) {
                               return (
                                 <Image
                                   src={comment.userPhoto}
@@ -590,7 +615,9 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
                   ) : (
                     <div className="text-center text-gray-400 py-8">
                       <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                      <p className="text-lg font-medium mb-1">Henüz yorum yok</p>
+                      <p className="text-lg font-medium mb-1">
+                        Henüz yorum yok
+                      </p>
                       <p className="text-sm">İlk yorumu sen yap!</p>
                     </div>
                   )}
@@ -600,11 +627,18 @@ export default function PostModal({ post, isOpen, onClose, onDelete, showAdminAc
 
             {/* Comment Input */}
             <div className="border-t border-gray-700 p-4">
-              <form onSubmit={handleAddComment} className="flex items-center space-x-3">
+              <form
+                onSubmit={handleAddComment}
+                className="flex items-center space-x-3"
+              >
                 <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                   {(() => {
-                    const profilePhoto = userProfileData?.photoURL || user?.photoURL;
-                    if (profilePhoto && !profilePhoto.includes('googleusercontent.com')) {
+                    const profilePhoto =
+                      userProfileData?.photoURL || user?.photoURL;
+                    if (
+                      profilePhoto &&
+                      !profilePhoto.includes("googleusercontent.com")
+                    ) {
                       return (
                         <Image
                           src={profilePhoto}

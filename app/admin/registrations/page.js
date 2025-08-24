@@ -108,6 +108,13 @@ export default function AdminRegistrationsPage() {
 
   // rm a registration
   const handleRemoveRegistration = async (registrationId) => {
+    if (
+      !confirm(
+        "Bu kayıtı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+      )
+    )
+      return;
+
     try {
       await deleteDoc(doc(db, "registrations", registrationId));
       setRegistrations((prev) =>
@@ -124,9 +131,9 @@ export default function AdminRegistrationsPage() {
 
   // Add this function to toggle event expansion
   const toggleEventExpansion = (eventId) => {
-    setExpandedEvents(prev => ({
+    setExpandedEvents((prev) => ({
       ...prev,
-      [eventId]: !prev[eventId]
+      [eventId]: !prev[eventId],
     }));
   };
 
@@ -154,8 +161,18 @@ export default function AdminRegistrationsPage() {
           href="/admin"
           className="inline-flex items-center px-4 py-3 text-sm sm:text-base bg-white/70 backdrop-blur-lg text-gray-700 rounded-2xl hover:bg-white/90 transition-all duration-300 border border-white/20 shadow-lg hover:shadow-xl transform hover:scale-105"
         >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <svg
+            className="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           Admin Paneline Geri Dön
         </Link>
@@ -169,14 +186,26 @@ export default function AdminRegistrationsPage() {
           </h1>
           <div className="h-1 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-full"></div>
         </div>
-        <p className="text-gray-600 mt-4 text-lg">Tüm etkinlik kayıtlarını görüntüleyin ve yönetin</p>
+        <p className="text-gray-600 mt-4 text-lg">
+          Tüm etkinlik kayıtlarını görüntüleyin ve yönetin
+        </p>
       </div>
 
       <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-white/20 shadow-xl">
         <div className="flex items-center mb-6">
           <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg mr-3">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            <svg
+              className="w-5 h-5 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
             </svg>
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
@@ -207,11 +236,14 @@ export default function AdminRegistrationsPage() {
                         {event.name}
                       </h3>
                       <span className="text-sm text-gray-500 mt-1">
-                        {registrationCount} {registrationCount === 1 ? 'registration' : 'registrations'}
+                        {registrationCount}{" "}
+                        {registrationCount === 1
+                          ? "registration"
+                          : "registrations"}
                       </span>
                     </div>
                     <span className="text-xl font-medium text-gray-500 w-6 h-6 flex items-center justify-center flex-shrink-0">
-                      {expandedEvents[event.firestoreId] ? '−' : '+'}
+                      {expandedEvents[event.firestoreId] ? "−" : "+"}
                     </span>
                   </button>
 
@@ -226,7 +258,9 @@ export default function AdminRegistrationsPage() {
                           registeredUsers.map((reg) => {
                             const userData = usersMap[reg.userId];
                             const signedUpDate = reg.signedUpAt
-                              ? new Date(reg.signedUpAt.seconds * 1000).toLocaleString("tr-TR", {
+                              ? new Date(
+                                  reg.signedUpAt.seconds * 1000
+                                ).toLocaleString("tr-TR", {
                                   year: "numeric",
                                   month: "long",
                                   day: "numeric",
@@ -242,7 +276,9 @@ export default function AdminRegistrationsPage() {
                               >
                                 <div className="w-full sm:w-auto">
                                   <p className="text-sm sm:text-base text-gray-700">
-                                    {userData ? `Name: ${userData.name}` : `User ID: ${reg.userId}`}
+                                    {userData
+                                      ? `Name: ${userData.name}`
+                                      : `User ID: ${reg.userId}`}
                                   </p>
                                   <p className="text-sm sm:text-base text-gray-700">
                                     {userData ? `Email: ${userData.email}` : ""}
@@ -252,7 +288,9 @@ export default function AdminRegistrationsPage() {
                                   </p>
                                 </div>
                                 <button
-                                  onClick={() => handleRemoveRegistration(reg.firestoreId)}
+                                  onClick={() =>
+                                    handleRemoveRegistration(reg.firestoreId)
+                                  }
                                   className="w-full sm:w-auto bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors text-sm"
                                 >
                                   Sil

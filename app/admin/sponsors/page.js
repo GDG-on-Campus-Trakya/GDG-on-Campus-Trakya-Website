@@ -23,7 +23,7 @@ export default function AdminSponsorsPage() {
 
   // Sponsor state
   const [sponsors, setSponsors] = useState([]);
-  
+
   // Auto-refresh
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -85,11 +85,11 @@ export default function AdminSponsorsPage() {
   // Auto-refresh every 30 seconds
   useEffect(() => {
     if (!isAdmin) return;
-    
+
     const interval = setInterval(() => {
-      setRefreshKey(prev => prev + 1);
+      setRefreshKey((prev) => prev + 1);
     }, 30000);
-    
+
     return () => clearInterval(interval);
   }, [isAdmin]);
 
@@ -167,6 +167,13 @@ export default function AdminSponsorsPage() {
 
   // Delete sponsor
   const handleDeleteSponsor = async (firestoreId) => {
+    if (
+      !confirm(
+        "Bu sponsoru silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+      )
+    )
+      return;
+
     try {
       await deleteDoc(doc(db, "sponsors", firestoreId));
       setSponsors((prev) =>
@@ -205,8 +212,18 @@ export default function AdminSponsorsPage() {
           href="/admin"
           className="inline-flex items-center px-4 py-3 text-sm sm:text-base bg-white/70 backdrop-blur-lg text-gray-700 rounded-2xl hover:bg-white/90 transition-all duration-300 border border-white/20 shadow-lg hover:shadow-xl transform hover:scale-105"
         >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <svg
+            className="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           Admin Paneline Geri Dön
         </Link>
@@ -220,7 +237,9 @@ export default function AdminSponsorsPage() {
           </h1>
           <div className="h-1 bg-gradient-to-r from-green-600 via-teal-600 to-blue-600 rounded-full"></div>
         </div>
-        <p className="text-gray-600 mt-4 text-lg">Tüm sponsorları görüntüleyin ve yönetin</p>
+        <p className="text-gray-600 mt-4 text-lg">
+          Tüm sponsorları görüntüleyin ve yönetin
+        </p>
       </div>
 
       {/* Stats Cards */}
@@ -228,26 +247,54 @@ export default function AdminSponsorsPage() {
         <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Toplam Sponsor</p>
-              <p className="text-3xl font-bold text-green-600">{sponsors.length}</p>
+              <p className="text-sm font-medium text-gray-600">
+                Toplam Sponsor
+              </p>
+              <p className="text-3xl font-bold text-green-600">
+                {sponsors.length}
+              </p>
             </div>
             <div className="p-3 bg-green-100 rounded-xl">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6m0 0v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6m16 0V6a2 2 0 00-2-2H4a2 2 0 00-2 2v0m16 0h2m-2 0h2" />
+              <svg
+                className="w-6 h-6 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6m0 0v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6m16 0V6a2 2 0 00-2-2H4a2 2 0 00-2 2v0m16 0h2m-2 0h2"
+                />
               </svg>
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Aktif Sponsorlar</p>
-              <p className="text-3xl font-bold text-teal-600">{sponsors.filter(s => s.website_url && s.img_url).length}</p>
+              <p className="text-sm font-medium text-gray-600">
+                Aktif Sponsorlar
+              </p>
+              <p className="text-3xl font-bold text-teal-600">
+                {sponsors.filter((s) => s.website_url && s.img_url).length}
+              </p>
             </div>
             <div className="p-3 bg-teal-100 rounded-xl">
-              <svg className="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-6 h-6 text-teal-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
           </div>
@@ -260,8 +307,18 @@ export default function AdminSponsorsPage() {
               <p className="text-3xl font-bold text-blue-600">0</p>
             </div>
             <div className="p-3 bg-blue-100 rounded-xl">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              <svg
+                className="w-6 h-6 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
               </svg>
             </div>
           </div>
@@ -272,21 +329,33 @@ export default function AdminSponsorsPage() {
       <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 mb-8 border border-white/20 shadow-xl">
         <div className="flex items-center mb-6">
           <div className="p-2 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg mr-3">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l5.5-3.5L16 21z" />
+            <svg
+              className="w-5 h-5 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l5.5-3.5L16 21z"
+              />
             </svg>
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
             {isEditing ? "Sponsor Düzenle" : "Yeni Sponsor Ekle"}
           </h2>
         </div>
-        
+
         <form
           onSubmit={isEditing ? handleUpdateSponsor : handleAddSponsor}
           className="space-y-6"
         >
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Sponsor Adı *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Sponsor Adı *
+            </label>
             <input
               type="text"
               name="name"
@@ -297,10 +366,12 @@ export default function AdminSponsorsPage() {
               className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500"
             />
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Logo URL *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Logo URL *
+              </label>
               <input
                 type="url"
                 name="img_url"
@@ -312,7 +383,9 @@ export default function AdminSponsorsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Website URL *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Website URL *
+              </label>
               <input
                 type="url"
                 name="website_url"
@@ -328,19 +401,25 @@ export default function AdminSponsorsPage() {
           {/* Preview */}
           {sponsorFormData.img_url && (
             <div className="bg-white/40 rounded-xl p-4">
-              <p className="text-sm font-medium text-gray-700 mb-3">Logo Önizlemesi:</p>
+              <p className="text-sm font-medium text-gray-700 mb-3">
+                Logo Önizlemesi:
+              </p>
               <div className="flex items-center space-x-4">
                 <img
                   src={sponsorFormData.img_url}
                   alt="Sponsor Logo Preview"
                   className="w-16 h-16 object-contain bg-white rounded-lg border border-gray-200"
                   onError={(e) => {
-                    e.target.style.display = 'none';
+                    e.target.style.display = "none";
                   }}
                 />
                 <div>
-                  <p className="font-medium text-gray-800">{sponsorFormData.name || 'Sponsor Adı'}</p>
-                  <p className="text-sm text-gray-600">{sponsorFormData.website_url || 'Website URL'}</p>
+                  <p className="font-medium text-gray-800">
+                    {sponsorFormData.name || "Sponsor Adı"}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {sponsorFormData.website_url || "Website URL"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -350,8 +429,8 @@ export default function AdminSponsorsPage() {
             <button
               type="submit"
               className={`flex-1 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] ${
-                isEditing 
-                  ? "bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600" 
+                isEditing
+                  ? "bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600"
                   : "bg-gradient-to-r from-green-500 to-teal-500 text-white hover:from-green-600 hover:to-teal-600"
               }`}
             >
@@ -375,8 +454,18 @@ export default function AdminSponsorsPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <div className="p-2 bg-gradient-to-r from-teal-500 to-blue-500 rounded-lg mr-3">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l5.5-3.5L16 21z" />
+              <svg
+                className="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l5.5-3.5L16 21z"
+                />
               </svg>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
@@ -384,16 +473,30 @@ export default function AdminSponsorsPage() {
             </h2>
           </div>
         </div>
-        
+
         {sponsors.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l5.5-3.5L16 21z" />
+              <svg
+                className="w-8 h-8 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l5.5-3.5L16 21z"
+                />
               </svg>
             </div>
-            <p className="text-lg text-gray-500 mb-2">Henüz sponsor bulunmuyor</p>
-            <p className="text-sm text-gray-400">İlk sponsoru eklemek için yukarıdaki formu kullanın</p>
+            <p className="text-lg text-gray-500 mb-2">
+              Henüz sponsor bulunmuyor
+            </p>
+            <p className="text-sm text-gray-400">
+              İlk sponsoru eklemek için yukarıdaki formu kullanın
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -410,8 +513,8 @@ export default function AdminSponsorsPage() {
                         alt={sponsor.name}
                         className="w-full h-full object-contain"
                         onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextElementSibling.style.display = 'flex';
+                          e.target.style.display = "none";
+                          e.target.nextElementSibling.style.display = "flex";
                         }}
                       />
                     ) : null}
@@ -435,7 +538,7 @@ export default function AdminSponsorsPage() {
                     </a>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-3">
                   <button
                     onClick={() => handleEditSponsor(sponsor)}

@@ -48,7 +48,7 @@ export default function SocialPage() {
     setLoadingEvents(true);
     const result = await socialUtils.getActiveEventsForPosting();
     if (result.success) {
-      setActiveEvents(result.events.filter(event => event.canPost));
+      setActiveEvents(result.events.filter((event) => event.canPost));
     }
     setLoadingEvents(false);
   };
@@ -67,7 +67,7 @@ export default function SocialPage() {
 
     if (result.success) {
       if (loadMore) {
-        setPosts(prev => [...prev, ...result.posts]);
+        setPosts((prev) => [...prev, ...result.posts]);
       } else {
         setPosts(result.posts);
       }
@@ -84,16 +84,18 @@ export default function SocialPage() {
     if (!loadMore) setIsLoading(true);
 
     const result = await socialUtils.getAnnouncements({
-      limit: 20, 
-      startAfter: loadMore ? lastDoc : null
+      limit: 20,
+      startAfter: loadMore ? lastDoc : null,
     });
 
     if (result.success) {
       // Filter only raffle results
-      const raffleResults = result.announcements.filter(a => a.type === "raffle_result");
-      
+      const raffleResults = result.announcements.filter(
+        (a) => a.type === "raffle_result"
+      );
+
       if (loadMore) {
-        setAnnouncements(prev => [...prev, ...raffleResults]);
+        setAnnouncements((prev) => [...prev, ...raffleResults]);
       } else {
         setAnnouncements(raffleResults);
       }
@@ -108,12 +110,12 @@ export default function SocialPage() {
 
   const applyFilter = () => {
     let filtered = posts;
-    
+
     // Filter by specific event or show all
     if (filter !== "all") {
-      filtered = posts.filter(post => post.eventId === filter);
+      filtered = posts.filter((post) => post.eventId === filter);
     }
-    
+
     setFilteredPosts(filtered);
   };
 
@@ -122,7 +124,7 @@ export default function SocialPage() {
   };
 
   const handlePostDelete = (postId) => {
-    setPosts(prev => prev.filter(post => post.id !== postId));
+    setPosts((prev) => prev.filter((post) => post.id !== postId));
   };
 
   const handleUploadComplete = () => {
@@ -130,23 +132,23 @@ export default function SocialPage() {
     if (currentTab === "posts") {
       loadPosts(); // Reload posts
     }
-    toast.success("Post başarıyla paylaşıldı!");
+    // Toast message is already shown in PostUpload component
   };
 
   const getFilterStats = () => {
     const total = posts.length;
     // Group posts by event
     const eventGroups = {};
-    posts.forEach(post => {
+    posts.forEach((post) => {
       if (post.eventId) {
         eventGroups[post.eventId] = eventGroups[post.eventId] || {
           count: 0,
-          name: post.eventName
+          name: post.eventName,
         };
         eventGroups[post.eventId].count++;
       }
     });
-    
+
     return { total, eventGroups };
   };
 
@@ -174,10 +176,12 @@ export default function SocialPage() {
       <div className="sticky top-0 bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">GDG Social</h1>
-            
-            {currentTab === "posts" && (
-              loadingEvents ? (
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              GDG Social
+            </h1>
+
+            {currentTab === "posts" &&
+              (loadingEvents ? (
                 <div className="bg-gray-600 p-2 sm:p-3 rounded-lg">
                   <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-2 border-white border-t-transparent"></div>
                 </div>
@@ -190,11 +194,13 @@ export default function SocialPage() {
                   <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
               ) : (
-                <div className="bg-gray-600/50 p-2 sm:p-3 rounded-lg cursor-not-allowed" title="Aktif etkinlik yok">
+                <div
+                  className="bg-gray-600/50 p-2 sm:p-3 rounded-lg cursor-not-allowed"
+                  title="Aktif etkinlik yok"
+                >
                   <Plus className="w-5 h-5 sm:w-6 sm:w-6 text-gray-400" />
                 </div>
-              )
-            )}
+              ))}
           </div>
 
           {/* Tab Navigation */}
@@ -210,7 +216,7 @@ export default function SocialPage() {
               <Calendar className="w-4 h-4" />
               <span>Etkinlik Fotoğrafları</span>
             </button>
-            
+
             <button
               onClick={() => setCurrentTab("results")}
               className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-md text-sm font-medium transition-all ${
@@ -240,7 +246,7 @@ export default function SocialPage() {
                   <span>Tüm Etkinlikler ({stats.total})</span>
                 </div>
               </button>
-              
+
               {Object.entries(stats.eventGroups).map(([eventId, eventData]) => (
                 <button
                   key={eventId}
@@ -295,17 +301,17 @@ export default function SocialPage() {
             )}
 
             {/* Empty States */}
-            {((currentTab === "posts" && filteredPosts.length === 0) || (currentTab === "results" && announcements.length === 0)) && (
+            {((currentTab === "posts" && filteredPosts.length === 0) ||
+              (currentTab === "results" && announcements.length === 0)) && (
               <div className="text-center py-12">
                 <div className="relative mx-auto rounded-xl bg-gray-800/50 backdrop-blur-sm p-8 shadow-xl max-w-md">
                   {currentTab === "posts" ? (
                     activeEvents.length > 0 ? (
                       <>
                         <h3 className="text-xl font-semibold text-white mb-2">
-                          {filter === "all" 
-                            ? "Henüz etkinlik fotoğrafı yok" 
-                            : "Bu etkinlikten henüz fotoğraf yok"
-                          }
+                          {filter === "all"
+                            ? "Henüz etkinlik fotoğrafı yok"
+                            : "Bu etkinlikten henüz fotoğraf yok"}
                         </h3>
                         <p className="text-[#d1d1e0] mb-4">
                           İlk etkinlik fotoğrafını sen paylaş ve çekilişe katıl!
@@ -327,11 +333,13 @@ export default function SocialPage() {
                           Şu anda aktif etkinlik yok
                         </h3>
                         <p className="text-[#d1d1e0] mb-4">
-                          Yeni etkinlikler başladığında burada fotoğraflarını paylaşabilirsin!
+                          Yeni etkinlikler başladığında burada fotoğraflarını
+                          paylaşabilirsin!
                         </p>
                         <div className="bg-blue-600/20 border border-blue-500/30 rounded-lg p-4 mt-4">
                           <p className="text-blue-300 text-sm">
-                            💡 Etkinlikler genellikle başladıktan sonra 3 gün boyunca fotoğraf paylaşımına açık kalır
+                            💡 Etkinlikler genellikle başladıktan sonra 3 gün
+                            boyunca fotoğraf paylaşımına açık kalır
                           </p>
                         </div>
                       </>
@@ -343,7 +351,8 @@ export default function SocialPage() {
                         Henüz çekiliş sonucu yok
                       </h3>
                       <p className="text-[#d1d1e0] mb-4">
-                        Etkinlik çekilişleri tamamlandığında sonuçlar burada ilan edilecek!
+                        Etkinlik çekilişleri tamamlandığında sonuçlar burada
+                        ilan edilecek!
                       </p>
                       <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-lg p-4 mt-4">
                         <p className="text-yellow-300 text-sm">
@@ -357,16 +366,22 @@ export default function SocialPage() {
             )}
 
             {/* Load More Button */}
-            {((currentTab === "posts" && filteredPosts.length > 0) || (currentTab === "results" && announcements.length > 0)) && hasMore && (
-              <div className="flex justify-center py-6 mt-6">
-                <button
-                  onClick={() => currentTab === "posts" ? loadPosts(true) : loadAnnouncements(true)}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all shadow-lg"
-                >
-                  Daha Fazla Yükle
-                </button>
-              </div>
-            )}
+            {((currentTab === "posts" && filteredPosts.length > 0) ||
+              (currentTab === "results" && announcements.length > 0)) &&
+              hasMore && (
+                <div className="flex justify-center py-6 mt-6">
+                  <button
+                    onClick={() =>
+                      currentTab === "posts"
+                        ? loadPosts(true)
+                        : loadAnnouncements(true)
+                    }
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all shadow-lg"
+                  >
+                    Daha Fazla Yükle
+                  </button>
+                </div>
+              )}
           </>
         )}
       </div>
@@ -374,7 +389,7 @@ export default function SocialPage() {
       {/* Upload Modal */}
       {showUpload && activeEvents.length > 0 && (
         <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
-          <PostUpload 
+          <PostUpload
             onUploadComplete={handleUploadComplete}
             onCancel={() => setShowUpload(false)}
           />
