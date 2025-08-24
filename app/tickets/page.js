@@ -1306,10 +1306,7 @@ export default function TicketsPage() {
                 <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-900">
                   {/* Original ticket message (user) */}
                   <div className="flex items-start gap-3 justify-end">
-                    <div className="w-8 h-8 rounded-lg bg-green-700 flex items-center justify-center text-white text-xs font-bold">
-                      S
-                    </div>
-                    <div className="max-w-xl bg-gray-800/70 border border-gray-700 rounded-2xl px-4 py-3">
+                    <div className="max-w-xl bg-green-900/30 border border-green-700 rounded-2xl px-4 py-3">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-semibold text-green-300">
                           Siz
@@ -1319,7 +1316,6 @@ export default function TicketsPage() {
                             {new Date(
                               selectedTicketForReply.createdAt
                             ).toLocaleDateString("tr-TR", {
-                              year: "numeric",
                               month: "short",
                               day: "numeric",
                               hour: "2-digit",
@@ -1331,6 +1327,9 @@ export default function TicketsPage() {
                       <p className="text-sm text-gray-200 whitespace-pre-wrap">
                         {selectedTicketForReply.message}
                       </p>
+                    </div>
+                    <div className="w-8 h-8 rounded-lg bg-green-700 flex items-center justify-center text-white text-xs font-bold">
+                      S
                     </div>
                   </div>
                   {/* Replies */}

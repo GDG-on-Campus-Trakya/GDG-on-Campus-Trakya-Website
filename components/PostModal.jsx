@@ -35,12 +35,14 @@ export default function PostModal({
   const [isAddingComment, setIsAddingComment] = useState(false);
   const [showCommentsDrawer, setShowCommentsDrawer] = useState(false);
   const [userProfileData, setUserProfileData] = useState(null);
+  const [postAuthorProfile, setPostAuthorProfile] = useState(null);
 
   useEffect(() => {
     if (post) {
       setIsLiked(post.likes?.includes(user?.uid) || false);
       setLikeCount(post.likeCount || 0);
       loadComments();
+      loadPostAuthorProfile();
     }
     if (user) {
       loadUserProfile();
@@ -56,6 +58,21 @@ export default function PostModal({
         }
       } catch (error) {
         console.error("Error loading user profile:", error);
+      }
+    }
+  };
+
+  const loadPostAuthorProfile = async () => {
+    if (post?.userId) {
+      try {
+        const userDoc = await getDoc(doc(db, "users", post.userId));
+        if (userDoc.exists()) {
+          setPostAuthorProfile(userDoc.data());
+        } else {
+          setPostAuthorProfile(null);
+        }
+      } catch (error) {
+        console.error("Error loading post author profile:", error);
       }
     }
   };
@@ -186,23 +203,31 @@ export default function PostModal({
         {/* Header - Mobile */}
         <div className="flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-              {post.userPhoto ||
-              (post.userId === user?.uid && user?.photoURL) ? (
-                <Image
-                  src={post.userPhoto || user?.photoURL}
-                  alt={post.userName}
-                  width={32}
-                  height={32}
-                  className="rounded-full object-cover"
-                />
-              ) : (
-                <User className="w-4 h-4 text-white" />
-              )}
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center overflow-hidden">
+              {(() => {
+                const profilePhoto =
+                  postAuthorProfile?.photoURL || post.userPhoto;
+                if (profilePhoto) {
+                  return (
+                    <Image
+                      src={profilePhoto}
+                      alt={
+                        postAuthorProfile?.name ||
+                        post.userName ||
+                        post.userEmail
+                      }
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-cover"
+                    />
+                  );
+                }
+                return <User className="w-4 h-4 text-white" />;
+              })()}
             </div>
             <div>
               <h3 className="text-white font-semibold text-sm">
-                {post.userName || post.userEmail}
+                {postAuthorProfile?.name || post.userName || post.userEmail}
               </h3>
               {post.eventName && (
                 <div className="flex items-center space-x-1 text-blue-400 text-xs">
@@ -367,28 +392,28 @@ export default function PostModal({
                 <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center overflow-hidden">
                   {(() => {
                     const profilePhoto =
-                      userProfileData?.photoURL || post.userPhoto;
-                    if (
-                      profilePhoto &&
-                      !profilePhoto.includes("googleusercontent.com")
-                    ) {
+                      postAuthorProfile?.photoURL || post.userPhoto;
+                    if (profilePhoto) {
                       return (
                         <Image
                           src={profilePhoto}
-                          alt={userProfileData?.name || post.userName}
+                          alt={
+                            postAuthorProfile?.name ||
+                            post.userName ||
+                            post.userEmail
+                          }
                           width={40}
                           height={40}
                           className="w-full h-full object-cover"
                         />
                       );
-                    } else {
-                      return <User className="w-6 h-6 text-white" />;
                     }
+                    return <User className="w-6 h-6 text-white" />;
                   })()}
                 </div>
                 <div>
                   <h3 className="text-white font-semibold text-sm">
-                    {post.userName || post.userEmail}
+                    {postAuthorProfile?.name || post.userName || post.userEmail}
                   </h3>
                   {post.eventName && (
                     <div className="flex items-center space-x-1 text-blue-400 text-xs">

@@ -8,7 +8,12 @@ import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 
-export default function PostCard({ post, onPostClick, onDelete, showAdminActions = false }) {
+export default function PostCard({
+  post,
+  onPostClick,
+  onDelete,
+  showAdminActions = false,
+}) {
   const [user] = useAuthState(auth);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likeCount || 0);
@@ -26,7 +31,10 @@ export default function PostCard({ post, onPostClick, onDelete, showAdminActions
   useEffect(() => {
     const loadPostUserProfile = async () => {
       // Eğer post'ta userPhoto yoksa veya default foto ise, kullanıcının güncel profilini al
-      if (post.userId && (!post.userPhoto || post.userPhoto.includes('googleusercontent.com'))) {
+      if (
+        post.userId &&
+        (!post.userPhoto || post.userPhoto.includes("googleusercontent.com"))
+      ) {
         try {
           const userDoc = await getDoc(doc(db, "users", post.userId));
           if (userDoc.exists()) {
@@ -50,7 +58,7 @@ export default function PostCard({ post, onPostClick, onDelete, showAdminActions
 
     if (result.success) {
       setIsLiked(result.action === "liked");
-      setLikeCount(prev => result.action === "liked" ? prev + 1 : prev - 1);
+      setLikeCount((prev) => (result.action === "liked" ? prev + 1 : prev - 1));
     } else {
       toast.error("Beğeni işlemi başarısız!");
     }
@@ -99,13 +107,18 @@ export default function PostCard({ post, onPostClick, onDelete, showAdminActions
           <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-pink-500">
             {(() => {
               // Öncelik sırası: Firestore profil fotoğrafı > Post'ta kaydedilen foto > Firebase Auth foto
-              const profilePhoto = postUserProfile?.photoURL || post.userPhoto || (post.userId === user?.uid && user?.photoURL);
-              
-              if (profilePhoto && !profilePhoto.includes('googleusercontent.com')) {
+              const profilePhoto =
+                postUserProfile?.photoURL ||
+                post.userPhoto ||
+                (post.userId === user?.uid && user?.photoURL);
+
+              if (profilePhoto) {
                 return (
                   <Image
                     src={profilePhoto}
-                    alt={postUserProfile?.name || post.userName || post.userEmail}
+                    alt={
+                      postUserProfile?.name || post.userName || post.userEmail
+                    }
                     width={32}
                     height={32}
                     className="w-full h-full object-cover"
@@ -123,13 +136,19 @@ export default function PostCard({ post, onPostClick, onDelete, showAdminActions
           <div className="flex-1">
             <div className="flex items-center space-x-2">
               <h3 className="text-white font-semibold text-sm">
-                {postUserProfile?.name || post.userName || post.userEmail?.split('@')[0]}
+                {postUserProfile?.name ||
+                  post.userName ||
+                  post.userEmail?.split("@")[0]}
               </h3>
               {post.eventName && (
-                <span className="text-blue-400 text-xs">• {post.eventName}</span>
+                <span className="text-blue-400 text-xs">
+                  • {post.eventName}
+                </span>
               )}
             </div>
-            <p className="text-gray-400 text-xs">{formatDate(post.timestamp)}</p>
+            <p className="text-gray-400 text-xs">
+              {formatDate(post.timestamp)}
+            </p>
           </div>
         </div>
 
@@ -139,8 +158,8 @@ export default function PostCard({ post, onPostClick, onDelete, showAdminActions
             <button
               onClick={handleHide}
               className={`px-3 py-1 rounded-full text-xs ${
-                post.isHidden 
-                  ? "bg-green-600 text-white hover:bg-green-700" 
+                post.isHidden
+                  ? "bg-green-600 text-white hover:bg-green-700"
                   : "bg-yellow-600 text-white hover:bg-yellow-700"
               }`}
             >
@@ -157,7 +176,7 @@ export default function PostCard({ post, onPostClick, onDelete, showAdminActions
       </div>
 
       {/* Post Image */}
-      <div 
+      <div
         className="relative cursor-pointer"
         onClick={() => onPostClick && onPostClick(post)}
       >
@@ -172,7 +191,7 @@ export default function PostCard({ post, onPostClick, onDelete, showAdminActions
           placeholder="blur"
           blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
         />
-        
+
         {/* Hidden overlay */}
         {post.isHidden && (
           <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center">
@@ -189,18 +208,14 @@ export default function PostCard({ post, onPostClick, onDelete, showAdminActions
               onClick={handleLike}
               disabled={!user || isLiking}
               className={`flex items-center space-x-2 transition-colors ${
-                isLiked 
-                  ? "text-red-500" 
-                  : "text-gray-400 hover:text-red-500"
+                isLiked ? "text-red-500" : "text-gray-400 hover:text-red-500"
               } ${!user ? "cursor-not-allowed opacity-50" : ""}`}
             >
-              <Heart 
-                className={`w-6 h-6 ${isLiked ? "fill-current" : ""}`} 
-              />
+              <Heart className={`w-6 h-6 ${isLiked ? "fill-current" : ""}`} />
               <span className="text-sm font-medium">{likeCount}</span>
             </button>
-            
-            <button 
+
+            <button
               onClick={() => onPostClick && onPostClick(post)}
               className="flex items-center space-x-2 text-gray-400 hover:text-blue-500 transition-colors"
             >
