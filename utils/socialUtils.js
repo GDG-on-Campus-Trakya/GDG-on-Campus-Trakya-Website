@@ -336,14 +336,36 @@ export const socialUtils = {
         ...doc.data(),
       }));
 
+      // Load updated user profiles for comments
+      const enhancedComments = await Promise.all(
+        comments.map(async (comment) => {
+          if (comment.userId) {
+            try {
+              const userDoc = await getDoc(doc(db, "users", comment.userId));
+              if (userDoc.exists()) {
+                const userData = userDoc.data();
+                return {
+                  ...comment,
+                  userName: userData.name || comment.userName,
+                  userPhoto: userData.photoURL || comment.userPhoto,
+                };
+              }
+            } catch (error) {
+              console.error("Error loading comment user profile:", error);
+            }
+          }
+          return comment;
+        })
+      );
+
       // Sort in memory instead of using orderBy
-      comments = comments.sort((a, b) => {
+      const sortedComments = enhancedComments.sort((a, b) => {
         const aTime = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
         const bTime = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp);
         return aTime - bTime;
       });
 
-      return { success: true, comments };
+      return { success: true, comments: sortedComments };
     } catch (error) {
       console.error("Error fetching comments:", error);
       return { success: false, error: error.message };

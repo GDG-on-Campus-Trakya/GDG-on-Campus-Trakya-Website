@@ -141,7 +141,12 @@ export default function PostModal({
     );
 
     if (result.success) {
-      const newCommentData = { ...result.comment, timestamp: new Date() };
+      const newCommentData = { 
+        ...result.comment, 
+        timestamp: new Date(),
+        userName: userProfileData?.name || user.displayName || user.email,
+        userPhoto: userProfileData?.photoURL || user.photoURL,
+      };
       setComments((prev) => [...prev, newCommentData]);
       setNewComment("");
       toast.success("Yorum eklendi!");
@@ -594,27 +599,17 @@ export default function PostModal({
                         className="flex space-x-3"
                       >
                         <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
-                          {(() => {
-                            // Yorumlarda da Google fotoğraflarını filtrele
-                            if (
-                              comment.userPhoto &&
-                              !comment.userPhoto.includes(
-                                "googleusercontent.com"
-                              )
-                            ) {
-                              return (
-                                <Image
-                                  src={comment.userPhoto}
-                                  alt={comment.userName}
-                                  width={32}
-                                  height={32}
-                                  className="w-full h-full object-cover"
-                                />
-                              );
-                            } else {
-                              return <User className="w-4 h-4 text-white" />;
-                            }
-                          })()}
+                          {comment.userPhoto ? (
+                            <Image
+                              src={comment.userPhoto}
+                              alt={comment.userName}
+                              width={32}
+                              height={32}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <User className="w-4 h-4 text-white" />
+                          )}
                         </div>
                         <div className="flex-1">
                           <div className="text-white text-sm">
@@ -625,14 +620,8 @@ export default function PostModal({
                               {comment.text}
                             </span>
                           </div>
-                          <div className="text-gray-500 text-xs mt-1 flex items-center space-x-4">
+                          <div className="text-gray-500 text-xs mt-1">
                             <span>{formatDate(comment.timestamp)}</span>
-                            <button className="text-gray-500 hover:text-gray-300 font-medium">
-                              Beğen
-                            </button>
-                            <button className="text-gray-500 hover:text-gray-300 font-medium">
-                              Yanıtla
-                            </button>
                           </div>
                         </div>
                       </div>
@@ -660,22 +649,17 @@ export default function PostModal({
                   {(() => {
                     const profilePhoto =
                       userProfileData?.photoURL || user?.photoURL;
-                    if (
-                      profilePhoto &&
-                      !profilePhoto.includes("googleusercontent.com")
-                    ) {
-                      return (
-                        <Image
-                          src={profilePhoto}
-                          alt="Your profile"
-                          width={32}
-                          height={32}
-                          className="w-full h-full object-cover"
-                        />
-                      );
-                    } else {
-                      return <User className="w-4 h-4 text-white" />;
-                    }
+                    return profilePhoto ? (
+                      <Image
+                        src={profilePhoto}
+                        alt="Your profile"
+                        width={32}
+                        height={32}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-4 h-4 text-white" />
+                    );
                   })()}
                 </div>
                 <input
