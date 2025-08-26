@@ -52,7 +52,12 @@ export default function AboutPage() {
           variants={itemVariants}
           className="relative mx-auto mb-16 rounded-xl bg-gray-800/50 backdrop-blur-sm p-4 sm:p-6 lg:p-8 shadow-xl"
         >
-          <InstaCarousel />
+          {/* <InstaCarousel /> */}
+          <div className="text-center py-8">
+            <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#DB4437] via-[#F4B400] to-[#0F9D58]">
+              Yeni Core Team yakında...
+            </h2>
+          </div>
         </motion.section>
 
         <motion.h1
@@ -77,19 +82,20 @@ export default function AboutPage() {
             variants={itemVariants}
             className="text-center sm:text-lg lg:text-xl leading-relaxed text-[#d1d1e0] backdrop-blur-sm bg-gray-800/30 p-6 rounded-lg"
           >
-            GDG Trakya On Campus, öğrenmek, paylaşmak ve gelişmek için bir araya gelen 
-            tutkulu geliştiriciler ve öğrencilerden oluşan bir topluluktur. Misyonumuz, 
-            öğrencilere Google teknolojilerini öğrenme fırsatları sunmak, sektör 
-            profesyonelleriyle iletişim kurmalarını sağlamak ve becerilerini 
-            geliştirmelerine yardımcı olmaktır.
+            GDG Trakya On Campus, öğrenmek, paylaşmak ve gelişmek için bir araya
+            gelen tutkulu geliştiriciler ve öğrencilerden oluşan bir
+            topluluktur. Misyonumuz, öğrencilere Google teknolojilerini öğrenme
+            fırsatları sunmak, sektör profesyonelleriyle iletişim kurmalarını
+            sağlamak ve becerilerini geliştirmelerine yardımcı olmaktır.
           </motion.p>
           <motion.p
             variants={itemVariants}
             className="text-center sm:text-lg lg:text-xl leading-relaxed text-[#d1d1e0] backdrop-blur-sm bg-gray-800/30 p-6 rounded-lg"
           >
-            İster yeni başlayın ister deneyimli bir geliştirici olun, etkinliklerimiz 
-            ve aktivitelerimiz sizi başarıya ulaşmanıza ve teknoloji meraklılarından 
-            oluşan güçlü bir topluluk kurmanıza yardımcı olmak için tasarlanmıştır.
+            İster yeni başlayın ister deneyimli bir geliştirici olun,
+            etkinliklerimiz ve aktivitelerimiz sizi başarıya ulaşmanıza ve
+            teknoloji meraklılarından oluşan güçlü bir topluluk kurmanıza
+            yardımcı olmak için tasarlanmıştır.
           </motion.p>
         </motion.div>
 
@@ -122,7 +128,8 @@ export default function AboutPage() {
 
       <style jsx global>{`
         @keyframes gradient-x {
-          0%, 100% {
+          0%,
+          100% {
             background-position: left;
           }
           50% {
@@ -134,11 +141,11 @@ export default function AboutPage() {
           animation: gradient-x 8s ease-in-out infinite;
           background-image: linear-gradient(
             to right,
-            #4285F4,  /* Google Blue */
-            #DB4437,  /* Google Red */
-            #F4B400,  /* Google Yellow */
-            #0F9D58,  /* Google Green */
-            #4285F4   /* Back to Blue */
+            #4285f4,
+            /* Google Blue */ #db4437,
+            /* Google Red */ #f4b400,
+            /* Google Yellow */ #0f9d58,
+            /* Google Green */ #4285f4 /* Back to Blue */
           );
         }
       `}</style>
