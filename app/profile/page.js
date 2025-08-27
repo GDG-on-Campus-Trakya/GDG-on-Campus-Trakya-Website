@@ -248,10 +248,10 @@ const Profile = () => {
         { merge: true }
       );
       setUserWantsEmails(newPreference);
-      toast.success("Email preference updated successfully.");
+      toast.success("E-posta tercihi başarıyla güncellendi.");
     } catch (error) {
-      console.error("Error updating email preference:", error);
-      toast.error("Failed to update email preference.");
+      console.error("E-posta tercihi güncellenirken hata:", error);
+      toast.error("E-posta tercihi güncellenemedi.");
     } finally {
       setIsEmailUpdateLoading(false);
     }
