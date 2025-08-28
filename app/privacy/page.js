@@ -3,7 +3,7 @@
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#000000] text-white">
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 pt-20 sm:pt-24 md:pt-28 pb-12">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">

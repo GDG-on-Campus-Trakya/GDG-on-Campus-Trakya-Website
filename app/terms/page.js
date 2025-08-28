@@ -3,7 +3,7 @@
 export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#000000] text-white">
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 pt-20 sm:pt-24 md:pt-28 pb-12">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
@@ -20,24 +20,32 @@ export default function TermsOfService() {
 
           {/* Content */}
           <div className="bg-gray-800/30 backdrop-blur-md border border-gray-700/50 rounded-2xl p-8 space-y-8">
-            
             <section>
-              <h2 className="text-2xl font-bold text-blue-400 mb-4">1. Kabul ve Onay</h2>
+              <h2 className="text-2xl font-bold text-blue-400 mb-4">
+                1. Kabul ve Onay
+              </h2>
               <p className="text-gray-300 leading-relaxed">
-                Bu web sitesini kullanarak, aşağıdaki kullanım şartlarını kabul etmiş sayılırsınız. 
-                Bu şartları kabul etmiyorsanız, siteyi kullanmamanızı rica ederiz. 
-                Bu şartlar zaman zaman güncellenebilir ve güncel hali her zaman bu sayfada yayınlanacaktır.
+                Bu web sitesini kullanarak, aşağıdaki kullanım şartlarını kabul
+                etmiş sayılırsınız. Bu şartları kabul etmiyorsanız, siteyi
+                kullanmamanızı rica ederiz. Bu şartlar zaman zaman
+                güncellenebilir ve güncel hali her zaman bu sayfada
+                yayınlanacaktır.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-blue-400 mb-4">2. Hizmet Tanımı</h2>
+              <h2 className="text-2xl font-bold text-blue-400 mb-4">
+                2. Hizmet Tanımı
+              </h2>
               <div className="space-y-4">
                 <p className="text-gray-300 leading-relaxed">
-                  GDG on Campus Trakya Üniversitesi platformu aşağıdaki hizmetleri sunar:
+                  GDG on Campus Trakya Üniversitesi platformu aşağıdaki
+                  hizmetleri sunar:
                 </p>
                 <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
-                  <li>Teknoloji etkinliklerinin duyurulması ve kayıt alınması</li>
+                  <li>
+                    Teknoloji etkinliklerinin duyurulması ve kayıt alınması
+                  </li>
                   <li>Üye profil yönetimi ve topluluk oluşturma</li>
                   <li>Proje paylaşım platformu</li>
                   <li>Sosyal medya entegrasyonu</li>
@@ -48,19 +56,25 @@ export default function TermsOfService() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-blue-400 mb-4">3. Kullanıcı Sorumlulukları</h2>
+              <h2 className="text-2xl font-bold text-blue-400 mb-4">
+                3. Kullanıcı Sorumlulukları
+              </h2>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Hesap Güvenliği:</h3>
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    Hesap Güvenliği:
+                  </h3>
                   <ul className="list-disc list-inside text-gray-300 space-y-1 ml-4">
                     <li>Hesap bilgilerinizi güvende tutmak</li>
                     <li>Şifrenizi kimseyle paylaşmamak</li>
                     <li>Şüpheli aktiviteleri bildirmek</li>
                   </ul>
                 </div>
-                
+
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">İçerik Sorumluluğu:</h3>
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    İçerik Sorumluluğu:
+                  </h3>
                   <ul className="list-disc list-inside text-gray-300 space-y-1 ml-4">
                     <li>Yalnızca gerçek ve doğru bilgileri paylaşmak</li>
                     <li>Hakaret, küfür ve taciz içeriklerinden kaçınmak</li>
@@ -70,7 +84,9 @@ export default function TermsOfService() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Topluluk Kuralları:</h3>
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    Topluluk Kuralları:
+                  </h3>
                   <ul className="list-disc list-inside text-gray-300 space-y-1 ml-4">
                     <li>Diğer kullanıcılara saygılı davranmak</li>
                     <li>Yapıcı ve eğitici içerikler üretmek</li>
@@ -82,9 +98,13 @@ export default function TermsOfService() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-blue-400 mb-4">4. Yasaklanan Davranışlar</h2>
+              <h2 className="text-2xl font-bold text-blue-400 mb-4">
+                4. Yasaklanan Davranışlar
+              </h2>
               <div className="bg-red-900/20 rounded-xl p-6 border border-red-500/30">
-                <p className="text-gray-300 mb-4">Aşağıdaki davranışlar kesinlikle yasaktır:</p>
+                <p className="text-gray-300 mb-4">
+                  Aşağıdaki davranışlar kesinlikle yasaktır:
+                </p>
                 <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
                   <li>Sisteme zarar verme, hack girişimleri</li>
                   <li>Başka kullanıcıların hesaplarına yetkisiz erişim</li>
@@ -98,34 +118,49 @@ export default function TermsOfService() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-blue-400 mb-4">5. Fikri Mülkiyet Hakları</h2>
+              <h2 className="text-2xl font-bold text-blue-400 mb-4">
+                5. Fikri Mülkiyet Hakları
+              </h2>
               <div className="space-y-4">
                 <div className="bg-purple-900/20 rounded-xl p-6 border border-purple-500/30">
-                  <h3 className="text-lg font-semibold text-white mb-3">Açık Kaynak Yapısı</h3>
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    Açık Kaynak Yapısı
+                  </h3>
                   <p className="text-gray-300 leading-relaxed">
-                    Bu platform açık kaynak kodlu olarak geliştirilmiştir. 
-                    Platform kaynak kodu MIT lisansı altında GitHub'da erişilebilirdir. 
-                    Ancak, GDG ve Google logolar ile markaları ilgili şirketlerin mülkiyetindedir.
+                    Bu platform açık kaynak kodlu olarak geliştirilmiştir.
+                    Platform kaynak kodu MIT lisansı altında GitHub'da
+                    erişilebilirdir. Ancak, GDG ve Google logolar ile markaları
+                    ilgili şirketlerin mülkiyetindedir.
                   </p>
                 </div>
-                
+
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Kullanıcı İçerikleri:</h3>
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    Kullanıcı İçerikleri:
+                  </h3>
                   <ul className="list-disc list-inside text-gray-300 space-y-1 ml-4">
                     <li>Paylaştığınız içerikler sizin mülkiyetinizde kalır</li>
-                    <li>Platformda paylaşım için gerekli lisansları vermiş sayılırsınız</li>
-                    <li>Telif hakkı ihlali durumunda sorumluluk kullanıcıya aittir</li>
+                    <li>
+                      Platformda paylaşım için gerekli lisansları vermiş
+                      sayılırsınız
+                    </li>
+                    <li>
+                      Telif hakkı ihlali durumunda sorumluluk kullanıcıya aittir
+                    </li>
                   </ul>
                 </div>
               </div>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-blue-400 mb-4">6. Hizmet Sürekliliği</h2>
+              <h2 className="text-2xl font-bold text-blue-400 mb-4">
+                6. Hizmet Sürekliliği
+              </h2>
               <div className="bg-yellow-900/20 rounded-xl p-6 border border-yellow-500/30">
                 <p className="text-gray-300 leading-relaxed mb-4">
-                  <strong className="text-yellow-400">Önemli Not:</strong> 
-                  Bu platform öğrenci topluluğu tarafından gönüllü olarak işletilmektedir.
+                  <strong className="text-yellow-400">Önemli Not:</strong>
+                  Bu platform öğrenci topluluğu tarafından gönüllü olarak
+                  işletilmektedir.
                 </p>
                 <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
                   <li>%100 kesintisiz hizmet garantisi veremeyiz</li>
@@ -137,7 +172,9 @@ export default function TermsOfService() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-blue-400 mb-4">7. Veri Yedekleme ve Kayıp</h2>
+              <h2 className="text-2xl font-bold text-blue-400 mb-4">
+                7. Veri Yedekleme ve Kayıp
+              </h2>
               <div className="space-y-4">
                 <p className="text-gray-300 leading-relaxed">
                   Verilerinizin güvenliği için elimizden geleni yaparız, ancak:
@@ -152,10 +189,14 @@ export default function TermsOfService() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-blue-400 mb-4">8. Etkinlik Katılım Kuralları</h2>
+              <h2 className="text-2xl font-bold text-blue-400 mb-4">
+                8. Etkinlik Katılım Kuralları
+              </h2>
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Kayıt Süreçleri:</h3>
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    Kayıt Süreçleri:
+                  </h3>
                   <ul className="list-disc list-inside text-gray-300 space-y-1 ml-4">
                     <li>Sadece Trakya Üniversitesi öğrencileri katılabilir</li>
                     <li>Doğru akademik bilgiler (fakülte/bölüm) gereklidir</li>
@@ -163,9 +204,11 @@ export default function TermsOfService() {
                     <li>QR kod kontrolü ile katılım doğrulanır</li>
                   </ul>
                 </div>
-                
+
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Etkinlik Kuralları:</h3>
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    Etkinlik Kuralları:
+                  </h3>
                   <ul className="list-disc list-inside text-gray-300 space-y-1 ml-4">
                     <li>Etkinliklere zamanında katılım</li>
                     <li>Diğer katılımcılara saygılı davranış</li>
@@ -177,14 +220,20 @@ export default function TermsOfService() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-blue-400 mb-4">9. Sorumluluk Sınırlamaları</h2>
+              <h2 className="text-2xl font-bold text-blue-400 mb-4">
+                9. Sorumluluk Sınırlamaları
+              </h2>
               <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600/50">
                 <p className="text-gray-300 leading-relaxed mb-4">
-                  GDG on Campus Trakya Üniversitesi aşağıdaki durumlardan sorumlu değildir:
+                  GDG on Campus Trakya Üniversitesi aşağıdaki durumlardan
+                  sorumlu değildir:
                 </p>
                 <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
                   <li>Kullanıcı hatalarından kaynaklanan kayıplar</li>
-                  <li>Üçüncü taraf hizmetlerden (Firebase, Vercel) kaynaklanan sorunlar</li>
+                  <li>
+                    Üçüncü taraf hizmetlerden (Firebase, Vercel) kaynaklanan
+                    sorunlar
+                  </li>
                   <li>İnternet bağlantı problemleri</li>
                   <li>Kullanıcılar arası anlaşmazlıklar</li>
                   <li>Dış faktörlerin neden olduğu hizmet kesintileri</li>
@@ -193,10 +242,14 @@ export default function TermsOfService() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-blue-400 mb-4">10. Hesap Askıya Alma ve Sonlandırma</h2>
+              <h2 className="text-2xl font-bold text-blue-400 mb-4">
+                10. Hesap Askıya Alma ve Sonlandırma
+              </h2>
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Askıya Alma Sebepleri:</h3>
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    Askıya Alma Sebepleri:
+                  </h3>
                   <ul className="list-disc list-inside text-gray-300 space-y-1 ml-4">
                     <li>Kullanım şartlarının ihlali</li>
                     <li>Diğer kullanıcıları rahatsız etme</li>
@@ -204,9 +257,11 @@ export default function TermsOfService() {
                     <li>Sahte bilgi paylaşımı</li>
                   </ul>
                 </div>
-                
+
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Sonlandırma Süreci:</h3>
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    Sonlandırma Süreci:
+                  </h3>
                   <ul className="list-disc list-inside text-gray-300 space-y-1 ml-4">
                     <li>Önce uyarı yapılır</li>
                     <li>Gerekirse geçici askıya alma</li>
@@ -218,22 +273,38 @@ export default function TermsOfService() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-blue-400 mb-4">11. İletişim ve Şikayetler</h2>
+              <h2 className="text-2xl font-bold text-blue-400 mb-4">
+                11. İletişim ve Şikayetler
+              </h2>
               <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600/50">
                 <p className="text-gray-300 leading-relaxed mb-4">
                   Kullanım şartları veya platform kullanımı hakkında:
                 </p>
                 <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
-                  <li><strong className="text-white">Destek Sistemi:</strong> Platform içindeki bilet sistemi</li>
-                  <li><strong className="text-white">Kategoriler:</strong> Şikayet, Öneri, Teknik Destek</li>
-                  <li><strong className="text-white">Yanıt Süresi:</strong> En fazla 3-5 iş günü</li>
-                  <li><strong className="text-white">Açık Kaynak:</strong> GitHub üzerinden katkı</li>
+                  <li>
+                    <strong className="text-white">Destek Sistemi:</strong>{" "}
+                    Platform içindeki bilet sistemi
+                  </li>
+                  <li>
+                    <strong className="text-white">Kategoriler:</strong>{" "}
+                    Şikayet, Öneri, Teknik Destek
+                  </li>
+                  <li>
+                    <strong className="text-white">Yanıt Süresi:</strong> En
+                    fazla 3-5 iş günü
+                  </li>
+                  <li>
+                    <strong className="text-white">Açık Kaynak:</strong> GitHub
+                    üzerinden katkı
+                  </li>
                 </ul>
               </div>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-blue-400 mb-4">12. Yasal Uygunluk</h2>
+              <h2 className="text-2xl font-bold text-blue-400 mb-4">
+                12. Yasal Uygunluk
+              </h2>
               <div className="space-y-4">
                 <p className="text-gray-300 leading-relaxed">
                   Bu kullanım şartları:
@@ -248,7 +319,9 @@ export default function TermsOfService() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-blue-400 mb-4">13. Değişiklik ve Güncellemeler</h2>
+              <h2 className="text-2xl font-bold text-blue-400 mb-4">
+                13. Değişiklik ve Güncellemeler
+              </h2>
               <div className="bg-blue-900/20 rounded-xl p-6 border border-blue-500/30">
                 <p className="text-gray-300 leading-relaxed mb-4">
                   Bu kullanım şartları zaman zaman güncellenebilir:
@@ -256,7 +329,10 @@ export default function TermsOfService() {
                 <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
                   <li>Önemli değişiklikler duyurulur</li>
                   <li>Güncel versiyon her zaman bu sayfadadır</li>
-                  <li>Kullanımaya devam etmek yeni şartları kabul etmek anlamına gelir</li>
+                  <li>
+                    Kullanımaya devam etmek yeni şartları kabul etmek anlamına
+                    gelir
+                  </li>
                   <li>GitHub üzerinden değişiklik geçmişi görüntülenebilir</li>
                 </ul>
               </div>
@@ -268,10 +344,13 @@ export default function TermsOfService() {
                   🎓 Eğitim Amaçlı Platform
                 </p>
                 <p className="text-gray-300 text-sm leading-relaxed">
-                  Bu platform eğitim ve öğrenci topluluğu faaliyetleri amacıyla oluşturulmuştur. 
-                  Amacımız teknoloji meraklısı öğrencileri bir araya getirmek ve öğrenmeyi desteklemektir.
-                  <br/>
-                  <strong className="text-white">Açık kaynak, şeffaf ve topluluk odaklı!</strong>
+                  Bu platform eğitim ve öğrenci topluluğu faaliyetleri amacıyla
+                  oluşturulmuştur. Amacımız teknoloji meraklısı öğrencileri bir
+                  araya getirmek ve öğrenmeyi desteklemektir.
+                  <br />
+                  <strong className="text-white">
+                    Açık kaynak, şeffaf ve topluluk odaklı!
+                  </strong>
                 </p>
               </div>
             </div>

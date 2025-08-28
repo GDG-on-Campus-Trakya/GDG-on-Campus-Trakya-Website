@@ -8,9 +8,12 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-inter)", "sans-serif"],
+      },
       screens: {
-        'xs': '320px',
-        '2xs': '280px',
+        xs: "320px",
+        "2xs": "280px",
       },
       colors: {
         "purple-500": "#9b5de5",

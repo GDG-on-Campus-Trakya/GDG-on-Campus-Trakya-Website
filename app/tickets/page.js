@@ -140,13 +140,13 @@ export default function TicketsPage() {
       );
 
       const snapshot = await getDocs(userTicketsQuery);
-      
+
       // Client-side'da son 24 saat içindeki ticket'ları say
-      const recentTickets = snapshot.docs.filter(doc => {
+      const recentTickets = snapshot.docs.filter((doc) => {
         const ticketDate = new Date(doc.data().createdAt);
         return ticketDate >= oneDayAgo;
       });
-      
+
       return recentTickets.length < 5; // Max 5 tickets per day
     } catch (error) {
       console.error("Error checking rate limit:", error);
@@ -171,13 +171,13 @@ export default function TicketsPage() {
       );
 
       const snapshot = await getDocs(userReopenQuery);
-      
+
       // Client-side'da son 24 saat içindeki reopen'ları say
-      const recentReopens = snapshot.docs.filter(doc => {
+      const recentReopens = snapshot.docs.filter((doc) => {
         const reopenDate = new Date(doc.data().reopenedAt);
         return reopenDate >= oneDayAgo;
       });
-      
+
       return recentReopens.length < 5; // Max 5 reopens per day
     } catch (error) {
       console.error("Error checking reopen rate limit:", error);
@@ -515,10 +515,10 @@ export default function TicketsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#000000] text-white">
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 pt-16 sm:pt-20 md:pt-24 pb-8">
         {/* Header Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#DB4437] via-[#F4B400] to-[#0F9D58] mb-6">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#DB4437] via-[#F4B400] to-[#0F9D58] mb-6 p-4">
             Şikayetler & Öneriler
           </h1>
           <p className="text-xl sm:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
