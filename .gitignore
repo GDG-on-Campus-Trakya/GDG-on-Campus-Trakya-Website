@@ -66,3 +66,4 @@ firestore.rules
 *.temp
 
 event_feed.md
+SECURITY.md
