@@ -13,6 +13,13 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "",
 };
 
+// Override authDomain only for development
+const env = process.env.NODE_ENV;
+if (env === "development") {
+  firebaseConfig.authDomain = "localhost:3000";
+}
+// In production, keep the original Firebase authDomain for redirect authentication to work
+
 // Initialize Firebase app
 const app = initializeApp(firebaseConfig);
 

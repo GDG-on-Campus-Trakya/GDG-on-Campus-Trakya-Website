@@ -67,3 +67,5 @@ firestore.rules
 
 event_feed.md
 SECURITY.md
+certificates
+MOBILE_AUTH_SETUP.md
