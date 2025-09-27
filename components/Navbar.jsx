@@ -1,16 +1,16 @@
 "use client";
 // components/Navbar.jsx
+import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, googleProvider, db } from "../firebase";
-import { signInWithPopup, signInWithRedirect, signOut, getRedirectResult } from "firebase/auth";
+import { signInWithPopup, signOut } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "../contexts/AuthContext";
 
 function NavbarContent() {
-  const { user, loading } = useAuth();
+  const [user, loading] = useAuthState(auth);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [userProfilePhoto, setUserProfilePhoto] = useState(null);
@@ -19,65 +19,31 @@ function NavbarContent() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [isSigningIn, setIsSigningIn] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  // Handle client-side mounting
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const currentUser = user;
-
-
-
-  const isMobileDevice = () => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-           (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
-  };
-
   const handleGoogleSignIn = async () => {
-    if (isSigningIn) return;
-
-    setIsSigningIn(true);
-
     try {
-      // Use redirect for mobile devices, popup for desktop
-      if (isMobileDevice()) {
-        // Mobile: go straight to redirect (popups don't work reliably)
-        await signInWithRedirect(auth, googleProvider);
-        return; // Don't reset loading state - redirect will handle it
-      } else {
-        // Desktop: try popup first
-        const result = await signInWithPopup(auth, googleProvider);
-        // User document creation is handled by AuthContext
+      const result = await signInWithPopup(auth, googleProvider);
+      const { uid, email, name } = result.user;
+
+      const userRef = doc(db, "users", uid);
+
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          email: email,
+          createdAt: new Date().toISOString(),
+          name: name,
+          wantsToGetEmails: true,
+        });
       }
     } catch (error) {
-      // Desktop popup fallback to redirect
-      if (error.code === 'auth/popup-blocked' ||
-          error.code === 'auth/popup-closed-by-user' ||
-          error.code === 'auth/cancelled-popup-request') {
-        try {
-          await signInWithRedirect(auth, googleProvider);
-          return; // Don't reset loading state
-        } catch (redirectError) {
-          console.error('Authentication failed:', redirectError);
-        }
-      } else {
-        console.error('Authentication error:', error);
-      }
-    } finally {
-      // Only reset loading state for desktop popup attempts
-      if (!isMobileDevice()) {
-        setIsSigningIn(false);
-      }
+      console.error("Error during sign-in:", error);
     }
   };
 
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      router.push("/");
     } catch (error) {
       console.error("Error during sign-out:", error);
     }
@@ -90,26 +56,9 @@ function NavbarContent() {
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const toggleProfileMenu = () => setProfileMenuOpen(!profileMenuOpen);
-
-  const handleMenuOpen = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setMenuOpen(true);
-  };
-
-  const handleMenuClose = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setMenuOpen(false);
-  };
   const isLandingPage = pathname === "/";
 
   const handleOutsideClick = (event) => {
-    // Don't close if clicking on the menu button itself
-    if (event.target.closest('.menu-button')) {
-      return;
-    }
-
     if (menuRef.current && !menuRef.current.contains(event.target)) {
       setMenuOpen(false);
     }
@@ -118,27 +67,21 @@ function NavbarContent() {
     }
   };
 
-  const handleOutsideTouch = (event) => {
-    handleOutsideClick(event);
-  };
-
-
-
   // Fetch user profile photo from Firestore
   useEffect(() => {
     const fetchUserProfilePhoto = async () => {
-      if (currentUser?.uid) {
+      if (user?.uid) {
         try {
-          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            setUserProfilePhoto(userData.photoURL || currentUser.photoURL || "/default-profile.png");
+            setUserProfilePhoto(userData.photoURL || user.photoURL || "/default-profile.png");
           } else {
-            setUserProfilePhoto(currentUser.photoURL || "/default-profile.png");
+            setUserProfilePhoto(user.photoURL || "/default-profile.png");
           }
         } catch (error) {
           console.error("Error fetching user profile photo:", error);
-          setUserProfilePhoto(currentUser.photoURL || "/default-profile.png");
+          setUserProfilePhoto(user.photoURL || "/default-profile.png");
         }
       } else {
         setUserProfilePhoto(null);
@@ -146,21 +89,16 @@ function NavbarContent() {
     };
 
     fetchUserProfilePhoto();
-  }, [currentUser]);
+  }, [user]);
 
   useEffect(() => {
     if (menuOpen || profileMenuOpen) {
       document.addEventListener("mousedown", handleOutsideClick);
-      document.addEventListener("touchstart", handleOutsideTouch);
     } else {
       document.removeEventListener("mousedown", handleOutsideClick);
-      document.removeEventListener("touchstart", handleOutsideTouch);
     }
 
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-      document.removeEventListener("touchstart", handleOutsideTouch);
-    };
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [menuOpen, profileMenuOpen]);
 
   return (
@@ -177,19 +115,14 @@ function NavbarContent() {
       <div className="flex items-center">
         {/* Mobile Menu Button - Visible only on small screens for ALL users */}
         <div className="md:hidden">
-          <button
-            onClick={menuOpen ? handleMenuClose : handleMenuOpen}
-            className="menu-button p-4 text-white focus:outline-none"
-            style={{
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent',
-              userSelect: 'none',
-              minWidth: '44px',
-              minHeight: '44px'
-            }}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleMenu}
+            className="p-2 text-white focus:outline-none"
           >
             <svg
-              className="w-6 h-6 pointer-events-none"
+              className="w-6 h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -210,7 +143,7 @@ function NavbarContent() {
                 />
               )}
             </svg>
-          </button>
+          </motion.button>
         </div>
 
         {/* Logo - Hidden on small screens */}
@@ -254,7 +187,7 @@ function NavbarContent() {
             Projeler
           </motion.span>
         </Link>
-        {currentUser && (
+        {user && (
           <Link href="/social">
             <motion.span
               whileHover={{ scale: 1.1, color: "#F59E0B" }}
@@ -264,7 +197,7 @@ function NavbarContent() {
             </motion.span>
           </Link>
         )}
-        {currentUser && (
+        {user && (
           <Link href="/tickets">
             <motion.span
               whileHover={{ scale: 1.1, color: "#EF4444" }}
@@ -281,19 +214,14 @@ function NavbarContent() {
 
       {/* Right Side - User Menu */}
       <div className="flex items-center gap-4">
-        {currentUser ? (
+        {user ? (
           <div className="relative">
             <motion.img
               whileHover={{ scale: 1.1 }}
               src={userProfilePhoto || "/default-profile.png"}
               alt="Profile"
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow cursor-pointer border-2 border-blue-500 touch-manipulation select-none"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow cursor-pointer border-2 border-blue-500"
               onClick={toggleProfileMenu}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                toggleProfileMenu();
-              }}
-              style={{ touchAction: 'manipulation' }}
             />
             <AnimatePresence>
               {profileMenuOpen && (
@@ -302,34 +230,24 @@ function NavbarContent() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   ref={profileMenuRef}
-                  className="absolute top-10 sm:top-12 right-0 bg-gradient-to-b from-gray-800 to-gray-900 text-white rounded-lg shadow-lg py-2 w-48 sm:w-56 z-[9999]"
+                  className="absolute top-10 sm:top-12 right-0 bg-gradient-to-b from-gray-800 to-gray-900 text-white rounded-lg shadow-lg py-2 w-48 sm:w-56 z-[60]"
                 >
                   <div className="px-3 sm:px-4 py-2 border-b border-gray-700">
-                    <p className="font-bold text-blue-400 text-sm sm:text-base truncate">{currentUser.displayName || "User"}</p>
-                    <p className="text-xs sm:text-sm text-gray-400 truncate">{currentUser.email}</p>
+                    <p className="font-bold text-blue-400 text-sm sm:text-base truncate">{user.displayName || "User"}</p>
+                    <p className="text-xs sm:text-sm text-gray-400 truncate">{user.email}</p>
                   </div>
                   
                   <motion.button
                     whileHover={{ backgroundColor: "#374151" }}
-                    className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm touch-manipulation select-none"
+                    className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm"
                     onClick={handleProfileClick}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      handleProfileClick();
-                    }}
-                    style={{ touchAction: 'manipulation' }}
                   >
                     Profili Görüntüle
                   </motion.button>
                   <motion.button
                     whileHover={{ backgroundColor: "#374151" }}
-                    className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm touch-manipulation select-none"
+                    className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm"
                     onClick={handleSignOut}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      handleSignOut();
-                    }}
-                    style={{ touchAction: 'manipulation' }}
                   >
                     Çıkış Yap
                   </motion.button>
@@ -342,17 +260,9 @@ function NavbarContent() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleGoogleSignIn}
-            disabled={isSigningIn}
-            className={`px-3 sm:px-6 py-2 ${isSigningIn ? 'bg-gray-600' : 'bg-blue-600 hover:bg-blue-700'} rounded-lg shadow-lg text-white font-semibold transition duration-300 text-sm sm:text-base touch-manipulation select-none`}
-            style={{
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent',
-              userSelect: 'none',
-              minWidth: '44px',
-              minHeight: '44px'
-            }}
+            className="px-3 sm:px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg text-white font-semibold transition duration-300 text-sm sm:text-base"
           >
-            {mounted && isSigningIn ? 'Giriş yapılıyor...' : 'Giriş Yap'}
+            Giriş Yap
           </motion.button>
         )}
       </div>
@@ -365,19 +275,13 @@ function NavbarContent() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             ref={menuRef}
-            className="md:hidden absolute top-full left-0 right-0 bg-gradient-to-b from-gray-800 to-gray-900 shadow-lg z-[9999]"
+            className="md:hidden absolute top-full left-0 right-0 bg-gradient-to-b from-gray-800 to-gray-900 shadow-lg z-50"
           >
             <div className="px-4 py-4 space-y-2">
               <Link href="/about" onClick={() => setMenuOpen(false)}>
                 <motion.div
                   whileHover={{ backgroundColor: "#374151" }}
-                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation select-none"
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    setMenuOpen(false);
-                    router.push('/about');
-                  }}
-                  style={{ touchAction: 'manipulation' }}
+                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
                 >
                   Hakkımızda
                 </motion.div>
@@ -385,13 +289,7 @@ function NavbarContent() {
               <Link href="/events" onClick={() => setMenuOpen(false)}>
                 <motion.div
                   whileHover={{ backgroundColor: "#374151" }}
-                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation select-none"
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    setMenuOpen(false);
-                    router.push('/events');
-                  }}
-                  style={{ touchAction: 'manipulation' }}
+                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
                 >
                   Etkinlikler
                 </motion.div>
@@ -399,44 +297,26 @@ function NavbarContent() {
               <Link href="/projects" onClick={() => setMenuOpen(false)}>
                 <motion.div
                   whileHover={{ backgroundColor: "#374151" }}
-                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation select-none"
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    setMenuOpen(false);
-                    router.push('/projects');
-                  }}
-                  style={{ touchAction: 'manipulation' }}
+                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
                 >
                   Projeler
                 </motion.div>
               </Link>
-              {currentUser && (
+              {user && (
                 <Link href="/social" onClick={() => setMenuOpen(false)}>
                   <motion.div
                     whileHover={{ backgroundColor: "#374151" }}
-                    className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation select-none"
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      setMenuOpen(false);
-                      router.push('/social');
-                    }}
-                    style={{ touchAction: 'manipulation' }}
+                    className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
                   >
                     Sosyal
                   </motion.div>
                 </Link>
               )}
-              {currentUser && (
+              {user && (
                 <Link href="/tickets" onClick={() => setMenuOpen(false)}>
                   <motion.div
                     whileHover={{ backgroundColor: "#374151" }}
-                    className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation select-none"
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      setMenuOpen(false);
-                      router.push('/tickets');
-                    }}
-                    style={{ touchAction: 'manipulation' }}
+                    className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
                   >
                     Şikayetler/Öneriler
                   </motion.div>

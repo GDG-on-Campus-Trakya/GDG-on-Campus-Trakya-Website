@@ -3,7 +3,6 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import "./globals.css";
 import AuthProvider from "./AuthProvider";
-import CustomAuthProvider from "../contexts/AuthContext";
 import { Analytics } from "@vercel/analytics/next";
 import { Inter } from "next/font/google";
 
@@ -25,11 +24,9 @@ export default async function RootLayout({ children }) {
         className={`${inter.variable} font-sans flex flex-col min-h-screen custom-scrollbar overflow-x-hidden`}
       >
         <AuthProvider>
-          <CustomAuthProvider>
-            <Navbar />
-            <main className="flex-1 w-full">{children}</main>
-            <Footer />
-          </CustomAuthProvider>
+          <Navbar />
+          <main className="flex-1 w-full">{children}</main>
+          <Footer />
         </AuthProvider>
         <Analytics />
       </body>
