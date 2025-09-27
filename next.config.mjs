@@ -69,7 +69,7 @@ const nextConfig = {
           // Prevent clickjacking
           {
             key: "X-Frame-Options",
-            value: "DENY",
+            value: "SAMEORIGIN",
           },
           // Prevent MIME sniffing
           {
