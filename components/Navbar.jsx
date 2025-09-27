@@ -19,15 +19,7 @@ function NavbarContent() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [isSigningIn, setIsSigningIn] = useState(false);
-
-  const handleGoogleSignIn = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (isSigningIn) return; // Prevent double clicks
-
-    setIsSigningIn(true);
+  const handleGoogleSignIn = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const { uid, email, name } = result.user;
@@ -45,12 +37,7 @@ function NavbarContent() {
         });
       }
     } catch (error) {
-      // Only log non-cancelled errors
-      if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
-        console.error("Error during sign-in:", error);
-      }
-    } finally {
-      setIsSigningIn(false);
+      console.error("Error during sign-in:", error);
     }
   };
 
@@ -69,36 +56,15 @@ function NavbarContent() {
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const toggleProfileMenu = () => setProfileMenuOpen(!profileMenuOpen);
-
-  const handleMenuOpen = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setMenuOpen(true);
-  };
-
-  const handleMenuClose = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setMenuOpen(false);
-  };
   const isLandingPage = pathname === "/";
 
   const handleOutsideClick = (event) => {
-    // Don't close if clicking on the menu button itself
-    if (event.target.closest('.menu-button')) {
-      return;
-    }
-
     if (menuRef.current && !menuRef.current.contains(event.target)) {
       setMenuOpen(false);
     }
     if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
       setProfileMenuOpen(false);
     }
-  };
-
-  const handleOutsideTouch = (event) => {
-    handleOutsideClick(event);
   };
 
   // Fetch user profile photo from Firestore
@@ -128,16 +94,11 @@ function NavbarContent() {
   useEffect(() => {
     if (menuOpen || profileMenuOpen) {
       document.addEventListener("mousedown", handleOutsideClick);
-      document.addEventListener("touchstart", handleOutsideTouch);
     } else {
       document.removeEventListener("mousedown", handleOutsideClick);
-      document.removeEventListener("touchstart", handleOutsideTouch);
     }
 
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-      document.removeEventListener("touchstart", handleOutsideTouch);
-    };
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [menuOpen, profileMenuOpen]);
 
   return (
@@ -154,19 +115,14 @@ function NavbarContent() {
       <div className="flex items-center">
         {/* Mobile Menu Button - Visible only on small screens for ALL users */}
         <div className="md:hidden">
-          <button
-            onClick={menuOpen ? handleMenuClose : handleMenuOpen}
-            className="menu-button p-4 text-white focus:outline-none"
-            style={{
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent',
-              userSelect: 'none',
-              minWidth: '44px',
-              minHeight: '44px'
-            }}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleMenu}
+            className="p-2 text-white focus:outline-none"
           >
             <svg
-              className="w-6 h-6 pointer-events-none"
+              className="w-6 h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -187,7 +143,7 @@ function NavbarContent() {
                 />
               )}
             </svg>
-          </button>
+          </motion.button>
         </div>
 
         {/* Logo - Hidden on small screens */}
@@ -264,13 +220,8 @@ function NavbarContent() {
               whileHover={{ scale: 1.1 }}
               src={userProfilePhoto || "/default-profile.png"}
               alt="Profile"
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow cursor-pointer border-2 border-blue-500 touch-manipulation select-none"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow cursor-pointer border-2 border-blue-500"
               onClick={toggleProfileMenu}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                toggleProfileMenu();
-              }}
-              style={{ touchAction: 'manipulation' }}
             />
             <AnimatePresence>
               {profileMenuOpen && (
@@ -279,7 +230,7 @@ function NavbarContent() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   ref={profileMenuRef}
-                  className="absolute top-10 sm:top-12 right-0 bg-gradient-to-b from-gray-800 to-gray-900 text-white rounded-lg shadow-lg py-2 w-48 sm:w-56 z-[9999]"
+                  className="absolute top-10 sm:top-12 right-0 bg-gradient-to-b from-gray-800 to-gray-900 text-white rounded-lg shadow-lg py-2 w-48 sm:w-56 z-[60]"
                 >
                   <div className="px-3 sm:px-4 py-2 border-b border-gray-700">
                     <p className="font-bold text-blue-400 text-sm sm:text-base truncate">{user.displayName || "User"}</p>
@@ -288,25 +239,15 @@ function NavbarContent() {
                   
                   <motion.button
                     whileHover={{ backgroundColor: "#374151" }}
-                    className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm touch-manipulation select-none"
+                    className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm"
                     onClick={handleProfileClick}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      handleProfileClick();
-                    }}
-                    style={{ touchAction: 'manipulation' }}
                   >
                     Profili Görüntüle
                   </motion.button>
                   <motion.button
                     whileHover={{ backgroundColor: "#374151" }}
-                    className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm touch-manipulation select-none"
+                    className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm"
                     onClick={handleSignOut}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      handleSignOut();
-                    }}
-                    style={{ touchAction: 'manipulation' }}
                   >
                     Çıkış Yap
                   </motion.button>
@@ -319,11 +260,9 @@ function NavbarContent() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleGoogleSignIn}
-            disabled={isSigningIn}
-            className={`px-3 sm:px-6 py-2 ${isSigningIn ? 'bg-gray-600' : 'bg-blue-600 hover:bg-blue-700'} rounded-lg shadow-lg text-white font-semibold transition duration-300 text-sm sm:text-base touch-manipulation select-none`}
-            style={{ touchAction: 'manipulation' }}
+            className="px-3 sm:px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg text-white font-semibold transition duration-300 text-sm sm:text-base"
           >
-{isSigningIn ? 'Giriş yapılıyor...' : 'Giriş Yap'}
+            Giriş Yap
           </motion.button>
         )}
       </div>
@@ -336,18 +275,13 @@ function NavbarContent() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             ref={menuRef}
-            className="md:hidden absolute top-full left-0 right-0 bg-gradient-to-b from-gray-800 to-gray-900 shadow-lg z-[9999]"
+            className="md:hidden absolute top-full left-0 right-0 bg-gradient-to-b from-gray-800 to-gray-900 shadow-lg z-50"
           >
             <div className="px-4 py-4 space-y-2">
               <Link href="/about" onClick={() => setMenuOpen(false)}>
                 <motion.div
                   whileHover={{ backgroundColor: "#374151" }}
-                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation select-none"
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    setMenuOpen(false);
-                  }}
-                  style={{ touchAction: 'manipulation' }}
+                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
                 >
                   Hakkımızda
                 </motion.div>
@@ -355,12 +289,7 @@ function NavbarContent() {
               <Link href="/events" onClick={() => setMenuOpen(false)}>
                 <motion.div
                   whileHover={{ backgroundColor: "#374151" }}
-                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation select-none"
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    setMenuOpen(false);
-                  }}
-                  style={{ touchAction: 'manipulation' }}
+                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
                 >
                   Etkinlikler
                 </motion.div>
@@ -368,12 +297,7 @@ function NavbarContent() {
               <Link href="/projects" onClick={() => setMenuOpen(false)}>
                 <motion.div
                   whileHover={{ backgroundColor: "#374151" }}
-                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation select-none"
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    setMenuOpen(false);
-                  }}
-                  style={{ touchAction: 'manipulation' }}
+                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
                 >
                   Projeler
                 </motion.div>
@@ -382,12 +306,7 @@ function NavbarContent() {
                 <Link href="/social" onClick={() => setMenuOpen(false)}>
                   <motion.div
                     whileHover={{ backgroundColor: "#374151" }}
-                    className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation select-none"
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      setMenuOpen(false);
-                    }}
-                    style={{ touchAction: 'manipulation' }}
+                    className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
                   >
                     Sosyal
                   </motion.div>
@@ -397,12 +316,7 @@ function NavbarContent() {
                 <Link href="/tickets" onClick={() => setMenuOpen(false)}>
                   <motion.div
                     whileHover={{ backgroundColor: "#374151" }}
-                    className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation select-none"
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      setMenuOpen(false);
-                    }}
-                    style={{ touchAction: 'manipulation' }}
+                    className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
                   >
                     Şikayetler/Öneriler
                   </motion.div>
