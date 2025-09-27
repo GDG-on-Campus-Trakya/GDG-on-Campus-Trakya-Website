@@ -2,7 +2,7 @@
 // components/Navbar.jsx
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, googleProvider, db } from "../firebase";
-import { signInWithRedirect, signOut, getRedirectResult } from "firebase/auth";
+import { signInWithPopup, signOut } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import { useEffect, useState, useRef, Suspense } from "react";
@@ -19,47 +19,31 @@ function NavbarContent() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const loginWithGoogleRedirect = async () => {
+  const handleGoogleSignIn = async () => {
     try {
-      googleProvider.setCustomParameters({
-        prompt: 'select_account'
-      });
-      await signInWithRedirect(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      const { uid, email, name } = result.user;
+
+      const userRef = doc(db, "users", uid);
+
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          email: email,
+          createdAt: new Date().toISOString(),
+          name: name,
+          wantsToGetEmails: true,
+        });
+      }
     } catch (error) {
       console.error("Error during sign-in:", error);
-    }
-  };
-
-  const checkRedirectResult = async () => {
-    try {
-      const result = await getRedirectResult(auth);
-
-      if (result) {
-        const { uid, email, displayName } = result.user;
-        const userRef = doc(db, "users", uid);
-        const userSnap = await getDoc(userRef);
-
-        if (!userSnap.exists()) {
-          await setDoc(userRef, {
-            email: email,
-            createdAt: new Date().toISOString(),
-            name: displayName,
-            wantsToGetEmails: true,
-          });
-        }
-      }
-      return result;
-    } catch (error) {
-      console.error("Error handling redirect result:", error);
-      throw error;
     }
   };
 
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      // Refresh page and redirect to home
-      window.location.href = '/';
     } catch (error) {
       console.error("Error during sign-out:", error);
     }
@@ -84,15 +68,6 @@ function NavbarContent() {
   };
 
   // Fetch user profile photo from Firestore
-  useEffect(() => {
-    // Check for redirect result with a slight delay for mobile browsers
-    const timer = setTimeout(() => {
-      checkRedirectResult();
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   useEffect(() => {
     const fetchUserProfilePhoto = async () => {
       if (user?.uid) {
@@ -144,11 +119,7 @@ function NavbarContent() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={toggleMenu}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              toggleMenu();
-            }}
-            className="p-2 text-white focus:outline-none touch-manipulation select-none"
+            className="p-2 text-white focus:outline-none"
           >
             <svg
               className="w-6 h-6"
@@ -249,12 +220,8 @@ function NavbarContent() {
               whileHover={{ scale: 1.1 }}
               src={userProfilePhoto || "/default-profile.png"}
               alt="Profile"
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow cursor-pointer border-2 border-blue-500 touch-manipulation select-none"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow cursor-pointer border-2 border-blue-500"
               onClick={toggleProfileMenu}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                toggleProfileMenu();
-              }}
             />
             <AnimatePresence>
               {profileMenuOpen && (
@@ -263,7 +230,7 @@ function NavbarContent() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   ref={profileMenuRef}
-                  className="absolute top-10 sm:top-12 right-0 bg-gradient-to-b from-gray-800 to-gray-900 text-white rounded-lg shadow-lg py-2 w-48 sm:w-56 z-[9999] border border-gray-700"
+                  className="absolute top-10 sm:top-12 right-0 bg-gradient-to-b from-gray-800 to-gray-900 text-white rounded-lg shadow-lg py-2 w-48 sm:w-56 z-[60]"
                 >
                   <div className="px-3 sm:px-4 py-2 border-b border-gray-700">
                     <p className="font-bold text-blue-400 text-sm sm:text-base truncate">{user.displayName || "User"}</p>
@@ -272,23 +239,15 @@ function NavbarContent() {
                   
                   <motion.button
                     whileHover={{ backgroundColor: "#374151" }}
-                    className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm touch-manipulation"
+                    className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm"
                     onClick={handleProfileClick}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      handleProfileClick();
-                    }}
                   >
                     Profili Görüntüle
                   </motion.button>
                   <motion.button
                     whileHover={{ backgroundColor: "#374151" }}
-                    className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm touch-manipulation"
+                    className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm"
                     onClick={handleSignOut}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      handleSignOut();
-                    }}
                   >
                     Çıkış Yap
                   </motion.button>
@@ -300,12 +259,8 @@ function NavbarContent() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={loginWithGoogleRedirect}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              loginWithGoogleRedirect();
-            }}
-            className="px-3 sm:px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg text-white font-semibold transition duration-300 text-sm sm:text-base touch-manipulation select-none"
+            onClick={handleGoogleSignIn}
+            className="px-3 sm:px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg text-white font-semibold transition duration-300 text-sm sm:text-base"
           >
             Giriş Yap
           </motion.button>
@@ -320,87 +275,52 @@ function NavbarContent() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             ref={menuRef}
-            className="md:hidden absolute top-full left-0 right-0 bg-gradient-to-b from-gray-800 to-gray-900 shadow-lg z-[9999] border-t border-gray-700"
+            className="md:hidden absolute top-full left-0 right-0 bg-gradient-to-b from-gray-800 to-gray-900 shadow-lg z-50"
           >
             <div className="px-4 py-4 space-y-2">
-              <motion.div
-                whileHover={{ backgroundColor: "#374151" }}
-                className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation"
-                onClick={() => {
-                  setMenuOpen(false);
-                  router.push('/about');
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  setMenuOpen(false);
-                  router.push('/about');
-                }}
-              >
-                Hakkımızda
-              </motion.div>
-              <motion.div
-                whileHover={{ backgroundColor: "#374151" }}
-                className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation"
-                onClick={() => {
-                  setMenuOpen(false);
-                  router.push('/events');
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  setMenuOpen(false);
-                  router.push('/events');
-                }}
-              >
-                Etkinlikler
-              </motion.div>
-              <motion.div
-                whileHover={{ backgroundColor: "#374151" }}
-                className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation"
-                onClick={() => {
-                  setMenuOpen(false);
-                  router.push('/projects');
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  setMenuOpen(false);
-                  router.push('/projects');
-                }}
-              >
-                Projeler
-              </motion.div>
-              {user && (
+              <Link href="/about" onClick={() => setMenuOpen(false)}>
                 <motion.div
                   whileHover={{ backgroundColor: "#374151" }}
-                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    router.push('/social');
-                  }}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    setMenuOpen(false);
-                    router.push('/social');
-                  }}
+                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
                 >
-                  Sosyal
+                  Hakkımızda
                 </motion.div>
+              </Link>
+              <Link href="/events" onClick={() => setMenuOpen(false)}>
+                <motion.div
+                  whileHover={{ backgroundColor: "#374151" }}
+                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
+                >
+                  Etkinlikler
+                </motion.div>
+              </Link>
+              <Link href="/projects" onClick={() => setMenuOpen(false)}>
+                <motion.div
+                  whileHover={{ backgroundColor: "#374151" }}
+                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
+                >
+                  Projeler
+                </motion.div>
+              </Link>
+              {user && (
+                <Link href="/social" onClick={() => setMenuOpen(false)}>
+                  <motion.div
+                    whileHover={{ backgroundColor: "#374151" }}
+                    className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
+                  >
+                    Sosyal
+                  </motion.div>
+                </Link>
               )}
               {user && (
-                <motion.div
-                  whileHover={{ backgroundColor: "#374151" }}
-                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    router.push('/tickets');
-                  }}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    setMenuOpen(false);
-                    router.push('/tickets');
-                  }}
-                >
-                  Şikayetler/Öneriler
-                </motion.div>
+                <Link href="/tickets" onClick={() => setMenuOpen(false)}>
+                  <motion.div
+                    whileHover={{ backgroundColor: "#374151" }}
+                    className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded"
+                  >
+                    Şikayetler/Öneriler
+                  </motion.div>
+                </Link>
               )}
             </div>
           </motion.div>
