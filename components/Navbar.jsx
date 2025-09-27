@@ -2,7 +2,7 @@
 // components/Navbar.jsx
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, googleProvider, db } from "../firebase";
-import { signInWithPopup, signInWithRedirect, signOut, getRedirectResult } from "firebase/auth";
+import { signInWithPopup, signOut } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import { useEffect, useState, useRef, Suspense } from "react";
@@ -21,59 +21,32 @@ function NavbarContent() {
 
   const [isSigningIn, setIsSigningIn] = useState(false);
 
-  // Helper function to handle user document creation
-  const handleUserCreation = async (user) => {
-    const { uid, email, displayName } = user;
-    const userRef = doc(db, "users", uid);
-    const userSnap = await getDoc(userRef);
-
-    if (!userSnap.exists()) {
-      await setDoc(userRef, {
-        email: email,
-        createdAt: new Date().toISOString(),
-        name: displayName,
-        wantsToGetEmails: true,
-      });
-    }
-  };
-
-  const isMobile = () => {
-    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
-      return false;
-    }
-
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    const isMobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile/i.test(userAgent);
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    const isSmallScreen = window.innerWidth <= 1024;
-
-    return isMobileUserAgent || (isTouchDevice && isSmallScreen);
-  };
-
   const handleGoogleSignIn = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (isSigningIn) return;
+    if (isSigningIn) return; // Prevent double clicks
 
     setIsSigningIn(true);
-
     try {
-      // Use popup for all devices - more reliable than redirect
       const result = await signInWithPopup(auth, googleProvider);
-      await handleUserCreation(result.user);
+      const { uid, email, name } = result.user;
+
+      const userRef = doc(db, "users", uid);
+
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          email: email,
+          createdAt: new Date().toISOString(),
+          name: name,
+          wantsToGetEmails: true,
+        });
+      }
     } catch (error) {
-      if (error.code === 'auth/popup-blocked') {
-        // If popup is blocked, try redirect as fallback
-        try {
-          await signInWithRedirect(auth, googleProvider);
-          return; // Don't reset isSigningIn, will be handled by redirect result
-        } catch (redirectError) {
-          console.error("Both popup and redirect failed:", redirectError);
-        }
-      } else if (error.code !== 'auth/cancelled-popup-request' &&
-                 error.code !== 'auth/popup-closed-by-user' &&
-                 error.code !== 'auth/user-cancelled') {
+      // Only log non-cancelled errors
+      if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
         console.error("Error during sign-in:", error);
       }
     } finally {
@@ -84,7 +57,6 @@ function NavbarContent() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      router.push("/");
     } catch (error) {
       console.error("Error during sign-out:", error);
     }
@@ -128,30 +100,6 @@ function NavbarContent() {
   const handleOutsideTouch = (event) => {
     handleOutsideClick(event);
   };
-
-  // Handle redirect result for mobile login - this must run on every page load
-  useEffect(() => {
-    const handleRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result?.user) {
-          await handleUserCreation(result.user);
-        }
-      } catch (error) {
-        if (error.code && error.code !== 'auth/cancelled-popup-request' &&
-            error.code !== 'auth/popup-closed-by-user' &&
-            error.code !== 'auth/user-cancelled') {
-          console.error("Error handling redirect result:", error);
-        }
-      } finally {
-        // Always reset signing in state after checking redirect result
-        setIsSigningIn(false);
-      }
-    };
-
-    // Always check for redirect result on component mount
-    handleRedirectResult();
-  }, []); // Empty dependency array - only run once on mount
 
   // Fetch user profile photo from Firestore
   useEffect(() => {
@@ -371,23 +319,11 @@ function NavbarContent() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleGoogleSignIn}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              if (!isSigningIn) {
-                handleGoogleSignIn(e);
-              }
-            }}
             disabled={isSigningIn}
             className={`px-3 sm:px-6 py-2 ${isSigningIn ? 'bg-gray-600' : 'bg-blue-600 hover:bg-blue-700'} rounded-lg shadow-lg text-white font-semibold transition duration-300 text-sm sm:text-base touch-manipulation select-none`}
-            style={{
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent',
-              userSelect: 'none',
-              minWidth: '44px',
-              minHeight: '44px'
-            }}
+            style={{ touchAction: 'manipulation' }}
           >
-            {isSigningIn ? 'Giriş yapılıyor...' : 'Giriş Yap'}
+{isSigningIn ? 'Giriş yapılıyor...' : 'Giriş Yap'}
           </motion.button>
         )}
       </div>
