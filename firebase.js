@@ -19,5 +19,15 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase services
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+
+// Configure Google provider for better cross-device compatibility
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
+
+// Add scope for basic profile info
+googleProvider.addScope('profile');
+googleProvider.addScope('email');
+
 export const db = getFirestore(app);
 export const storage = getStorage(app);
