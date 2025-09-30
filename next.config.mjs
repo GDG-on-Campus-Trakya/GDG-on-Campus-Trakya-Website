@@ -99,7 +99,7 @@ const nextConfig = {
           {
             key: "Permissions-Policy",
             value: [
-              "camera=()",
+              "camera=(self)",
               "microphone=()",
               "geolocation=()",
               "interest-cohort=()",
