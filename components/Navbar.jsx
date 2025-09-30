@@ -73,7 +73,12 @@ function NavbarContent() {
   };
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
-  const toggleProfileMenu = () => setProfileMenuOpen(!profileMenuOpen);
+  const toggleProfileMenu = () => {
+    setProfileMenuOpen(!profileMenuOpen);
+    if (!profileMenuOpen) {
+      setMenuOpen(false);
+    }
+  };
   const isLandingPage = pathname === "/";
 
   const handleOutsideClick = (event) => {
