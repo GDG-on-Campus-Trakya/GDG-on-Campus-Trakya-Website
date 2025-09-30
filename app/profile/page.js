@@ -337,11 +337,13 @@ const Profile = () => {
         </h2>
         <motion.div
           whileHover={{ scale: 1.01 }}
-          className="flex flex-row items-center justify-between space-x-4 rounded-lg border p-4"
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg border p-4"
         >
-          <div className="space-y-0.5">
-            <Label htmlFor="email-notifications">Email Bildirimleri</Label>
-            <p className="text-sm text-gray-400">
+          <div className="space-y-0.5 flex-1 min-w-0">
+            <Label htmlFor="email-notifications" className="text-base">
+              Email Bildirimleri
+            </Label>
+            <p className="text-sm text-gray-400 break-words">
               Etkinlikler ve güncellemeler hakkında email alın
             </p>
           </div>
@@ -350,7 +352,7 @@ const Profile = () => {
             checked={userWantsEmails}
             onCheckedChange={handleEmailPreferenceChange}
             disabled={isEmailUpdateLoading}
-            className="data-[state=checked]:bg-blue-600"
+            className="data-[state=checked]:bg-blue-600 shrink-0"
           />
         </motion.div>
         {isEmailUpdateLoading && (
@@ -473,10 +475,10 @@ const Profile = () => {
           whileHover={{ scale: 1.01 }}
           className="flex flex-col space-y-4 rounded-lg border border-red-500 p-4 bg-red-950/20"
         >
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-0.5 flex-1 min-w-0">
               <h3 className="text-lg font-medium text-red-300">Hesabı Sil</h3>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-gray-400 break-words">
                 Hesabınızı ve tüm verilerinizi kalıcı olarak silin. Bu işlem
                 geri alınamaz.
               </p>
@@ -484,7 +486,7 @@ const Profile = () => {
             <Button
               variant="destructive"
               onClick={() => setIsDeleteAccountModalOpen(true)}
-              className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
+              className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 shrink-0 w-full sm:w-auto"
             >
               <Trash2 className="w-4 h-4" />
               Hesabı Sil
