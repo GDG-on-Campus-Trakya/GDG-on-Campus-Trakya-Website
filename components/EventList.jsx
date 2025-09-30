@@ -1,16 +1,21 @@
 // components/EventList.jsx
 
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const isExpired = (eventDate, eventTime) => {
   const now = new Date();
   const [hours, minutes] = eventTime.split(':').map(Number);
   const eventDateTime = new Date(eventDate);
   eventDateTime.setHours(hours, minutes, 0, 0);
-  return now > eventDateTime;
+
+  // Add 6 hours grace period after event ends for QR code visibility
+  const graceEndTime = new Date(eventDateTime);
+  graceEndTime.setHours(graceEndTime.getHours() + 6);
+
+  return now > graceEndTime;
 };
 
 // Updated formatDate function to accept options
@@ -26,6 +31,8 @@ const EventList = ({
   qrCodes,
   downloadQRCode,
 }) => {
+  const [enlargedQR, setEnlargedQR] = useState(null);
+
   if (registrations.length === 0) {
     return (
       <p className="text-gray-400">Henüz bir etkinliğe kayıt olmadınız.</p>
@@ -108,10 +115,16 @@ const EventList = ({
             <div className="flex flex-col gap-4">
               {!expired && qrCodes[registration.qrCodeId] && (
                 <div className="flex flex-col items-center gap-2">
-                  <img
+                  <motion.img
                     src={qrCodes[registration.qrCodeId]}
                     alt="QR Code"
-                    className="w-32 h-32"
+                    className="w-32 h-32 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => setEnlargedQR({
+                      qrCode: qrCodes[registration.qrCodeId],
+                      eventName: event.name
+                    })}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   />
                   <button
                     onClick={() =>
@@ -140,6 +153,70 @@ const EventList = ({
           </motion.li>
         );
       })}
+
+      {/* QR Code Enlargement Modal */}
+      <AnimatePresence>
+        {enlargedQR && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setEnlargedQR(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+              className="bg-white rounded-2xl p-6 max-w-sm w-full mx-auto shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 truncate">
+                  {enlargedQR.eventName}
+                </h3>
+                <button
+                  onClick={() => setEnlargedQR(null)}
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* QR Code */}
+              <div className="flex flex-col items-center space-y-4">
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <img
+                    src={enlargedQR.qrCode}
+                    alt="QR Code"
+                    className="w-64 h-64 sm:w-80 sm:h-80"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 w-full">
+                  <button
+                    onClick={() => downloadQRCode(enlargedQR.qrCode, enlargedQR.eventName)}
+                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                  >
+                    Kodu İndir
+                  </button>
+                  <button
+                    onClick={() => setEnlargedQR(null)}
+                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                  >
+                    Kapat
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </ul>
   );
 };

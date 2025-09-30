@@ -8,12 +8,14 @@ import Link from "next/link";
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { checkUserRole } from "../utils/roleUtils";
 
 function NavbarContent() {
   const [user, loading] = useAuthState(auth);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [userProfilePhoto, setUserProfilePhoto] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   const menuRef = useRef(null);
   const profileMenuRef = useRef(null);
   const router = useRouter();
@@ -94,7 +96,7 @@ function NavbarContent() {
   }, []);
 
   useEffect(() => {
-    const fetchUserProfilePhoto = async () => {
+    const fetchUserData = async () => {
       if (user?.uid) {
         try {
           const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -104,16 +106,22 @@ function NavbarContent() {
           } else {
             setUserProfilePhoto(user.photoURL || "/default-profile.png");
           }
+
+          // Check user role
+          const role = await checkUserRole(user.email);
+          setUserRole(role);
         } catch (error) {
-          console.error("Error fetching user profile photo:", error);
+          console.error("Error fetching user data:", error);
           setUserProfilePhoto(user.photoURL || "/default-profile.png");
+          setUserRole(null);
         }
       } else {
         setUserProfilePhoto(null);
+        setUserRole(null);
       }
     };
 
-    fetchUserProfilePhoto();
+    fetchUserData();
   }, [user]);
 
   useEffect(() => {
@@ -236,6 +244,16 @@ function NavbarContent() {
             </motion.span>
           </Link>
         )}
+        {userRole && (
+          <Link href="/admin">
+            <motion.span
+              whileHover={{ scale: 1.1, color: "#10B981" }}
+              className="hover:text-green-400 transition cursor-pointer font-semibold"
+            >
+              Admin Paneli
+            </motion.span>
+          </Link>
+        )}
       </div>
 
       {/* Spacer for mobile to push right side content to the right */}
@@ -281,6 +299,23 @@ function NavbarContent() {
                   >
                     Profili Görüntüle
                   </motion.button>
+                  {userRole && (
+                    <motion.button
+                      whileHover={{ backgroundColor: "#374151" }}
+                      className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm touch-manipulation font-semibold text-green-400"
+                      onClick={() => {
+                        setProfileMenuOpen(false);
+                        router.push('/admin');
+                      }}
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
+                        setProfileMenuOpen(false);
+                        router.push('/admin');
+                      }}
+                    >
+                      Admin Paneli
+                    </motion.button>
+                  )}
                   <motion.button
                     whileHover={{ backgroundColor: "#374151" }}
                     className="block w-full text-left px-3 sm:px-4 py-2 hover:bg-gray-700 transition-colors text-sm touch-manipulation"
@@ -400,6 +435,23 @@ function NavbarContent() {
                   }}
                 >
                   Şikayetler/Öneriler
+                </motion.div>
+              )}
+              {userRole && (
+                <motion.div
+                  whileHover={{ backgroundColor: "#374151" }}
+                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation font-semibold text-green-400"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push('/admin');
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    setMenuOpen(false);
+                    router.push('/admin');
+                  }}
+                >
+                  Admin Paneli
                 </motion.div>
               )}
             </div>

@@ -93,9 +93,9 @@ export default function AdminQRVerificationPage() {
           }
         },
         (errorMessage) => {
-          if (!errorMessage.includes("NotFoundException")) {
-            console.log("QR code parse error, error =", errorMessage);
-          }
+          // if (!errorMessage.includes("NotFoundException")) {
+          //   console.log("QR code parse error, error =", errorMessage);
+          // }
         }
       );
     } catch (error) {
@@ -126,13 +126,6 @@ export default function AdminQRVerificationPage() {
         return;
       }
 
-      // Enhanced validation: Check if QR code ID is a valid UUID v4
-      const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!UUID_REGEX.test(qrCodeId)) {
-        setVerificationResult("Invalid QR Code format: Invalid UUID");
-        toast.error("Geçersiz QR kod formatı!");
-        return;
-      }
 
       try {
         // Get registration data first
@@ -172,23 +165,26 @@ export default function AdminQRVerificationPage() {
         const eventDoc = eventSnapshot.docs[0];
         const eventData = eventDoc.data();
 
-        // Check if verification is happening on the event date (Turkey timezone)
+        // Check if verification is happening within allowed time (event day + 6 hours)
         const turkeyTimezone = 'Europe/Istanbul';
 
-        // Get current date in Turkey timezone
+        // Get current time in Turkey timezone
         const now = new Date();
-        const today = new Date(now.toLocaleString('en-US', { timeZone: turkeyTimezone }));
-        today.setHours(0, 0, 0, 0);
+        const currentTime = new Date(now.toLocaleString('en-US', { timeZone: turkeyTimezone }));
 
-        // Parse event date and normalize to Turkey timezone
+        // Parse event date and set to start of day in Turkey timezone
         const eventDate = new Date(eventData.date + 'T00:00:00+03:00'); // Turkey timezone
-        eventDate.setHours(0, 0, 0, 0);
 
-        if (eventDate.getTime() !== today.getTime()) {
+        // Calculate end of verification period (event day + 6 hours)
+        const verificationEndTime = new Date(eventDate);
+        verificationEndTime.setDate(verificationEndTime.getDate() + 1); // Next day
+        verificationEndTime.setHours(6, 0, 0, 0); // 6 AM next day
+
+        if (currentTime < eventDate || currentTime > verificationEndTime) {
           setVerificationResult(
-            "QR code can only be verified on the day of the event"
+            "QR code can only be verified on the event day and up to 6 hours after"
           );
-          toast.error("QR kodu sadece etkinlik günü doğrulanabilir!");
+          toast.error("QR kodu sadece etkinlik günü ve sonrasındaki 6 saat içinde doğrulanabilir!");
           return;
         }
 
