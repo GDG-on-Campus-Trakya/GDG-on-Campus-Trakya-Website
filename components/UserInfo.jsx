@@ -7,7 +7,7 @@ import { db } from "../firebase";
 import { toast } from "react-toastify";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { faculties, departments } from "@/constants";
+import { faculties, facultyDepartments } from "@/constants";
 import ProfileImageUpload from "./ProfileImageUpload";
 import { StoragePaths } from "../utils/storageUtils";
 import {
@@ -28,6 +28,7 @@ const UserInfo = ({ user }) => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [departmentSearch, setDepartmentSearch] = useState("");
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -128,6 +129,27 @@ const UserInfo = ({ user }) => {
     return requiredFields.every((field) => profileData[field]?.trim() !== "");
   };
 
+  const handleFacultyChange = (newFaculty) => {
+    setProfileData({
+      ...profileData,
+      faculty: newFaculty,
+      department: "" // Clear department when faculty changes
+    });
+    setDepartmentSearch(""); // Clear search when faculty changes
+  };
+
+  const getFilteredDepartments = () => {
+    if (!profileData.faculty) return [];
+
+    const departments = facultyDepartments[profileData.faculty] || [];
+
+    if (!departmentSearch) return departments;
+
+    return departments.filter(department =>
+      department.toLowerCase().includes(departmentSearch.toLowerCase())
+    );
+  };
+
   return (
     <div className="flex flex-col items-center gap-5 justify-center mb-10 w-full max-w-2xl mx-auto">
       <div className="flex items-center gap-5 justify-center">
@@ -184,9 +206,7 @@ const UserInfo = ({ user }) => {
                 <label className="text-sm text-gray-300">Fakülte</label>
                 <Select
                   value={profileData.faculty}
-                  onValueChange={(value) =>
-                    setProfileData({ ...profileData, faculty: value })
-                  }
+                  onValueChange={handleFacultyChange}
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <SelectValue placeholder="Fakülte seçin" />
@@ -206,17 +226,26 @@ const UserInfo = ({ user }) => {
               </div>
               <div className="space-y-2">
                 <label className="text-sm text-gray-300">Bölüm</label>
+                {profileData.faculty && (
+                  <Input
+                    placeholder="Bölüm ara..."
+                    value={departmentSearch}
+                    onChange={(e) => setDepartmentSearch(e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 mb-2"
+                  />
+                )}
                 <Select
                   value={profileData.department}
                   onValueChange={(value) =>
                     setProfileData({ ...profileData, department: value })
                   }
+                  disabled={!profileData.faculty}
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                    <SelectValue placeholder="Bölüm seçin" />
+                    <SelectValue placeholder={profileData.faculty ? "Bölüm seçin" : "Önce fakülte seçin"} />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-700 border-gray-600">
-                    {departments.map((department) => (
+                    {getFilteredDepartments().map((department) => (
                       <SelectItem
                         key={department}
                         value={department}
