@@ -126,6 +126,14 @@ export default function AdminQRVerificationPage() {
         return;
       }
 
+      // Enhanced validation: Check if QR code ID is a valid UUID v4
+      const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!UUID_REGEX.test(qrCodeId)) {
+        setVerificationResult("Invalid QR Code format: Invalid UUID");
+        toast.error("Geçersiz QR kod formatı!");
+        return;
+      }
+
       try {
         // Get registration data first
         const registrationsRef = collection(db, "registrations");
@@ -164,12 +172,16 @@ export default function AdminQRVerificationPage() {
         const eventDoc = eventSnapshot.docs[0];
         const eventData = eventDoc.data();
 
-        // Check if verification is happening on the event date
-        const eventDate = new Date(eventData.date);
-        const today = new Date();
+        // Check if verification is happening on the event date (Turkey timezone)
+        const turkeyTimezone = 'Europe/Istanbul';
 
-        // Set hours to 0 to compare just the dates
+        // Get current date in Turkey timezone
+        const now = new Date();
+        const today = new Date(now.toLocaleString('en-US', { timeZone: turkeyTimezone }));
         today.setHours(0, 0, 0, 0);
+
+        // Parse event date and normalize to Turkey timezone
+        const eventDate = new Date(eventData.date + 'T00:00:00+03:00'); // Turkey timezone
         eventDate.setHours(0, 0, 0, 0);
 
         if (eventDate.getTime() !== today.getTime()) {

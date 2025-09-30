@@ -233,6 +233,23 @@ export default function AdminEventsPage() {
   // Update this function in your AdminEventsPage component
   const handleSendEmailToRegisteredUsers = async (eventId) => {
     try {
+      // Rate limiting: Check last email sent time for this event
+      const emailLogRef = doc(db, "emailLogs", eventId);
+      const emailLogSnap = await getDoc(emailLogRef);
+
+      if (emailLogSnap.exists()) {
+        const lastSentAt = emailLogSnap.data().lastSentAt.toDate();
+        const now = new Date();
+        const timeDiff = now - lastSentAt;
+        const hoursSinceLastSent = timeDiff / (1000 * 60 * 60); // Convert to hours
+
+        // Minimum 1 hour between email sends for same event
+        if (hoursSinceLastSent < 1) {
+          const remainingMinutes = Math.ceil((60 - (hoursSinceLastSent * 60)));
+          toast.error(`Bu etkinlik için son email gönderiminden ${remainingMinutes} dakika sonra tekrar email gönderebilirsiniz.`);
+          return;
+        }
+      }
       // Fetch registrations for the event
       const registrationsRef = collection(db, "registrations");
       const registrationsQuery = query(
@@ -309,7 +326,15 @@ export default function AdminEventsPage() {
         throw new Error(data.message || "Failed to send emails");
       }
 
-      alert("Emails sent successfully!");
+      // Log successful email send with timestamp
+      await setDoc(emailLogRef, {
+        eventId: eventId,
+        lastSentAt: new Date(),
+        sentBy: user.email,
+        recipientCount: userEmails.length,
+      });
+
+      toast.success("Email'ler başarıyla gönderildi!");
     } catch (error) {
       console.error("Error sending emails:", error);
       alert(error.message || "Error sending emails. Please try again later.");
@@ -342,15 +367,18 @@ export default function AdminEventsPage() {
         throw new Error("Event not found");
       }
 
+      // Get Firebase ID token for secure authentication
+      const idToken = await user.getIdToken();
+
       // Call the API route to generate QR code
       const response = await fetch("/api/qrCode", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`, // Secure authentication
         },
         body: JSON.stringify({
           eventId: eventId,
-          adminEmail: user.email, // Pass admin's email for verification
         }),
       });
 

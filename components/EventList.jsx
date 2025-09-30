@@ -5,7 +5,13 @@ import React from "react";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 
-const isExpired = (eventDate) => new Date(eventDate) < new Date();
+const isExpired = (eventDate, eventTime) => {
+  const now = new Date();
+  const [hours, minutes] = eventTime.split(':').map(Number);
+  const eventDateTime = new Date(eventDate);
+  eventDateTime.setHours(hours, minutes, 0, 0);
+  return now > eventDateTime;
+};
 
 // Updated formatDate function to accept options
 const formatDate = (date, options = {}) => {
@@ -43,7 +49,7 @@ const EventList = ({
           }
         );
 
-        const expired = isExpired(event.date);
+        const expired = isExpired(event.date, event.time);
         const status = expired ? "Geçmiş" : "Yaklaşan";
         const statusColor =
           status === "Yaklaşan" ? "bg-green-600" : "bg-red-600";
