@@ -1,13 +1,21 @@
 // pages/api/generateQRCode.js
 import { NextResponse } from "next/server";
 import QRCode from "qrcode";
-import { db } from "../../../firebase";
-import { doc, getDoc, setDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { getFirestore } from "../../../utils/firebaseAdmin";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(request) {
   try {
     const { eventId, adminEmail } = await request.json();
+
+    // Get Firebase Admin Firestore instance
+    const db = getFirestore();
+    if (!db) {
+      return NextResponse.json(
+        { message: "Firebase Admin not available" },
+        { status: 500 }
+      );
+    }
 
     // Admin check
     if (!adminEmail) {
@@ -17,10 +25,10 @@ export async function POST(request) {
       );
     }
 
-    const adminRef = doc(db, "admins", adminEmail);
-    const adminSnap = await getDoc(adminRef);
+    const adminRef = db.collection("admins").doc(adminEmail);
+    const adminSnap = await adminRef.get();
 
-    if (!adminSnap.exists()) {
+    if (!adminSnap.exists) {
       return NextResponse.json(
         { message: "Unauthorized: Invalid admin email" },
         { status: 403 }
@@ -28,9 +36,9 @@ export async function POST(request) {
     }
 
     // Check for existing QR code
-    const qrCodesRef = collection(db, "eventQrCodes");
-    const qrCodeQuery = query(qrCodesRef, where("eventId", "==", eventId));
-    const qrCodeSnapshot = await getDocs(qrCodeQuery);
+    const qrCodesRef = db.collection("eventQrCodes");
+    const qrCodeQuery = qrCodesRef.where("eventId", "==", eventId);
+    const qrCodeSnapshot = await qrCodeQuery.get();
 
     if (!qrCodeSnapshot.empty) {
       return NextResponse.json(
@@ -48,9 +56,9 @@ export async function POST(request) {
       errorCorrectionLevel: "H",
     });
 
-    // Store QR code in Firestore
-    const qrCodeRef = doc(collection(db, "eventQrCodes"), qrCodeId);
-    await setDoc(qrCodeRef, {
+    // Store QR code in Firestore using Admin SDK
+    const qrCodeRef = db.collection("eventQrCodes").doc(qrCodeId);
+    await qrCodeRef.set({
       eventId: eventId,
       code: qrCodeData,
       createdAt: new Date(),

@@ -65,7 +65,5 @@ firestore.rules
 *.tmp
 *.temp
 
-event_feed.md
-SECURITY.md
 certificates
-MOBILE_AUTH_SETUP.md
+docs

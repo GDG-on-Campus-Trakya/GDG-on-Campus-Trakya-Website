@@ -36,11 +36,20 @@ const initializeFirebaseAdmin = () => {
           // Service account file
           console.log('🔧 Using service account file');
           credential = admin.credential.applicationDefault();
+        } else if (process.env.FIREBASE_ADMIN_PRIVATE_KEY) {
+          // Individual env vars (also support in development)
+          console.log('🔧 Using individual environment variables');
+          credential = admin.credential.cert({
+            projectId: process.env.FIREBASE_ADMIN_PROJECT_ID,
+            clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
+            privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY.replace(/\\n/g, '\n'),
+          });
         } else {
           console.warn('⚠️ No Firebase Admin credentials found');
           console.warn('💡 For development, either:');
           console.warn('   1. Set GOOGLE_APPLICATION_CREDENTIALS to service account file path');
           console.warn('   2. Run Firebase emulators with FIREBASE_AUTH_EMULATOR_HOST');
+          console.warn('   3. Set FIREBASE_ADMIN_PRIVATE_KEY environment variables');
           return null;
         }
       }

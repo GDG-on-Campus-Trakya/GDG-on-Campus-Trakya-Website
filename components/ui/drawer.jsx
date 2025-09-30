@@ -9,22 +9,17 @@ import { cn } from "@/lib/utils"
 const Drawer = ({
   shouldScaleBackground = true,
   open,
+  direction = "bottom",
   ...props
 }) => {
-  React.useEffect(() => {
-    if (open) {
-      document.body.setAttribute('data-drawer-open', 'true');
-    } else {
-      document.body.setAttribute('data-drawer-open', 'false');
-    }
-
-    return () => {
-      document.body.setAttribute('data-drawer-open', 'false');
-    };
-  }, [open]);
-
   return (
-    <DrawerPrimitive.Root shouldScaleBackground={shouldScaleBackground} open={open} {...props} />
+    <DrawerPrimitive.Root
+      shouldScaleBackground={shouldScaleBackground}
+      open={open}
+      direction={direction}
+      preventScrollRestoration={true}
+      {...props}
+    />
   );
 }
 Drawer.displayName = "Drawer"
@@ -49,7 +44,9 @@ const DrawerContent = React.forwardRef(({ className, children, ...props }, ref) 
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background",
+        "fixed z-50 flex flex-col border bg-background",
+        // Default bottom positioning for bottom drawer
+        "inset-x-0 bottom-0 mt-24 h-auto rounded-t-[10px]",
         className
       )}
       {...props}>

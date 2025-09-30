@@ -62,9 +62,43 @@ function EventsPageContent() {
   const [signupError, setSignupError] = useState(null);
 
   const [hasSignedUp, setHasSignedUp] = useState(false);
+  const [drawerLoading, setDrawerLoading] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageCache, setImageCache] = useState(new Map());
   const router = useRouter();
 
-  const drawerRef = useRef(null);
+  // Advanced image loading with caching and optimization
+  const loadImageOptimized = (imageUrl, isMobile = false) => {
+    return new Promise((resolve) => {
+      // Check cache first
+      if (imageCache.has(imageUrl)) {
+        resolve(true);
+        return;
+      }
+
+      const img = new Image();
+
+      // Aggressive timeout for mobile
+      const timeout = setTimeout(() => {
+        resolve(false); // Timeout, but don't block UI
+      }, isMobile ? 150 : 500);
+
+      img.onload = () => {
+        clearTimeout(timeout);
+        // Cache the loaded image
+        setImageCache(prev => new Map(prev.set(imageUrl, true)));
+        resolve(true);
+      };
+
+      img.onerror = () => {
+        clearTimeout(timeout);
+        resolve(false);
+      };
+
+      // Start loading
+      img.src = imageUrl;
+    });
+  };
 
   const formatDate = (date) => {
     const d = new Date(date);
@@ -241,18 +275,6 @@ function EventsPageContent() {
     fetchData();
   }, []);
 
-  // Prevent scrolling when drawer is open (çokomelli)
-  useEffect(() => {
-    if (selectedEvent) {
-      document.body.classList.add("overflow-hidden");
-    } else {
-      document.body.classList.remove("overflow-hidden");
-    }
-
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-    };
-  }, [selectedEvent]);
 
   // Memoize event dates for performance (ilk defa memo kullandım)
   const eventDates = useMemo(() => {
@@ -278,31 +300,99 @@ function EventsPageContent() {
     });
   };
 
-  const handleEventClick = (event) => {
+  const handleEventClick = async (event) => {
+    setDrawerLoading(true);
+    setImageLoaded(false);
     setSelectedEvent(event);
+
+    // Mobile-optimized loading strategy
+    const isMobile = window.innerWidth <= 768;
+
+    if (event.imageUrl) {
+      // Use optimized image loading
+      const loaded = await loadImageOptimized(event.imageUrl, isMobile);
+      setImageLoaded(true);
+      setDrawerLoading(false);
+    } else {
+      // No image, open immediately
+      setImageLoaded(true);
+      setDrawerLoading(false);
+    }
   };
 
   const closeDrawer = () => {
     setSelectedEvent(null);
+    // Clear QR code parameter from URL when closing drawer
+    const url = new URL(window.location);
+    if (url.searchParams.has('qrCode')) {
+      url.searchParams.delete('qrCode');
+      window.history.replaceState(null, '', url.toString());
+    }
+    // Force cleanup of any potential body style issues - more aggressive for mobile
+    setTimeout(() => {
+      document.body.style.removeProperty('overflow');
+      document.body.style.removeProperty('overflow-x');
+      document.body.style.removeProperty('overflow-y');
+      document.body.style.removeProperty('pointer-events');
+      document.body.style.removeProperty('touch-action');
+      document.body.classList.remove('overflow-hidden');
+      document.documentElement.style.removeProperty('overflow');
+      document.documentElement.style.removeProperty('touch-action');
+      // Re-enable touch scrolling
+      document.body.style.touchAction = 'auto';
+      document.documentElement.style.touchAction = 'auto';
+    }, 100);
   };
 
-  const showPreviousEvent = () => {
+  const showPreviousEvent = async () => {
     if (!selectedEvent) return;
     const currentIndex = filteredEvents.findIndex(
       (event) => event.id === selectedEvent.id
     );
     const previousIndex =
       (currentIndex - 1 + filteredEvents.length) % filteredEvents.length;
-    setSelectedEvent(filteredEvents[previousIndex]);
+    const previousEvent = filteredEvents[previousIndex];
+
+    setDrawerLoading(true);
+    setImageLoaded(false);
+    setSelectedEvent(previousEvent);
+
+    const isMobile = window.innerWidth <= 768;
+
+    if (previousEvent.imageUrl) {
+      // Use optimized image loading with even faster timeouts for navigation
+      await loadImageOptimized(previousEvent.imageUrl, isMobile);
+      setImageLoaded(true);
+      setDrawerLoading(false);
+    } else {
+      setImageLoaded(true);
+      setDrawerLoading(false);
+    }
   };
 
-  const showNextEvent = () => {
+  const showNextEvent = async () => {
     if (!selectedEvent) return;
     const currentIndex = filteredEvents.findIndex(
       (event) => event.id === selectedEvent.id
     );
     const nextIndex = (currentIndex + 1) % filteredEvents.length;
-    setSelectedEvent(filteredEvents[nextIndex]);
+    const nextEvent = filteredEvents[nextIndex];
+
+    setDrawerLoading(true);
+    setImageLoaded(false);
+    setSelectedEvent(nextEvent);
+
+    const isMobile = window.innerWidth <= 768;
+
+    if (nextEvent.imageUrl) {
+      // Use optimized image loading
+      await loadImageOptimized(nextEvent.imageUrl, isMobile);
+      setImageLoaded(true);
+      setDrawerLoading(false);
+    } else {
+      setImageLoaded(true);
+      setDrawerLoading(false);
+    }
   };
 
   const handleDateClick = (day) => {
@@ -361,21 +451,6 @@ function EventsPageContent() {
     return filtered;
   }, [events, selectedDate, filterStatus]);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (drawerRef.current && !drawerRef.current.contains(event.target)) {
-        setSelectedEvent(null);
-      }
-    };
-
-    if (selectedEvent) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [selectedEvent]);
 
   const getSponsorsDetails = (sponsorIds) => {
     return sponsors.filter((sponsor) => sponsorIds.includes(sponsor.id));
@@ -501,20 +576,19 @@ function EventsPageContent() {
                     return (
                       <motion.div
                         key={event.id}
-                        initial={{ x: -50, opacity: 0 }}
+                        initial={{ x: -20, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
-                        exit={{ x: 50, opacity: 0 }}
+                        exit={{ x: 20, opacity: 0 }}
                         transition={{
-                          delay: index * 0.1,
-                          duration: 0.5,
+                          delay: index * 0.05, // Reduced delay
+                          duration: 0.3, // Reduced duration
                           ease: "easeOut",
                         }}
                         whileHover={{
-                          scale: 1.02,
-                          backgroundColor: "rgba(55, 65, 81, 0.8)",
-                          transition: { duration: 0.2 },
+                          scale: 1.01, // Reduced scale
+                          transition: { duration: 0.1 }, // Faster transition
                         }}
-                        className="flex items-start bg-gray-800 rounded-lg p-5 shadow-lg cursor-pointer relative hover:bg-gray-700 transition-all"
+                        className="flex items-start bg-gray-800 rounded-lg p-5 shadow-lg cursor-pointer relative hover:bg-gray-700 transition-all active:scale-95"
                         onClick={() => handleEventClick(event)}
                       >
                         {/* Timeline Marker with animation */}
@@ -544,6 +618,8 @@ function EventsPageContent() {
                             src={event.imageUrl}
                             alt={event.name}
                             className="w-44 h-auto rounded"
+                            loading="lazy"
+                            decoding="async"
                           />
                         </motion.div>
 
@@ -601,21 +677,16 @@ function EventsPageContent() {
         </motion.div>
       </main>
 
-      {/* Drawer with animations */}
+      {/* Responsive Drawer - Bottom on mobile, Right on desktop */}
       <Drawer
         open={!!selectedEvent}
-        onOpenChange={(open) => !open && setSelectedEvent(null)}
+        onOpenChange={(open) => !open && closeDrawer()}
       >
-        <DrawerContent className="fixed inset-y-0 right-0 h-[98vh] my-auto w-[400px] bg-transparent border-none shadow-2xl">
-          <motion.div
-            initial={{ x: 400, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 400, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className={cn(
-              "h-full w-full bg-[#0a0a19] text-white p-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent rounded-l-lg bg-gray-800"
-            )}
-          >
+        <DrawerContent className="md:top-0 md:right-0 md:left-auto md:bottom-0 md:h-screen md:w-[400px] md:rounded-none md:border-l
+                                   max-md:inset-x-0 max-md:bottom-0 max-md:h-[85vh] max-md:rounded-t-[10px] max-md:border-t
+                                   bg-[#0a0a19] text-white border-gray-600">
+          <div className="h-full p-6 overflow-y-auto touch-pan-y overscroll-contain
+                          md:scrollbar-thin md:scrollbar-thumb-gray-600 md:scrollbar-track-transparent">
             <DrawerHeader className="p-0">
               <div className="flex justify-end space-x-3 mb-6">
                 <button
@@ -633,32 +704,60 @@ function EventsPageContent() {
               </div>
               {selectedEvent && (
                 <>
-                  <img
-                    src={selectedEvent.imageUrl}
-                    alt={selectedEvent.name}
-                    className="w-full h-auto rounded mb-6 select-none pointer-events-none"
-                    draggable="false"
-                  />
+                  {/* Simple Fast Image */}
+                  <div className="w-full mb-6">
+                    <img
+                      src={selectedEvent.imageUrl}
+                      alt={selectedEvent.name}
+                      className="w-full h-auto rounded select-none pointer-events-none"
+                      draggable="false"
+                      loading="eager"
+                      decoding="async"
+                    />
+                  </div>
+
+                  {/* Title - Always present for accessibility */}
                   <DrawerTitle className="text-3xl font-bold mb-3">
-                    {selectedEvent.name}
+                    {drawerLoading ? "Yükleniyor..." : selectedEvent.name}
                   </DrawerTitle>
+
+                  {/* Content Loading State */}
+                  {drawerLoading && (
+                    <div className="space-y-4 animate-pulse">
+                      <div className="h-4 bg-gray-700 rounded w-1/2"></div>
+                      <div className="h-4 bg-gray-700 rounded w-2/3"></div>
+                    </div>
+                  )}
 
                   {/* Wrap content in DrawerDescription for accessibility */}
                   <DrawerDescription asChild>
-                    <div className="space-y-4">
-                      <div className="text-lg text-gray-400">
-                        {getDayLabel(selectedEvent.date)}, {selectedEvent.time}
+                    {drawerLoading ? (
+                      <div className="space-y-4 animate-pulse">
+                        <div className="h-4 bg-gray-700 rounded w-full"></div>
+                        <div className="h-4 bg-gray-700 rounded w-5/6"></div>
+                        <div className="h-4 bg-gray-700 rounded w-4/5"></div>
+                        <div className="space-y-2 mt-4">
+                          <div className="h-3 bg-gray-700 rounded w-full"></div>
+                          <div className="h-3 bg-gray-700 rounded w-full"></div>
+                          <div className="h-3 bg-gray-700 rounded w-3/4"></div>
+                        </div>
                       </div>
-                      <div className="text-lg text-gray-400">
-                        <strong>Kategori:</strong> {selectedEvent.category}
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="text-lg text-gray-400">
+                          {getDayLabel(selectedEvent.date)}, {selectedEvent.time}
+                        </div>
+                        <div className="text-lg text-gray-400">
+                          <strong>Kategori:</strong> {selectedEvent.category}
+                        </div>
+                        <div className="text-lg text-gray-400">
+                          <strong>Lokasyon:</strong> {selectedEvent.location}
+                        </div>
+                        <div className="text-lg text-white">
+                          {selectedEvent.description}
+                        </div>
                       </div>
-                      <div className="text-lg text-gray-400">
-                        <strong>Lokasyon:</strong> {selectedEvent.location}
-                      </div>
-                      <div className="text-lg text-white">
-                        {selectedEvent.description}
-                      </div>
-                    </div>
+                    )}
                   </DrawerDescription>
                 </>
               )}
@@ -684,6 +783,8 @@ function EventsPageContent() {
                                 src={sponsor.img_url}
                                 alt={sponsor.name}
                                 className="w-10 h-10 object-contain"
+                                loading="lazy"
+                                decoding="async"
                               />
                               <span className="text-lg">{sponsor.name}</span>
                             </div>
@@ -774,7 +875,7 @@ function EventsPageContent() {
                 </button>
               </DrawerClose>
             </DrawerFooter>
-          </motion.div>
+          </div>
         </DrawerContent>
       </Drawer>
 
