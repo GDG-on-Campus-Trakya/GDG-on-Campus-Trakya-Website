@@ -230,12 +230,12 @@ function NavbarContent() {
           </motion.span>
         </Link>
         {user && (
-          <Link href="/quiz/join">
+          <Link href="/game">
             <motion.span
               whileHover={{ scale: 1.1, color: "#A78BFA" }}
               className="hover:text-purple-400 transition cursor-pointer"
             >
-              Quiz Katıl
+              Oyun
             </motion.span>
           </Link>
         )}
@@ -424,15 +424,15 @@ function NavbarContent() {
                   className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation"
                   onClick={() => {
                     setMenuOpen(false);
-                    router.push('/quiz/join');
+                    router.push('/game');
                   }}
                   onTouchEnd={(e) => {
                     e.preventDefault();
                     setMenuOpen(false);
-                    router.push('/quiz/join');
+                    router.push('/game');
                   }}
                 >
-                  Quiz Katıl
+                  Oyun
                 </motion.div>
               )}
               {user && (
