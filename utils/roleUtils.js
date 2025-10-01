@@ -33,11 +33,12 @@ export const hasPermission = (userRole, requiredRole) => {
 
 export const EVENT_MANAGER_PAGES = [
   "/admin/users",
-  "/admin/registrations", 
+  "/admin/registrations",
   "/admin/qr-verification",
   "/admin/raffles",
   "/admin/social",
-  "/admin/event-stats"
+  "/admin/event-stats",
+  "/admin/quiz/host"
 ];
 
 export const canAccessPage = (userRole, pagePath) => {

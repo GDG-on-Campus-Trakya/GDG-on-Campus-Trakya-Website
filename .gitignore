@@ -61,9 +61,11 @@ firestore-data/
 logs/
 
 firestore.rules
+database.rules.json
 # Temporary files
 *.tmp
 *.temp
 
 certificates
 docs
+quizzes
