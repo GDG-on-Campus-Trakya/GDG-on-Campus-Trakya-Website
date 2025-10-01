@@ -1,19 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { auth, db } from "../../../firebase";
+import { auth } from "../../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
-import {
-  collection,
-  getDocs,
-  doc,
-  getDoc,
-  setDoc,
-  deleteDoc,
-} from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { checkUserRole, ROLES, hasPermission } from "../../../utils/roleUtils";
+import { ROLES } from "../../../utils/roleUtils";
 import AdminProtection from "../../../components/AdminProtection";
 
 export default function AdminManagementPage() {
@@ -30,36 +22,54 @@ export default function AdminManagementPage() {
 
   const fetchAdmins = async () => {
     try {
-      const adminSnapshot = await getDocs(collection(db, "admins"));
-      setAdmins(
-        adminSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-      );
+      const token = await user.getIdToken();
+      const response = await fetch('/api/admin/admins', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAdmins(data.admins);
+      } else {
+        console.error('Failed to fetch admins');
+        toast.error('Yöneticiler yüklenemedi!');
+      }
     } catch (error) {
       console.error("Error fetching admins:", error);
+      toast.error('Yöneticiler yüklenirken hata oluştu!');
     }
   };
 
   const fetchUsers = async () => {
     try {
-      const usersSnapshot = await getDocs(collection(db, "users"));
-      setUsers(
-        usersSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-      );
+      const token = await user.getIdToken();
+      const response = await fetch('/api/admin/users', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data.users);
+      } else {
+        console.error('Failed to fetch users');
+        toast.error('Kullanıcılar yüklenemedi!');
+      }
     } catch (error) {
       console.error("Error fetching users:", error);
+      toast.error('Kullanıcılar yüklenirken hata oluştu!');
     }
   };
 
   useEffect(() => {
-    fetchAdmins();
-    fetchUsers();
-  }, [refreshKey]);
+    if (user) {
+      fetchAdmins();
+      fetchUsers();
+    }
+  }, [user, refreshKey]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -74,20 +84,32 @@ export default function AdminManagementPage() {
     if (!newAdminEmail) return;
 
     try {
-      const adminRef = doc(db, "admins", newAdminEmail);
-      await setDoc(adminRef, { 
-        email: newAdminEmail, 
-        role: newAdminRole,
-        createdAt: new Date().toISOString()
+      const token = await user.getIdToken();
+      const response = await fetch('/api/admin/admins', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          email: newAdminEmail,
+          role: newAdminRole
+        })
       });
-      setAdmins((prev) => [
-        ...prev,
-        { id: newAdminEmail, email: newAdminEmail, role: newAdminRole },
-      ]);
-      setNewAdminEmail("");
-      setNewAdminRole(ROLES.EVENT_MANAGER);
-      setShowSuggestions(false);
-      toast.success("Yönetici başarıyla eklendi!");
+
+      if (response.ok) {
+        setAdmins((prev) => [
+          ...prev,
+          { id: newAdminEmail, email: newAdminEmail, role: newAdminRole },
+        ]);
+        setNewAdminEmail("");
+        setNewAdminRole(ROLES.EVENT_MANAGER);
+        setShowSuggestions(false);
+        toast.success("Yönetici başarıyla eklendi!");
+      } else {
+        const error = await response.json();
+        toast.error(error.error || "Yönetici eklenirken bir hata oluştu!");
+      }
     } catch (error) {
       console.error("Error adding admin:", error);
       toast.error("Yönetici eklenirken bir hata oluştu!");
@@ -101,9 +123,21 @@ export default function AdminManagementPage() {
     }
 
     try {
-      await deleteDoc(doc(db, "admins", id));
-      setAdmins((prev) => prev.filter((admin) => admin.id !== id));
-      toast.success("Yönetici başarıyla silindi!");
+      const token = await user.getIdToken();
+      const response = await fetch(`/api/admin/admins?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        setAdmins((prev) => prev.filter((admin) => admin.id !== id));
+        toast.success("Yönetici başarıyla silindi!");
+      } else {
+        const error = await response.json();
+        toast.error(error.error || "Yönetici silinirken bir hata oluştu!");
+      }
     } catch (error) {
       console.error("Error removing admin:", error);
       toast.error("Yönetici silinirken bir hata oluştu!");
@@ -117,18 +151,30 @@ export default function AdminManagementPage() {
     }
 
     try {
-      const adminRef = doc(db, "admins", adminId);
-      await setDoc(adminRef, { 
-        email: adminId, 
-        role: newRole 
-      }, { merge: true });
-      
-      setAdmins((prev) => 
-        prev.map((admin) => 
-          admin.id === adminId ? { ...admin, role: newRole } : admin
-        )
-      );
-      toast.success("Rol başarıyla güncellendi!");
+      const token = await user.getIdToken();
+      const response = await fetch('/api/admin/admins', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          adminId,
+          role: newRole
+        })
+      });
+
+      if (response.ok) {
+        setAdmins((prev) =>
+          prev.map((admin) =>
+            admin.id === adminId ? { ...admin, role: newRole } : admin
+          )
+        );
+        toast.success("Rol başarıyla güncellendi!");
+      } else {
+        const error = await response.json();
+        toast.error(error.error || "Rol güncellenirken bir hata oluştu!");
+      }
     } catch (error) {
       console.error("Error updating role:", error);
       toast.error("Rol güncellenirken bir hata oluştu!");

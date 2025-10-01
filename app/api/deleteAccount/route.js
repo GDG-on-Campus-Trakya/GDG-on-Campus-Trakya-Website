@@ -1,7 +1,11 @@
+import 'server-only';
 import { NextResponse } from "next/server";
 import admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 // Initialize Firebase Admin
 if (!admin.apps.length) {

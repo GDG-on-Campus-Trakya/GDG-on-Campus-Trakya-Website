@@ -55,17 +55,24 @@ function EventsPageContent() {
   const [sponsors, setSponsors] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(null);
   const [filterStatus, setFilterStatus] = useState("upcoming");
   const [user, loading, error] = useAuthState(auth);
   const [signupMessage, setSignupMessage] = useState(null);
   const [signupError, setSignupError] = useState(null);
+  const [isClient, setIsClient] = useState(false);
 
   const [hasSignedUp, setHasSignedUp] = useState(false);
   const [drawerLoading, setDrawerLoading] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageCache, setImageCache] = useState(new Map());
   const router = useRouter();
+
+  // Initialize client-side only state after hydration
+  useEffect(() => {
+    setIsClient(true);
+    setCurrentMonth(new Date());
+  }, []);
 
   // Advanced image loading with caching and optimization
   const loadImageOptimized = (imageUrl, isMobile = false) => {
@@ -109,6 +116,7 @@ function EventsPageContent() {
   };
 
   const isExpired = (eventDate, eventTime) => {
+    if (!isClient) return false; // Return false during SSR to avoid hydration mismatch
     const now = new Date();
     const [hours, minutes] = eventTime.split(':').map(Number);
     const eventDateTime = new Date(eventDate);
@@ -282,6 +290,15 @@ function EventsPageContent() {
   }, [events]);
 
   const getDayLabel = (date) => {
+    if (!isClient) {
+      // Return a safe fallback during SSR
+      const eventDate = new Date(date);
+      return eventDate.toLocaleDateString("tr-TR", {
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+      });
+    }
     const eventDate = new Date(date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -306,7 +323,7 @@ function EventsPageContent() {
     setSelectedEvent(event);
 
     // Mobile-optimized loading strategy
-    const isMobile = window.innerWidth <= 768;
+    const isMobile = isClient ? window.innerWidth <= 768 : false;
 
     if (event.imageUrl) {
       // Use optimized image loading
@@ -323,25 +340,29 @@ function EventsPageContent() {
   const closeDrawer = () => {
     setSelectedEvent(null);
     // Clear QR code parameter from URL when closing drawer
-    const url = new URL(window.location);
-    if (url.searchParams.has('qrCode')) {
-      url.searchParams.delete('qrCode');
-      window.history.replaceState(null, '', url.toString());
+    if (isClient) {
+      const url = new URL(window.location);
+      if (url.searchParams.has('qrCode')) {
+        url.searchParams.delete('qrCode');
+        window.history.replaceState(null, '', url.toString());
+      }
     }
     // Force cleanup of any potential body style issues - more aggressive for mobile
-    setTimeout(() => {
-      document.body.style.removeProperty('overflow');
-      document.body.style.removeProperty('overflow-x');
-      document.body.style.removeProperty('overflow-y');
-      document.body.style.removeProperty('pointer-events');
-      document.body.style.removeProperty('touch-action');
-      document.body.classList.remove('overflow-hidden');
-      document.documentElement.style.removeProperty('overflow');
-      document.documentElement.style.removeProperty('touch-action');
-      // Re-enable touch scrolling
-      document.body.style.touchAction = 'auto';
-      document.documentElement.style.touchAction = 'auto';
-    }, 100);
+    if (isClient) {
+      setTimeout(() => {
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('overflow-x');
+        document.body.style.removeProperty('overflow-y');
+        document.body.style.removeProperty('pointer-events');
+        document.body.style.removeProperty('touch-action');
+        document.body.classList.remove('overflow-hidden');
+        document.documentElement.style.removeProperty('overflow');
+        document.documentElement.style.removeProperty('touch-action');
+        // Re-enable touch scrolling
+        document.body.style.touchAction = 'auto';
+        document.documentElement.style.touchAction = 'auto';
+      }, 100);
+    }
   };
 
   const showPreviousEvent = async () => {
@@ -357,7 +378,7 @@ function EventsPageContent() {
     setImageLoaded(false);
     setSelectedEvent(previousEvent);
 
-    const isMobile = window.innerWidth <= 768;
+    const isMobile = isClient ? window.innerWidth <= 768 : false;
 
     if (previousEvent.imageUrl) {
       // Use optimized image loading with even faster timeouts for navigation
@@ -382,7 +403,7 @@ function EventsPageContent() {
     setImageLoaded(false);
     setSelectedEvent(nextEvent);
 
-    const isMobile = window.innerWidth <= 768;
+    const isMobile = isClient ? window.innerWidth <= 768 : false;
 
     if (nextEvent.imageUrl) {
       // Use optimized image loading
@@ -427,29 +448,39 @@ function EventsPageContent() {
         (event) => formatDate(event.date) === selectedDateStr
       );
     } else if (filterStatus === "upcoming") {
-      const now = new Date();
-      filtered = filtered.filter((event) => {
-        const [hours, minutes] = event.time.split(':').map(Number);
-        const eventDateTime = new Date(event.date);
-        eventDateTime.setHours(hours, minutes, 0, 0);
-        return eventDateTime >= now;
-      });
-      // Sort upcoming events from oldest to newest
-      filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+      if (!isClient) {
+        // During SSR, show all events to avoid hydration mismatch
+        filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+      } else {
+        const now = new Date();
+        filtered = filtered.filter((event) => {
+          const [hours, minutes] = event.time.split(':').map(Number);
+          const eventDateTime = new Date(event.date);
+          eventDateTime.setHours(hours, minutes, 0, 0);
+          return eventDateTime >= now;
+        });
+        // Sort upcoming events from oldest to newest
+        filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+      }
     } else if (filterStatus === "past") {
-      const now = new Date();
-      filtered = filtered.filter((event) => {
-        const [hours, minutes] = event.time.split(':').map(Number);
-        const eventDateTime = new Date(event.date);
-        eventDateTime.setHours(hours, minutes, 0, 0);
-        return eventDateTime < now;
-      });
-      // Sort past events from newest to oldest
-      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+      if (!isClient) {
+        // During SSR, show no past events to avoid hydration mismatch
+        filtered = [];
+      } else {
+        const now = new Date();
+        filtered = filtered.filter((event) => {
+          const [hours, minutes] = event.time.split(':').map(Number);
+          const eventDateTime = new Date(event.date);
+          eventDateTime.setHours(hours, minutes, 0, 0);
+          return eventDateTime < now;
+        });
+        // Sort past events from newest to oldest
+        filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+      }
     }
 
     return filtered;
-  }, [events, selectedDate, filterStatus]);
+  }, [events, selectedDate, filterStatus, isClient]);
 
 
   const getSponsorsDetails = (sponsorIds) => {
@@ -503,13 +534,15 @@ function EventsPageContent() {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.5 }}
           >
-            <Calendar
-              currentMonth={currentMonth}
-              setCurrentMonth={setCurrentMonth}
-              selectedDate={selectedDate}
-              handleDateClick={handleDateClick}
-              eventDates={eventDates}
-            />
+            {currentMonth && (
+              <Calendar
+                currentMonth={currentMonth}
+                setCurrentMonth={setCurrentMonth}
+                selectedDate={selectedDate}
+                handleDateClick={handleDateClick}
+                eventDates={eventDates}
+              />
+            )}
           </motion.div>
 
           {/* Filter Buttons */}

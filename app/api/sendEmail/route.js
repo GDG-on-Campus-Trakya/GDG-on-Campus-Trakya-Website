@@ -1,8 +1,12 @@
 // app/api/sendEmail/route.js
+import 'server-only';
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import { db } from "../../../firebase"; 
+import { db } from "../../../firebase";
 import { doc, getDoc } from "firebase/firestore";
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
   try {

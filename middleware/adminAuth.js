@@ -1,3 +1,4 @@
+import 'server-only';
 import admin from 'firebase-admin';
 import { checkUserRole, ROLES } from '../utils/roleUtils';
 

@@ -1,11 +1,12 @@
 // components/EventList.jsx
 
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
 
-const isExpired = (eventDate, eventTime) => {
+const isExpired = (eventDate, eventTime, isClient = true) => {
+  if (!isClient) return false; // Return false during SSR to avoid hydration mismatch
   const now = new Date();
   const [hours, minutes] = eventTime.split(':').map(Number);
   const eventDateTime = new Date(eventDate);
@@ -32,6 +33,11 @@ const EventList = ({
   downloadQRCode,
 }) => {
   const [enlargedQR, setEnlargedQR] = useState(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   if (registrations.length === 0) {
     return (
@@ -46,7 +52,7 @@ const EventList = ({
         if (!event) return null;
 
         const signedUpDate = formatDate(
-          registration.signedUpAt?.seconds * 1000 || Date.now(),
+          registration.signedUpAt?.seconds * 1000 || (isClient ? Date.now() : 0),
           {
             year: "numeric",
             month: "long",
@@ -56,7 +62,7 @@ const EventList = ({
           }
         );
 
-        const expired = isExpired(event.date, event.time);
+        const expired = isExpired(event.date, event.time, isClient);
         const status = expired ? "Geçmiş" : "Yaklaşan";
         const statusColor =
           status === "Yaklaşan" ? "bg-green-600" : "bg-red-600";
