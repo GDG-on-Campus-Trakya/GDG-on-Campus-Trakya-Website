@@ -152,7 +152,7 @@ export default function PollAdminPage() {
 
   const handleManagePoll = () => {
     if (!pollCode) return;
-    router.push(`/poll/host/${pollCode}`);
+    router.push(`/admin/poll/host/${pollCode}`);
   };
 
   if (loading) {

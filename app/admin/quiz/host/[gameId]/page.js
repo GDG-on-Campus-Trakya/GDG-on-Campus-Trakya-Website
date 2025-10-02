@@ -267,7 +267,7 @@ export default function HostGamePage() {
                     Oyuncular bu kodu kullanarak katılabilir
                   </p>
                   <p className="text-gray-400 mt-2">
-                    gdg-trakya.vercel.app/quiz/join
+                    gdgoncampustrakya.com/game
                   </p>
                 </div>
 

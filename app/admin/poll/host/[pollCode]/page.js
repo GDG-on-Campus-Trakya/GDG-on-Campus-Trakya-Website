@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../../../../firebase";
+import { auth } from "../../../../../firebase";
 import { useRouter, useParams } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -17,7 +17,7 @@ import {
   getCurrentMatch,
   endPoll,
   updatePollStatus
-} from "../../../../utils/pollUtils";
+} from "../../../../../utils/pollUtils";
 
 export default function PollHostPage() {
   const [user, loading] = useAuthState(auth);

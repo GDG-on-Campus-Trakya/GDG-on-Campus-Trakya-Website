@@ -35,7 +35,7 @@ export default function PollRoomPage() {
     const unsubscribePoll = subscribeToPoll(pollId, (pollData) => {
       if (!pollData) {
         toast.error("Poll bulunamadı!");
-        router.push("/poll/join");
+        router.push("/game");
         return;
       }
 

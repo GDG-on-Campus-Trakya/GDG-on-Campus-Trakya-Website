@@ -1,30 +1,31 @@
 "use client";
 import { useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, db } from "../../../firebase";
+import { auth, db } from "../../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { findPollByCode, addPlayerToPoll } from "../../../utils/pollUtils";
+import { findGameByCode, addPlayerToGame } from "../../utils/quizUtils";
+import { findPollByCode, addPlayerToPoll } from "../../utils/pollUtils";
 
-export default function JoinPollPage() {
+export default function GameJoinPage() {
   const [user, loading] = useAuthState(auth);
-  const [pollCode, setPollCode] = useState("");
+  const [gameCode, setGameCode] = useState("");
   const [joining, setJoining] = useState(false);
   const router = useRouter();
 
-  const handleJoinPoll = async (e) => {
+  const handleJoinGame = async (e) => {
     e.preventDefault();
 
     if (!user) {
-      toast.error("Poll'a katılmak için giriş yapmalısınız!");
+      toast.error("Oyuna katılmak için giriş yapmalısınız!");
       router.push("/");
       return;
     }
 
-    if (pollCode.length !== 6) {
-      toast.error("Poll kodu 6 haneli olmalıdır!");
+    if (gameCode.length !== 6) {
+      toast.error("Oyun kodu 6 haneli olmalıdır!");
       return;
     }
 
@@ -43,30 +44,7 @@ export default function JoinPollPage() {
 
       const userData = userDoc.data();
 
-      // Find poll
-      const poll = await findPollByCode(pollCode);
-
-      if (!poll) {
-        toast.error("Poll bulunamadı! Kodu kontrol edin.");
-        setJoining(false);
-        return;
-      }
-
-      if (poll.status === "finished") {
-        toast.error("Bu poll sona ermiş!");
-        setJoining(false);
-        return;
-      }
-
-      // Check if already joined
-      const playerId = `player_${user.uid}`;
-      if (poll.players && poll.players[playerId]) {
-        toast.info("Bu poll'a zaten katıldınız!");
-        router.push(`/poll/room/${poll.id}`);
-        return;
-      }
-
-      // Add player
+      // Prepare player data
       const playerData = {
         userId: user.uid,
         name: userData.name || user.displayName || "Anonim",
@@ -76,19 +54,69 @@ export default function JoinPollPage() {
         department: userData.department || ""
       };
 
-      await addPlayerToPoll(poll.id, playerData);
-      toast.success("Poll'a katıldınız!");
-      router.push(`/poll/room/${poll.id}`);
+      // Try to find as quiz
+      let game = await findGameByCode(gameCode);
+
+      if (game) {
+        // It's a quiz
+        if (game.status === "finished") {
+          toast.error("Bu oyun sona ermiş!");
+          setJoining(false);
+          return;
+        }
+
+        // Check if already joined
+        const playerId = `player_${user.uid}`;
+        if (game.players && game.players[playerId]) {
+          toast.info("Bu oyuna zaten katıldınız!");
+          router.push(`/quiz/play/${game.id}`);
+          return;
+        }
+
+        await addPlayerToGame(game.id, playerData);
+        toast.success("Oyuna katıldınız!");
+        router.push(`/quiz/play/${game.id}`);
+        return;
+      }
+
+      // Try to find as poll
+      const poll = await findPollByCode(gameCode);
+
+      if (poll) {
+        // It's a poll
+        if (poll.status === "finished") {
+          toast.error("Bu oyun sona ermiş!");
+          setJoining(false);
+          return;
+        }
+
+        // Check if already joined
+        const playerId = `player_${user.uid}`;
+        if (poll.players && poll.players[playerId]) {
+          toast.info("Bu oyuna zaten katıldınız!");
+          router.push(`/poll/room/${poll.id}`);
+          return;
+        }
+
+        await addPlayerToPoll(poll.id, playerData);
+        toast.success("Oyuna katıldınız!");
+        router.push(`/poll/room/${poll.id}`);
+        return;
+      }
+
+      // Neither found
+      toast.error("Oyun bulunamadı! Kodu kontrol edin.");
+      setJoining(false);
     } catch (error) {
-      console.error("Error joining poll:", error);
-      toast.error("Poll'a katılırken hata oluştu!");
+      console.error("Error joining game:", error);
+      toast.error("Oyuna katılırken hata oluştu!");
       setJoining(false);
     }
   };
 
   const handleCodeInput = (e) => {
     const value = e.target.value.replace(/\D/g, "").slice(0, 6);
-    setPollCode(value);
+    setGameCode(value);
   };
 
   if (loading) {
@@ -100,22 +128,22 @@ export default function JoinPollPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-indigo-900 flex items-center justify-center p-6">
       <div className="max-w-md w-full">
         <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold text-white mb-4">Poll!</h1>
-          <p className="text-xl text-white/80">Oylamaya katılmak için kodu girin</p>
+          <h1 className="text-6xl font-bold text-white mb-4">Oyun!</h1>
+          <p className="text-xl text-white/80">Oyuna katılmak için kodu girin</p>
         </div>
 
         <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20">
-          <form onSubmit={handleJoinPoll} className="space-y-6">
+          <form onSubmit={handleJoinGame} className="space-y-6">
             <div>
               <label className="block text-white mb-3 text-lg font-semibold">
-                Poll Kodu
+                Oyun Kodu
               </label>
               <input
                 type="text"
-                value={pollCode}
+                value={gameCode}
                 onChange={handleCodeInput}
                 className="w-full px-6 py-4 text-center text-4xl font-bold bg-white/20 border-2 border-white/30 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-white tracking-widest"
                 placeholder="000000"
@@ -128,17 +156,17 @@ export default function JoinPollPage() {
             {!user && (
               <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-xl p-4">
                 <p className="text-yellow-200 text-sm text-center">
-                  Oylamaya katılmak için önce giriş yapmalısınız
+                  Oyuna katılmak için önce giriş yapmalısınız
                 </p>
               </div>
             )}
 
             <button
               type="submit"
-              disabled={!user || pollCode.length !== 6 || joining}
-              className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl transition-colors font-bold text-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!user || gameCode.length !== 6 || joining}
+              className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl transition-colors font-bold text-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {joining ? "Katılınıyor..." : "Oylamaya Katıl"}
+              {joining ? "Katılınıyor..." : "Oyuna Katıl"}
             </button>
           </form>
 

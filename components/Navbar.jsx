@@ -230,22 +230,12 @@ function NavbarContent() {
           </motion.span>
         </Link>
         {user && (
-          <Link href="/quiz/join">
+          <Link href="/game">
             <motion.span
               whileHover={{ scale: 1.1, color: "#A78BFA" }}
               className="hover:text-purple-400 transition cursor-pointer"
             >
-              Quiz Katıl
-            </motion.span>
-          </Link>
-        )}
-        {user && (
-          <Link href="/poll/join">
-            <motion.span
-              whileHover={{ scale: 1.1, color: "#EC4899" }}
-              className="hover:text-pink-400 transition cursor-pointer"
-            >
-              Poll Katıl
+              Oyuna Katıl
             </motion.span>
           </Link>
         )}
@@ -434,32 +424,15 @@ function NavbarContent() {
                   className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation"
                   onClick={() => {
                     setMenuOpen(false);
-                    router.push('/quiz/join');
+                    router.push('/game');
                   }}
                   onTouchEnd={(e) => {
                     e.preventDefault();
                     setMenuOpen(false);
-                    router.push('/quiz/join');
+                    router.push('/game');
                   }}
                 >
-                  Quiz Katıl
-                </motion.div>
-              )}
-              {user && (
-                <motion.div
-                  whileHover={{ backgroundColor: "#374151" }}
-                  className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    router.push('/poll/join');
-                  }}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    setMenuOpen(false);
-                    router.push('/poll/join');
-                  }}
-                >
-                  Poll Katıl
+                  Oyuna Katıl
                 </motion.div>
               )}
               {user && (

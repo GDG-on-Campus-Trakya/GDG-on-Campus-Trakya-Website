@@ -37,7 +37,7 @@ export default function PlayGamePage() {
     const unsubscribeGame = subscribeToGame(gameId, (gameData) => {
       if (!gameData) {
         toast.error("Oyun bulunamadı!");
-        router.push("/quiz/join");
+        router.push("/game");
         return;
       }
 
