@@ -95,6 +95,23 @@ export default function AdminProjectsPage() {
     fetchProjects();
   }, [isAdmin]);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (showSocialModal) {
+      document.body.classList.add('modal-open');
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = 'unset';
+    };
+  }, [showSocialModal]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -755,6 +772,7 @@ export default function AdminProjectsPage() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
             onClick={() => setShowSocialModal(false)}
+            style={{ overscrollBehavior: 'contain' }}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -762,6 +780,7 @@ export default function AdminProjectsPage() {
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
               className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden"
+              style={{ overscrollBehavior: 'contain' }}
             >
               {/* Modal Header */}
               <div className="p-6 border-b border-gray-600">
@@ -784,7 +803,13 @@ export default function AdminProjectsPage() {
               </div>
 
               {/* Modal Content */}
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+              <div 
+                className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]"
+                style={{ 
+                  overscrollBehavior: 'contain',
+                  WebkitOverflowScrolling: 'touch'
+                }}
+              >
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Stats and Actions */}
                   <div className="space-y-6">

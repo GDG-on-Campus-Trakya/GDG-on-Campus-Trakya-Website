@@ -405,6 +405,16 @@ export default function AdminEventsPage() {
   const [currentQRCodeDataURL, setCurrentQRCodeDataURL] = useState("");
   const [currentQRCodeId, setCurrentQRCodeId] = useState("");
 
+  // Modal scroll lock effect
+  useEffect(() => {
+    if (qrCodeModalOpen) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => document.body.classList.remove('modal-open');
+  }, [qrCodeModalOpen]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -1086,8 +1096,16 @@ export default function AdminEventsPage() {
 
       {/* QR Code Modal */}
       {qrCodeModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-          <div className="bg-gray-700/90 backdrop-blur-lg p-8 rounded-3xl shadow-2xl max-w-md w-full border border-gray-700/50">
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-4"
+          style={{ overscrollBehavior: 'contain' }}
+          onClick={() => setQRCodeModalOpen(false)}
+        >
+          <div 
+            className="bg-gray-700/90 backdrop-blur-lg p-8 rounded-3xl shadow-2xl max-w-md w-full border border-gray-700/50"
+            style={{ overscrollBehavior: 'contain' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="text-center">
               <div className="flex items-center justify-center mb-6">
                 <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mr-3">

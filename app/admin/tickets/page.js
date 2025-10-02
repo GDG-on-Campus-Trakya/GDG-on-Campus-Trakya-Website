@@ -86,6 +86,23 @@ export default function AdminTicketsPage() {
     };
   }, [selectedTicket?.id]);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (selectedTicket) {
+      document.body.classList.add('modal-open');
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedTicket]);
+
   const fetchTickets = async () => {
     try {
       setIsLoading(true);
@@ -589,8 +606,14 @@ export default function AdminTicketsPage() {
 
       {/* Chat Modal */}
       {selectedTicket && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-2xl">
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          style={{ overscrollBehavior: 'contain' }}
+        >
+          <div 
+            className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-2xl"
+            style={{ overscrollBehavior: 'contain' }}
+          >
             {/* Header */}
             <div className="px-6 py-4 border-b border-gray-700 flex items-start justify-between">
               <div>
@@ -624,7 +647,13 @@ export default function AdminTicketsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
               {/* Conversation */}
               <div className="lg:col-span-2 flex flex-col h-[60vh]">
-                <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-900">
+                <div 
+                  className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-900"
+                  style={{ 
+                    overscrollBehavior: 'contain',
+                    WebkitOverflowScrolling: 'touch'
+                  }}
+                >
                   {/* Original ticket message */}
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-lg bg-green-700 flex items-center justify-center text-white text-xs font-bold">

@@ -73,6 +73,23 @@ export default function AdminRafflesPage() {
     }
   }, [isAdmin]);
 
+  // Prevent body scroll when any modal is open
+  useEffect(() => {
+    if (showCreateModal || showChangeWinnerModal || showEditModal || selectedRaffle) {
+      document.body.classList.add('modal-open');
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = 'unset';
+    };
+  }, [showCreateModal, showChangeWinnerModal, showEditModal, selectedRaffle]);
+
   const loadRaffles = async () => {
     setIsLoading(true);
     const result = await raffleUtils.getRaffles();
@@ -753,8 +770,16 @@ function CreateRaffleModal({ events, onClose, onCreate }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+      style={{ overscrollBehavior: 'contain' }}
+      onClick={onClose}
+    >
+      <div 
+        className="bg-gray-800 rounded-lg p-6 w-full max-w-md"
+        style={{ overscrollBehavior: 'contain' }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className="text-xl font-bold mb-4">Yeni Çekiliş Oluştur</h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -846,8 +871,16 @@ function CreateRaffleModal({ events, onClose, onCreate }) {
 // Participants Modal
 function ParticipantsModal({ raffle, participants, onClose, formatDate }) {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-hidden">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+      style={{ overscrollBehavior: 'contain' }}
+      onClick={onClose}
+    >
+      <div 
+        className="bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-hidden"
+        style={{ overscrollBehavior: 'contain' }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">
             {raffle.title} - Katılımcılar ({participants.length})
@@ -903,8 +936,16 @@ function ChangeWinnerModal({ raffle, participants, onClose, onChangeWinner }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+      style={{ overscrollBehavior: 'contain' }}
+      onClick={onClose}
+    >
+      <div 
+        className="bg-gray-800 rounded-lg p-6 w-full max-w-md"
+        style={{ overscrollBehavior: 'contain' }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Kazananı Değiştir</h2>
           <button
@@ -990,8 +1031,16 @@ function EditRaffleModal({ raffle, onClose, onUpdate }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+      style={{ overscrollBehavior: 'contain' }}
+      onClick={onClose}
+    >
+      <div 
+        className="bg-gray-800 rounded-lg p-6 w-full max-w-md"
+        style={{ overscrollBehavior: 'contain' }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Çekiliş Düzenle</h2>
           <button
