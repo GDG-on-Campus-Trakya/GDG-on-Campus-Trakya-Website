@@ -60,15 +60,7 @@ export default function CookieConsent() {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
       <div className="w-full bg-gray-900 border-t border-gray-700 shadow-2xl pointer-events-auto relative">
-        {/* Close button - always top-right */}
-        {!showDetails && (
-          <button
-            onClick={() => setShowBanner(false)}
-            className="absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-300 p-2 z-10"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        )}
+        {/* Close button removed - users must make a choice */}
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">

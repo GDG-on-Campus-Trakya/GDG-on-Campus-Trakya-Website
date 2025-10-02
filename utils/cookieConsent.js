@@ -9,34 +9,37 @@ export const CONSENT_KEY = 'cookieConsent';
 export async function getCookieConsent(userEmail = null) {
   if (typeof window === 'undefined') return null;
 
-  // If no user email provided, check localStorage as fallback (for non-logged in users)
-  if (!userEmail) {
-    try {
-      const consent = localStorage.getItem(CONSENT_KEY);
-      return consent ? JSON.parse(consent) : null;
-    } catch (error) {
-      console.error('Error reading cookie consent from localStorage:', error);
-      return null;
-    }
-  }
-
-  // Fetch from Firestore for logged-in users
+  // First check localStorage for immediate response (both logged in and out users)
   try {
-    const { doc, getDoc } = await import('firebase/firestore');
-    const { db } = await import('../firebase');
-
-    const consentRef = doc(db, 'userConsents', userEmail);
-    const consentSnap = await getDoc(consentRef);
-
-    if (consentSnap.exists()) {
-      return consentSnap.data();
+    const localConsent = localStorage.getItem(CONSENT_KEY);
+    if (localConsent) {
+      return JSON.parse(localConsent);
     }
-
-    return null;
   } catch (error) {
-    console.error('Error reading cookie consent from Firestore:', error);
-    return null;
+    console.error('Error reading cookie consent from localStorage:', error);
   }
+
+  // If user is logged in, also try to fetch from Firestore
+  if (userEmail) {
+    try {
+      const { doc, getDoc } = await import('firebase/firestore');
+      const { db } = await import('../firebase');
+
+      const consentRef = doc(db, 'userConsents', userEmail);
+      const consentSnap = await getDoc(consentRef);
+
+      if (consentSnap.exists()) {
+        const firestoreConsent = consentSnap.data();
+        // Save to localStorage for faster future access
+        localStorage.setItem(CONSENT_KEY, JSON.stringify(firestoreConsent));
+        return firestoreConsent;
+      }
+    } catch (error) {
+      console.error('Error reading cookie consent from Firestore:', error);
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -86,20 +89,25 @@ export async function saveCookieConsent(preferences, userEmail = null) {
       timestamp: new Date().toISOString()
     };
 
-    // If user is logged in, save to Firestore
-    if (userEmail) {
-      const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
-      const { db } = await import('../firebase');
+    // Always save to localStorage for immediate access
+    localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
 
-      const consentRef = doc(db, 'userConsents', userEmail);
-      await setDoc(consentRef, {
-        ...consent,
-        userEmail,
-        updatedAt: serverTimestamp()
-      });
-    } else {
-      // For non-logged in users, use localStorage as fallback
-      localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
+    // If user is logged in, also save to Firestore
+    if (userEmail) {
+      try {
+        const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+        const { db } = await import('../firebase');
+
+        const consentRef = doc(db, 'userConsents', userEmail);
+        await setDoc(consentRef, {
+          ...consent,
+          userEmail,
+          updatedAt: serverTimestamp()
+        });
+      } catch (error) {
+        console.error('Error saving cookie consent to Firestore:', error);
+        // Continue anyway since we have localStorage
+      }
     }
 
     // Trigger custom event for other parts of the app

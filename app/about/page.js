@@ -2,7 +2,7 @@
 // about/page.js
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
@@ -14,6 +14,22 @@ export default function AboutPage() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [direction, setDirection] = useState(1);
+
+  // Modal açıldığında/kapandığında body scroll'u yönet
+  useEffect(() => {
+    if (selectedImage) {
+      // Modal açıldığında scroll'u kapat
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Modal kapandığında scroll'u aç
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup: Component unmount olduğunda scroll'u geri aç
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedImage]);
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
