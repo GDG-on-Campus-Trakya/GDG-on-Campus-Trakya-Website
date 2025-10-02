@@ -239,34 +239,6 @@ export default function AdminPage() {
               </Link>
 
               <Link
-                href="/admin/datasets"
-                className="group bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-6 rounded-2xl text-center hover:from-purple-600 hover:to-indigo-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-              >
-                <div className="flex flex-col items-center space-y-3">
-                  <div className="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-300">
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
-                  </div>
-                  <span className="font-semibold text-lg">Veri Setleri</span>
-                </div>
-              </Link>
-
-              <Link
-                href="/admin/polls"
-                className="group bg-gradient-to-r from-blue-500 to-pink-500 text-white p-6 rounded-2xl text-center hover:from-blue-600 hover:to-pink-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-              >
-                <div className="flex flex-col items-center space-y-3">
-                  <div className="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-300">
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                    </svg>
-                  </div>
-                  <span className="font-semibold text-lg">Canlı Oylama</span>
-                </div>
-              </Link>
-
-              <Link
                 href="/admin/events"
                 className="group bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-2xl text-center hover:from-blue-600 hover:to-cyan-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
               >
