@@ -1,6 +1,6 @@
 // firebase.js
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence, indexedDBLocalPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getDatabase } from "firebase/database";
@@ -31,3 +31,17 @@ export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const realtimeDb = getDatabase(app);
+
+// Set auth persistence for better Safari performance
+// IndexedDB is preferred, falls back to localStorage
+if (typeof window !== 'undefined') {
+  setPersistence(auth, indexedDBLocalPersistence)
+    .catch((error) => {
+      // If IndexedDB fails (some Safari private mode), try localStorage
+      console.warn('IndexedDB persistence failed, falling back to localStorage:', error);
+      return setPersistence(auth, browserLocalPersistence);
+    })
+    .catch((error) => {
+      console.error('Auth persistence setup failed:', error);
+    });
+}

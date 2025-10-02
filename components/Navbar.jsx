@@ -2,7 +2,7 @@
 // components/Navbar.jsx
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, googleProvider, db } from "../firebase";
-import { signInWithRedirect, signOut, getRedirectResult } from "firebase/auth";
+import { signInWithPopup, signOut } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import { useEffect, useState, useRef, Suspense } from "react";
@@ -21,22 +21,17 @@ function NavbarContent() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const loginWithGoogleRedirect = async () => {
+  const loginWithGoogle = async () => {
     try {
       googleProvider.setCustomParameters({
         prompt: 'select_account'
       });
-      await signInWithRedirect(auth, googleProvider);
-    } catch (error) {
-      console.error("Error during sign-in:", error);
-    }
-  };
 
-  const checkRedirectResult = async () => {
-    try {
-      const result = await getRedirectResult(auth);
+      // SADECE POPUP KULLAN - HIZLI VE SMOOTH
+      const result = await signInWithPopup(auth, googleProvider);
 
-      if (result) {
+      // Kullanıcı dokümanını oluştur
+      if (result?.user) {
         const { uid, email, displayName } = result.user;
         const userRef = doc(db, "users", uid);
         const userSnap = await getDoc(userRef);
@@ -50,10 +45,21 @@ function NavbarContent() {
           });
         }
       }
-      return result;
     } catch (error) {
-      console.error("Error handling redirect result:", error);
-      throw error;
+      console.error("Error during sign-in:", error);
+
+      // Kullanıcı dostu hata mesajları
+      if (error.code === 'auth/popup-blocked') {
+        alert('Popup engellendi! Lütfen tarayıcınızda popup engellemesini kapatın ve tekrar deneyin.');
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        // Kullanıcı pencereyi kapattı, sessizce işle
+        console.log('Kullanıcı popup\'ı kapattı');
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        // Başka bir popup zaten açık
+        console.log('Başka bir giriş işlemi devam ediyor');
+      } else {
+        alert('Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.');
+      }
     }
   };
 
@@ -90,15 +96,7 @@ function NavbarContent() {
     }
   };
 
-  // Fetch user profile photo from Firestore
-  useEffect(() => {
-    // Check for redirect result with a slight delay for mobile browsers
-    const timer = setTimeout(() => {
-      checkRedirectResult();
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, []);
+  // Not needed anymore - using popup only!
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -350,10 +348,10 @@ function NavbarContent() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={loginWithGoogleRedirect}
+            onClick={loginWithGoogle}
             onTouchEnd={(e) => {
               e.preventDefault();
-              loginWithGoogleRedirect();
+              loginWithGoogle();
             }}
             className="px-3 sm:px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg text-white font-semibold transition duration-300 text-sm sm:text-base touch-manipulation select-none"
           >

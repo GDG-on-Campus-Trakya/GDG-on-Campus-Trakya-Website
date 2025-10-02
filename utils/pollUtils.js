@@ -122,27 +122,37 @@ export const createPoll = async (pollData) => {
 };
 
 /**
- * Find poll by code
  * @param {string} pollCode - 6-digit poll code
  * @returns {Promise<Object|null>} Poll data with ID
  */
 export const findPollByCode = async (pollCode) => {
-  const pollsRef = ref(realtimeDb, 'polls');
-  const snapshot = await get(pollsRef);
+  try {
+    const pollsRef = ref(realtimeDb, 'polls');
+    const snapshot = await get(pollsRef);
 
-  if (!snapshot.exists()) return null;
+    if (!snapshot.exists()) return null;
 
-  const polls = snapshot.val();
-  const pollEntry = Object.entries(polls).find(
-    ([id, poll]) => poll.pollCode === pollCode
-  );
+    const polls = snapshot.val();
 
-  if (!pollEntry) return null;
+    // Optimize: Early return if no polls
+    if (!polls || typeof polls !== 'object') return null;
 
-  return {
-    id: pollEntry[0],
-    ...pollEntry[1]
-  };
+    // Optimize: Use for...of instead of find for better performance
+    const entries = Object.entries(polls);
+    for (const [id, poll] of entries) {
+      if (poll && poll.pollCode === pollCode) {
+        return {
+          id,
+          ...poll
+        };
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error finding poll by code:', error);
+    return null;
+  }
 };
 
 /**

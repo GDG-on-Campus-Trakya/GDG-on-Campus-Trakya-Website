@@ -52,27 +52,37 @@ export const createGame = async (gameData) => {
 };
 
 /**
- * Find game by code
  * @param {string} gameCode - 6-digit game code
  * @returns {Promise<Object|null>} Game data with ID
  */
 export const findGameByCode = async (gameCode) => {
-  const gamesRef = ref(realtimeDb, 'games');
-  const snapshot = await get(gamesRef);
+  try {
+    const gamesRef = ref(realtimeDb, 'games');
+    const snapshot = await get(gamesRef);
 
-  if (!snapshot.exists()) return null;
+    if (!snapshot.exists()) return null;
 
-  const games = snapshot.val();
-  const gameEntry = Object.entries(games).find(
-    ([id, game]) => game.gameCode === gameCode
-  );
+    const games = snapshot.val();
 
-  if (!gameEntry) return null;
+    // Optimize: Early return if no games
+    if (!games || typeof games !== 'object') return null;
 
-  return {
-    id: gameEntry[0],
-    ...gameEntry[1]
-  };
+    // Optimize: Use for...of instead of find for better performance
+    const entries = Object.entries(games);
+    for (const [id, game] of entries) {
+      if (game && game.gameCode === gameCode) {
+        return {
+          id,
+          ...game
+        };
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error finding game by code:', error);
+    return null;
+  }
 };
 
 /**

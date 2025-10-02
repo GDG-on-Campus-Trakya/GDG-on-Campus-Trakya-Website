@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../firebase";
 import { doc, getDoc } from "firebase/firestore";
@@ -8,14 +8,16 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { findGameByCode, addPlayerToGame } from "../../utils/quizUtils";
 import { findPollByCode, addPlayerToPoll } from "../../utils/pollUtils";
+import { debounce, withTimeout, isSafari } from "../../utils/debounce";
 
 export default function GameJoinPage() {
   const [user, loading] = useAuthState(auth);
   const [gameCode, setGameCode] = useState("");
   const [joining, setJoining] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const router = useRouter();
 
-  const handleJoinGame = async (e) => {
+  const handleJoinGame = useCallback(async (e) => {
     e.preventDefault();
 
     if (!user) {
@@ -32,13 +34,24 @@ export default function GameJoinPage() {
     setJoining(true);
 
     try {
-      // Get user data
-      const userRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userRef);
+      // Safari için özel timeout süresi
+      const timeoutDuration = isSafari() ? 8000 : 10000;
+
+      // Paralel olarak user data ve game/poll search yap (BÜYÜK PERFORMANS ARTIŞ)
+      const [userDoc, game, poll] = await withTimeout(
+        Promise.all([
+          getDoc(doc(db, "users", user.uid)),
+          findGameByCode(gameCode),
+          findPollByCode(gameCode)
+        ]),
+        timeoutDuration,
+        "İşlem çok uzun sürdü. Lütfen tekrar deneyin."
+      );
 
       if (!userDoc.exists()) {
         toast.error("Profil bilgileriniz bulunamadı. Lütfen profil sayfanızı doldurun.");
         router.push("/profile");
+        setJoining(false);
         return;
       }
 
@@ -54,51 +67,51 @@ export default function GameJoinPage() {
         department: userData.department || ""
       };
 
-      // Try to find as quiz
-      let game = await findGameByCode(gameCode);
+      const playerId = `player_${user.uid}`;
 
+      // Check quiz game
       if (game) {
-        // It's a quiz
         if (game.status === "finished") {
           toast.error("Bu oyun sona ermiş!");
           setJoining(false);
           return;
         }
 
-        // Check if already joined
-        const playerId = `player_${user.uid}`;
         if (game.players && game.players[playerId]) {
           toast.info("Bu oyuna zaten katıldınız!");
           router.push(`/quiz/play/${game.id}`);
           return;
         }
 
-        await addPlayerToGame(game.id, playerData);
+        await withTimeout(
+          addPlayerToGame(game.id, playerData),
+          5000,
+          "Oyuna katılma işlemi zaman aşımına uğradı"
+        );
         toast.success("Oyuna katıldınız!");
         router.push(`/quiz/play/${game.id}`);
         return;
       }
 
-      // Try to find as poll
-      const poll = await findPollByCode(gameCode);
-
+      // Check poll
       if (poll) {
-        // It's a poll
         if (poll.status === "finished") {
           toast.error("Bu oyun sona ermiş!");
           setJoining(false);
           return;
         }
 
-        // Check if already joined
-        const playerId = `player_${user.uid}`;
         if (poll.players && poll.players[playerId]) {
           toast.info("Bu oyuna zaten katıldınız!");
           router.push(`/poll/room/${poll.id}`);
           return;
         }
 
-        await addPlayerToPoll(poll.id, playerData);
+        await withTimeout(
+          addPlayerToPoll(poll.id, playerData),
+          5000,
+          "Oyuna katılma işlemi zaman aşımına uğradı"
+        );
         toast.success("Oyuna katıldınız!");
         router.push(`/poll/room/${poll.id}`);
         return;
@@ -109,20 +122,54 @@ export default function GameJoinPage() {
       setJoining(false);
     } catch (error) {
       console.error("Error joining game:", error);
-      toast.error("Oyuna katılırken hata oluştu!");
+      const errorMessage = error.message === "İşlem çok uzun sürdü. Lütfen tekrar deneyin."
+        ? error.message
+        : "Oyuna katılırken hata oluştu!";
+      toast.error(errorMessage);
       setJoining(false);
     }
-  };
+  }, [user, gameCode, router]);
 
-  const handleCodeInput = (e) => {
+  // Debounced input handler for better performance
+  const handleCodeInput = useCallback((e) => {
     const value = e.target.value.replace(/\D/g, "").slice(0, 6);
     setGameCode(value);
-  };
+
+    // Show typing indicator
+    setIsTyping(true);
+
+    // Clear typing indicator after user stops typing
+    const clearTyping = debounce(() => {
+      setIsTyping(false);
+    }, 500);
+
+    clearTyping();
+  }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
-        <p className="text-lg text-white">Yükleniyor...</p>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-indigo-900">
+        <div className="max-w-md w-full px-6">
+          <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20 animate-pulse">
+            <div className="space-y-6">
+              {/* Title skeleton */}
+              <div className="h-8 bg-white/20 rounded-xl w-3/4 mx-auto"></div>
+              <div className="h-6 bg-white/20 rounded-xl w-1/2 mx-auto"></div>
+
+              {/* Input skeleton */}
+              <div className="space-y-3 mt-8">
+                <div className="h-5 bg-white/20 rounded w-24"></div>
+                <div className="h-16 bg-white/20 rounded-xl"></div>
+              </div>
+
+              {/* Button skeleton */}
+              <div className="h-14 bg-white/20 rounded-xl mt-6"></div>
+            </div>
+          </div>
+
+          {/* Loading text */}
+          <p className="text-center text-white/80 mt-6">Yükleniyor...</p>
+        </div>
       </div>
     );
   }
@@ -164,9 +211,19 @@ export default function GameJoinPage() {
             <button
               type="submit"
               disabled={!user || gameCode.length !== 6 || joining}
-              className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl transition-colors font-bold text-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl transition-colors font-bold text-xl disabled:opacity-50 disabled:cursor-not-allowed relative"
             >
-              {joining ? "Katılınıyor..." : "Oyuna Katıl"}
+              {joining ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Katılınıyor...
+                </span>
+              ) : (
+                "Oyuna Katıl"
+              )}
             </button>
           </form>
 
