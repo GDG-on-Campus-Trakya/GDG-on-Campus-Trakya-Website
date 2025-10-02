@@ -53,11 +53,11 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' vitals.vercel-insights.com *.googleapis.com *.firebaseapp.com apis.google.com accounts.google.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' vitals.vercel-insights.com va.vercel-scripts.com *.googleapis.com *.firebaseapp.com apis.google.com accounts.google.com",
               "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
               "font-src 'self' data: blob:",
               "img-src 'self' data: blob: *.googleapis.com *.googleusercontent.com firebasestorage.googleapis.com storage.googleapis.com",
-              "connect-src 'self' *.googleapis.com *.firebaseapp.com accounts.google.com vitals.vercel-insights.com wss: https:",
+              "connect-src 'self' *.googleapis.com *.firebaseapp.com accounts.google.com vitals.vercel-insights.com va.vercel-scripts.com wss: https:",
               "frame-src 'self' *.firebaseapp.com *.googleapis.com accounts.google.com",
               "object-src 'none'",
               "base-uri 'self'",

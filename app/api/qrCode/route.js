@@ -49,7 +49,9 @@ export async function POST(request) {
 
     // Generate unique QR code ID
     const qrCodeId = uuidv4();
-    const qrCodeData = `${process.env.NEXT_PUBLIC_BASE_URL}/events?qrCode=${qrCodeId}`;
+    
+    // Always use production URL for QR codes
+    const qrCodeData = `https://gdgoncampustu.com/events?qrCode=${qrCodeId}`;
 
     // Generate the QR Code as a Data URL
     const qrCodeDataURL = await QRCode.toDataURL(qrCodeData, {

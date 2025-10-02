@@ -331,6 +331,17 @@ export const endGame = async (gameId) => {
   // Save results to Firestore
   try {
     await saveGameResults(gameId);
+
+    // Clean up Realtime DB after successful save to Firestore
+    // Wait a bit to ensure clients can see final state
+    setTimeout(async () => {
+      try {
+        await deleteGame(gameId);
+        console.log(`Game ${gameId} cleaned up from Realtime DB`);
+      } catch (error) {
+        console.error("Failed to cleanup game from Realtime DB:", error);
+      }
+    }, 30000); // Wait 30 seconds before cleanup
   } catch (error) {
     console.error("Failed to save game results:", error);
     // Don't throw error, game still ends successfully
