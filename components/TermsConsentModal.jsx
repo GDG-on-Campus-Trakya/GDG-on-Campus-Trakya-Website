@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,20 @@ import Link from "next/link";
 export default function TermsConsentModal({ isOpen, onAccept, onDecline }) {
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const handleAccept = () => {
     if (privacyAccepted && termsAccepted) {

@@ -39,6 +39,20 @@ const EventList = ({
     setIsClient(true);
   }, []);
 
+  // Prevent body scroll when QR modal is open
+  useEffect(() => {
+    if (enlargedQR) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [enlargedQR]);
+
   if (registrations.length === 0) {
     return (
       <p className="text-gray-400">Henüz bir etkinliğe kayıt olmadınız.</p>

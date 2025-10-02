@@ -50,6 +50,20 @@ export default function PostModal({
     }
   }, [post, user?.uid]);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   const loadUserProfile = async () => {
     if (user) {
       try {

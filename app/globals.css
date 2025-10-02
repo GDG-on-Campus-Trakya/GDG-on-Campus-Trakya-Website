@@ -3,18 +3,56 @@
 @tailwind utilities;
 
 /* Base styles */
-html,
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  height: 100%;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
 body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
   overflow-x: hidden; /* Prevent horizontal scrolling */
+  overflow-y: auto; /* Allow vertical scrolling */
   background: linear-gradient(
     to bottom,
     #111827,
     #1f2937
   ); /* Dark gradient to prevent white flash */
+  /* Extend background to cover any potential white space */
+  background-attachment: fixed;
+  background-size: 100% 100%;
+  position: relative;
+}
+
+/* Prevent white space on zoom out - Background overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(to bottom, #111827, #1f2937);
+  z-index: -1;
+}
+
+/* iPhone Safe Area Support - Prevents content from hiding behind notch/home indicator */
+@supports (padding: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
 /* Mobile touch optimization */
@@ -34,6 +72,21 @@ p, span, h1, h2, h3, h4, h5, h6, input, textarea {
   -moz-user-select: text;
   -ms-user-select: text;
   user-select: text;
+}
+
+/* Prevent iOS auto-zoom on input focus */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+input[type="password"],
+textarea,
+select {
+  font-size: 16px !important; /* iOS Safari won't zoom if font-size >= 16px */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* Touch manipulation for interactive elements */

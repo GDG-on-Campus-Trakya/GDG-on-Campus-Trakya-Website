@@ -71,6 +71,20 @@ export default function TicketsPage() {
     };
   }, [showReplyModal, selectedTicketForReply?.id]);
 
+  // Prevent body scroll when any modal is open
+  useEffect(() => {
+    if (showReopenModal || showReplyModal || showForm) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showReopenModal, showReplyModal, showForm]);
+
   const fetchUserTickets = async () => {
     try {
       setIsLoading(true);

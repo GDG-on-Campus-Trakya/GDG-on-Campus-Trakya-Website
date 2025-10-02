@@ -138,15 +138,22 @@ function NavbarContent() {
   }, [menuOpen, profileMenuOpen]);
 
   return (
-    <motion.nav
+    <motion.div
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className={`flex items-center px-4 sm:px-6 lg:px-8 h-14 sm:h-16 md:h-20 ${
+      className={`${
         isLandingPage
           ? "bg-gradient-to-b from-gray-900 to-gray-900"
           : "bg-black/70 backdrop-blur-md"
-      } text-white sticky top-0 z-50 transition-all duration-300`}
+      } sticky top-0 z-50 transition-all duration-300`}
+      style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)'
+      }}
     >
+      <nav className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-14 sm:h-16 md:h-20 text-white">
+
       {/* Left Side - Mobile Menu Button on small screens, Logo on larger screens */}
       <div className="flex items-center">
         {/* Mobile Menu Button - Visible only on small screens for ALL users */}
@@ -268,9 +275,6 @@ function NavbarContent() {
           </Link>
         )}
       </div>
-
-      {/* Spacer for mobile to push right side content to the right */}
-      <div className="md:hidden flex-1"></div>
 
       {/* Right Side - User Menu */}
       <div className="flex items-center gap-4">
@@ -488,7 +492,8 @@ function NavbarContent() {
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.nav>
+      </nav>
+    </motion.div>
   );
 }
 

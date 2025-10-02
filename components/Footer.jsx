@@ -23,7 +23,14 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-gradient-to-t from-black to-gray-900 text-gray-300 py-8 sm:py-12">
+    <footer 
+      className="bg-gradient-to-t from-black to-gray-900 text-gray-300 py-8 sm:py-12"
+      style={{
+        paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
+        paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+        paddingRight: 'max(1rem, env(safe-area-inset-right))'
+      }}
+    >
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           {/* Left Section */}

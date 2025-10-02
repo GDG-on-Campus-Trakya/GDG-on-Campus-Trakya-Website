@@ -21,6 +21,12 @@ export const metadata = {
 export default async function RootLayout({ children }) {
   return (
     <html className="h-full">
+      <head>
+        <meta 
+          name="viewport" 
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" 
+        />
+      </head>
       <body
         className={`${inter.variable} font-sans flex flex-col min-h-screen custom-scrollbar overflow-x-hidden`}
       >

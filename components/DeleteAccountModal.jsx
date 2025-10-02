@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { 
@@ -35,6 +35,20 @@ const DeleteAccountModal = ({ isOpen, onClose }) => {
   const [confirmationText, setConfirmationText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const handleDeleteAccount = async () => {
     if (confirmationText !== CONFIRMATION_TEXT) {
