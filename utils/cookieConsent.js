@@ -3,25 +3,49 @@
 export const CONSENT_KEY = 'cookieConsent';
 
 /**
- * Get current cookie consent preferences
+ * Get current cookie consent preferences from Firestore
+ * @param {string} userEmail - User's email address
  */
-export function getCookieConsent() {
+export async function getCookieConsent(userEmail = null) {
   if (typeof window === 'undefined') return null;
 
+  // If no user email provided, check localStorage as fallback (for non-logged in users)
+  if (!userEmail) {
+    try {
+      const consent = localStorage.getItem(CONSENT_KEY);
+      return consent ? JSON.parse(consent) : null;
+    } catch (error) {
+      console.error('Error reading cookie consent from localStorage:', error);
+      return null;
+    }
+  }
+
+  // Fetch from Firestore for logged-in users
   try {
-    const consent = localStorage.getItem(CONSENT_KEY);
-    return consent ? JSON.parse(consent) : null;
+    const { doc, getDoc } = await import('firebase/firestore');
+    const { db } = await import('../firebase');
+
+    const consentRef = doc(db, 'userConsents', userEmail);
+    const consentSnap = await getDoc(consentRef);
+
+    if (consentSnap.exists()) {
+      return consentSnap.data();
+    }
+
+    return null;
   } catch (error) {
-    console.error('Error reading cookie consent:', error);
+    console.error('Error reading cookie consent from Firestore:', error);
     return null;
   }
 }
 
 /**
  * Check if a specific cookie type is consented
+ * @param {string} type - Type of consent (necessary, analytics, functional)
+ * @param {string} userEmail - User's email address
  */
-export function hasConsent(type) {
-  const consent = getCookieConsent();
+export async function hasConsent(type, userEmail = null) {
+  const consent = await getCookieConsent(userEmail);
 
   // If no consent given yet, assume no consent (except necessary)
   if (!consent) {
@@ -33,22 +57,26 @@ export function hasConsent(type) {
 
 /**
  * Check if analytics cookies are allowed
+ * @param {string} userEmail - User's email address
  */
-export function canUseAnalytics() {
-  return hasConsent('analytics');
+export async function canUseAnalytics(userEmail = null) {
+  return await hasConsent('analytics', userEmail);
 }
 
 /**
  * Check if functional cookies are allowed
+ * @param {string} userEmail - User's email address
  */
-export function canUseFunctional() {
-  return hasConsent('functional');
+export async function canUseFunctional(userEmail = null) {
+  return await hasConsent('functional', userEmail);
 }
 
 /**
- * Save cookie consent
+ * Save cookie consent to Firestore
+ * @param {Object} preferences - User's consent preferences
+ * @param {string} userEmail - User's email address
  */
-export function saveCookieConsent(preferences) {
+export async function saveCookieConsent(preferences, userEmail = null) {
   if (typeof window === 'undefined') return;
 
   try {
@@ -58,7 +86,21 @@ export function saveCookieConsent(preferences) {
       timestamp: new Date().toISOString()
     };
 
-    localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
+    // If user is logged in, save to Firestore
+    if (userEmail) {
+      const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+      const { db } = await import('../firebase');
+
+      const consentRef = doc(db, 'userConsents', userEmail);
+      await setDoc(consentRef, {
+        ...consent,
+        userEmail,
+        updatedAt: serverTimestamp()
+      });
+    } else {
+      // For non-logged in users, use localStorage as fallback
+      localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
+    }
 
     // Trigger custom event for other parts of the app
     window.dispatchEvent(new CustomEvent('cookieConsentChanged', {
@@ -74,11 +116,12 @@ export function saveCookieConsent(preferences) {
 
 /**
  * Clear all non-necessary cookies and storage
+ * @param {string} userEmail - User's email address
  */
-export function clearNonNecessaryCookies() {
+export async function clearNonNecessaryCookies(userEmail = null) {
   if (typeof window === 'undefined') return;
 
-  const consent = getCookieConsent();
+  const consent = await getCookieConsent(userEmail);
 
   // Clear session storage audit log if functional cookies not allowed
   if (!consent?.functional) {

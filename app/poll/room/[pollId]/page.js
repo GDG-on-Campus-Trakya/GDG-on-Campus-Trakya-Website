@@ -339,13 +339,6 @@ export default function PollRoomPage() {
                   )}
                 </div>
               </div>
-
-              <button
-                onClick={() => router.push("/poll/join")}
-                className="w-full py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl transition-colors font-bold text-lg sm:text-xl"
-              >
-                Yeni Poll'a Katıl
-              </button>
             </div>
           )}
         </div>

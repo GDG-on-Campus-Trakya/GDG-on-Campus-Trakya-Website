@@ -172,45 +172,28 @@ export default function SocialPage() {
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-gradient-to-b from-[#1a1a2e] to-[#000000] text-white">
-      {/* Header */}
-      <div className="sticky top-0 bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 z-40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">
-              GDG Social
-            </h1>
+      {/* Main Container */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pt-20 sm:pt-24">
+        {/* Page Title */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 mb-2">
+            Sosyal Medya
+          </h1>
+          <p className="text-gray-400 text-sm sm:text-base">
+            Etkinlik anlarını paylaş, çekilişlere katıl!
+          </p>
+        </div>
 
-            {currentTab === "posts" &&
-              (loadingEvents ? (
-                <div className="bg-gray-600 p-2 sm:p-3 rounded-lg">
-                  <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-2 border-white border-t-transparent"></div>
-                </div>
-              ) : activeEvents.length > 0 ? (
-                <button
-                  onClick={() => setShowUpload(true)}
-                  className="bg-blue-600 text-white p-2 sm:p-3 rounded-lg hover:bg-blue-700 transition-all shadow-lg"
-                  title={`${activeEvents.length} aktif etkinlik mevcut`}
-                >
-                  <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
-                </button>
-              ) : (
-                <div
-                  className="bg-gray-600/50 p-2 sm:p-3 rounded-lg cursor-not-allowed"
-                  title="Aktif etkinlik yok"
-                >
-                  <Plus className="w-5 h-5 sm:w-6 sm:w-6 text-gray-400" />
-                </div>
-              ))}
-          </div>
-
+        {/* Compact Controls */}
+        <div className="bg-gray-800/50 backdrop-blur-md rounded-2xl p-4 sm:p-6 mb-6 border border-gray-700">
           {/* Tab Navigation */}
-          <div className="flex space-x-1 bg-gray-700 rounded-lg p-1 mb-6">
+          <div className="flex space-x-2 mb-4">
             <button
               onClick={() => setCurrentTab("posts")}
-              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-xl text-sm font-medium transition-all ${
                 currentTab === "posts"
-                  ? "bg-blue-500 text-white shadow-lg"
-                  : "text-gray-400 hover:bg-gray-600 hover:text-white"
+                  ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30"
+                  : "text-gray-400 hover:bg-gray-700/50 hover:text-white"
               }`}
             >
               <Calendar className="w-4 h-4" />
@@ -219,10 +202,10 @@ export default function SocialPage() {
 
             <button
               onClick={() => setCurrentTab("results")}
-              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-xl text-sm font-medium transition-all ${
                 currentTab === "results"
-                  ? "bg-yellow-500 text-white shadow-lg"
-                  : "text-gray-400 hover:bg-gray-600 hover:text-white"
+                  ? "bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg shadow-yellow-500/30"
+                  : "text-gray-400 hover:bg-gray-700/50 hover:text-white"
               }`}
             >
               <Trophy className="w-4 h-4" />
@@ -230,43 +213,48 @@ export default function SocialPage() {
             </button>
           </div>
 
-          {/* Filter Tabs - Event Based (only for posts) */}
-          {currentTab === "posts" && (
-            <div className="flex flex-wrap gap-2 bg-gray-700 rounded-lg p-2">
-              <button
-                onClick={() => setFilter("all")}
-                className={`py-2 px-4 rounded text-sm font-medium transition-all ${
-                  filter === "all"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-700 text-gray-400 hover:bg-blue-500 hover:text-white"
-                }`}
+          {/* Filter Dropdown - Event Based (only for posts) */}
+          {currentTab === "posts" && Object.keys(stats.eventGroups).length > 0 && (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <Filter className="w-4 h-4" />
+                <span>Filtre:</span>
+              </div>
+              <select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                className="flex-1 bg-gray-700/50 border border-gray-600 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer hover:bg-gray-700"
               >
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>Tüm Etkinlikler ({stats.total})</span>
-                </div>
-              </button>
-
-              {Object.entries(stats.eventGroups).map(([eventId, eventData]) => (
-                <button
-                  key={eventId}
-                  onClick={() => setFilter(eventId)}
-                  className={`py-2 px-4 rounded text-sm font-medium transition-all ${
-                    filter === eventId
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-700 text-gray-400 hover:bg-blue-500 hover:text-white"
-                  }`}
-                >
-                  {eventData.name} ({eventData.count})
-                </button>
-              ))}
+                <option value="all">
+                  Tüm Etkinlikler ({stats.total} fotoğraf)
+                </option>
+                {Object.entries(stats.eventGroups).map(([eventId, eventData]) => (
+                  <option key={eventId} value={eventId}>
+                    {eventData.name} ({eventData.count} fotoğraf)
+                  </option>
+                ))}
+              </select>
             </div>
           )}
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {/* Floating Add Button */}
+        {currentTab === "posts" &&
+          (loadingEvents ? (
+            <div className="fixed bottom-6 right-6 bg-gray-600 p-4 rounded-full shadow-2xl z-50">
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+            </div>
+          ) : activeEvents.length > 0 ? (
+            <button
+              onClick={() => setShowUpload(true)}
+              className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full hover:bg-blue-700 transition-all shadow-2xl hover:scale-110 z-50"
+              title={`${activeEvents.length} aktif etkinlik mevcut`}
+            >
+              <Plus className="w-6 h-6" />
+            </button>
+          ) : null)}
+
+        {/* Content */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mb-4"></div>
@@ -384,38 +372,38 @@ export default function SocialPage() {
               )}
           </>
         )}
+
+        {/* Upload Modal */}
+        {showUpload && activeEvents.length > 0 && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+            <PostUpload
+              onUploadComplete={handleUploadComplete}
+              onCancel={() => setShowUpload(false)}
+            />
+          </div>
+        )}
+
+        {/* Post Modal */}
+        <PostModal
+          post={selectedPost}
+          isOpen={!!selectedPost}
+          onClose={() => setSelectedPost(null)}
+          onDelete={handlePostDelete}
+        />
+
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="dark"
+        />
       </div>
-
-      {/* Upload Modal */}
-      {showUpload && activeEvents.length > 0 && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
-          <PostUpload
-            onUploadComplete={handleUploadComplete}
-            onCancel={() => setShowUpload(false)}
-          />
-        </div>
-      )}
-
-      {/* Post Modal */}
-      <PostModal
-        post={selectedPost}
-        isOpen={!!selectedPost}
-        onClose={() => setSelectedPost(null)}
-        onDelete={handlePostDelete}
-      />
-
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-      />
     </div>
   );
 }

@@ -5,41 +5,52 @@ import { Button } from './ui/button';
 import { X } from 'lucide-react';
 import Link from 'next/link';
 import { saveCookieConsent, getCookieConsent, clearNonNecessaryCookies } from '@/utils/cookieConsent';
+import { auth } from '../firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 export default function CookieConsent() {
+  const [user] = useAuthState(auth);
   const [showBanner, setShowBanner] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
-    const consent = getCookieConsent();
-    if (!consent) {
-      setShowBanner(true);
-    }
-  }, []);
+    const checkConsent = async () => {
+      const userEmail = user?.email || null;
+      const consent = await getCookieConsent(userEmail);
+      if (!consent) {
+        setShowBanner(true);
+      }
+    };
 
-  const acceptAll = () => {
-    saveCookieConsent({
+    checkConsent();
+  }, [user]);
+
+  const acceptAll = async () => {
+    const userEmail = user?.email || null;
+    await saveCookieConsent({
       necessary: true,
       analytics: true,
       functional: true
-    });
+    }, userEmail);
     setShowBanner(false);
   };
 
-  const acceptNecessary = () => {
-    saveCookieConsent({
+  const acceptNecessary = async () => {
+    const userEmail = user?.email || null;
+    await saveCookieConsent({
       necessary: true,
       analytics: false,
       functional: false
-    });
-    clearNonNecessaryCookies();
+    }, userEmail);
+    await clearNonNecessaryCookies(userEmail);
     setShowBanner(false);
   };
 
-  const savePreferences = (preferences) => {
-    saveCookieConsent(preferences);
+  const savePreferences = async (preferences) => {
+    const userEmail = user?.email || null;
+    await saveCookieConsent(preferences, userEmail);
     if (!preferences.functional) {
-      clearNonNecessaryCookies();
+      await clearNonNecessaryCookies(userEmail);
     }
     setShowBanner(false);
   };
@@ -48,11 +59,21 @@ export default function CookieConsent() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
-      <div className="w-full bg-gray-900 border-t border-gray-700 shadow-2xl pointer-events-auto">
+      <div className="w-full bg-gray-900 border-t border-gray-700 shadow-2xl pointer-events-auto relative">
+        {/* Close button - always top-right */}
+        {!showDetails && (
+          <button
+            onClick={() => setShowBanner(false)}
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-300 p-2 z-10"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
             {/* Left Content */}
-            <div className="flex-1">
+            <div className="flex-1 pr-10 sm:pr-12 lg:pr-0">
               <div className="flex items-start gap-3">
                 <span className="text-2xl flex-shrink-0">🍪</span>
                 <div>
@@ -102,12 +123,6 @@ export default function CookieConsent() {
                 >
                   Sadece Gerekli Çerezler
                 </Button>
-                <button
-                  onClick={() => setShowBanner(false)}
-                  className="text-gray-400 hover:text-gray-300 p-2"
-                >
-                  <X className="w-5 h-5" />
-                </button>
               </div>
             )}
           </div>

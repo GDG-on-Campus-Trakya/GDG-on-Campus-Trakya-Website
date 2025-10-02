@@ -515,13 +515,13 @@ export default function TicketsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#000000] text-white">
-      <div className="container mx-auto px-4 pt-16 sm:pt-20 md:pt-24 pb-8">
+      <div className="container mx-auto px-4 pt-20 sm:pt-24 md:pt-28 pb-8">
         {/* Header Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#DB4437] via-[#F4B400] to-[#0F9D58] mb-6 p-4">
+        <div className="text-center mb-8 sm:mb-12 md:mb-16">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#DB4437] via-[#F4B400] to-[#0F9D58] mb-4 sm:mb-6 px-2">
             Şikayetler & Öneriler
           </h1>
-          <p className="text-xl sm:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-6 sm:mb-8 md:mb-12 max-w-3xl mx-auto px-4">
             Görüşlerinizi bizimle paylaşın ve deneyiminizi geliştirmemize
             yardımcı olun
           </p>
@@ -529,7 +529,7 @@ export default function TicketsPage() {
           {/* Action Button */}
           <button
             onClick={() => setShowForm(!showForm)}
-            className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 border border-blue-500/30"
+            className="inline-flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base md:text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 border border-blue-500/30"
           >
             <svg
               className="w-6 h-6"
@@ -559,11 +559,11 @@ export default function TicketsPage() {
 
         {/* Ticket Form */}
         {showForm && (
-          <div className="bg-gray-800/30 backdrop-blur-md border border-gray-700/50 rounded-2xl p-8 mb-16 max-w-3xl mx-auto shadow-2xl">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
+          <div className="bg-gray-800/30 backdrop-blur-md border border-gray-700/50 rounded-2xl p-4 sm:p-6 md:p-8 mb-8 sm:mb-12 md:mb-16 max-w-3xl mx-auto shadow-2xl">
+            <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-white"
+                  className="w-4 h-4 sm:w-6 sm:h-6 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -576,13 +576,13 @@ export default function TicketsPage() {
                   />
                 </svg>
               </div>
-              <h2 className="text-3xl font-bold text-white">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">
                 Yeni Bilet Oluştur
               </h2>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 md:space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-gray-200 mb-3 flex items-center gap-2">
                     <svg
@@ -605,13 +605,13 @@ export default function TicketsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, category: e.target.value })
                     }
-                    className="w-full px-4 py-4 bg-gray-700/30 border border-gray-600/50 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-white transition-all duration-200"
+                    className="w-full px-4 py-4 bg-gray-700/30 border border-gray-600/50 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-white transition-all duration-200 [&>option]:bg-gray-800 [&>option]:text-white"
                     required
                   >
-                    <option value="complaint">🚨 Şikayet</option>
-                    <option value="suggestion">💡 Öneri</option>
-                    <option value="technical">🔧 Teknik Destek</option>
-                    <option value="other">📝 Diğer</option>
+                    <option value="complaint" className="bg-gray-800 text-white">🚨 Şikayet</option>
+                    <option value="suggestion" className="bg-gray-800 text-white">💡 Öneri</option>
+                    <option value="technical" className="bg-gray-800 text-white">🔧 Teknik Destek</option>
+                    <option value="other" className="bg-gray-800 text-white">📝 Diğer</option>
                   </select>
                 </div>
 
@@ -859,9 +859,9 @@ export default function TicketsPage() {
         )}
 
         {/* Tickets List */}
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white mb-4 flex items-center justify-center gap-3">
+        <div className="max-w-6xl mx-auto px-2 sm:px-4">
+          <div className="text-center mb-6 sm:mb-8 md:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4 flex items-center justify-center gap-2 sm:gap-3">
               <svg
                 className="w-8 h-8 text-blue-400"
                 fill="none"
@@ -885,7 +885,7 @@ export default function TicketsPage() {
           </div>
 
           {tickets.length === 0 ? (
-            <div className="bg-gray-800/30 backdrop-blur-md border border-gray-700/50 rounded-2xl p-12 text-center">
+            <div className="bg-gray-800/30 backdrop-blur-md border border-gray-700/50 rounded-2xl p-6 sm:p-8 md:p-12 text-center">
               <svg
                 className="w-16 h-16 text-gray-500 mx-auto mb-4"
                 fill="none"
@@ -926,18 +926,18 @@ export default function TicketsPage() {
               </button>
             </div>
           ) : (
-            <div className="grid gap-6">
+            <div className="grid gap-4 sm:gap-6">
               {tickets.map((ticket) => (
                 <div
                   key={ticket.id}
-                  className="bg-gray-800/30 backdrop-blur-md border border-gray-700/50 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-gray-600/50 cursor-pointer"
+                  className="bg-gray-800/30 backdrop-blur-md border border-gray-700/50 rounded-2xl p-4 sm:p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-gray-600/50 cursor-pointer"
                   onClick={() => handleReplyClick(ticket)}
                 >
                   {/* Ticket Header */}
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-start gap-4 mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+                    <div className="flex-1 w-full">
+                      <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center flex-shrink-0">
                           <svg
                             className="w-6 h-6 text-white"
                             fill="none"
@@ -953,41 +953,41 @@ export default function TicketsPage() {
                           </svg>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-3 mb-2">
-                            <h3 className="text-xl font-bold text-white truncate">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                            <h3 className="text-base sm:text-lg md:text-xl font-bold text-white break-words">
                               {ticket.subject}
                             </h3>
                             {ticket.ticketNumber && (
-                              <span className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-mono rounded-lg border border-blue-500/30">
+                              <span className="px-2 sm:px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs sm:text-sm font-mono rounded-lg border border-blue-500/30">
                                 #{ticket.ticketNumber}
                               </span>
                             )}
                           </div>
-                          <div className="flex flex-wrap gap-3 mb-3">
+                          <div className="flex flex-wrap gap-2 sm:gap-3 mb-2 sm:mb-3">
                             <span
-                              className={`px-4 py-2 rounded-xl text-sm font-semibold ${getStatusColor(
+                              className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold ${getStatusColor(
                                 ticket.status
                               )}`}
                             >
                               {getStatusText(ticket.status)}
                             </span>
-                            <span className="px-4 py-2 rounded-xl text-sm font-semibold bg-gray-700/50 text-gray-200 border border-gray-600/30">
+                            <span className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold bg-gray-700/50 text-gray-200 border border-gray-600/30">
                               {getCategoryText(ticket.category)}
                             </span>
                             {ticket.assignedTo && (
-                              <span className="px-4 py-2 rounded-xl text-sm font-semibold bg-purple-900/50 text-purple-200 border border-purple-600/30">
+                              <span className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold bg-purple-900/50 text-purple-200 border border-purple-600/30">
                                 👤 Admin Atandı
                               </span>
                             )}
                           </div>
                           {ticket.status === "closed" && (
-                            <div className="flex items-center gap-3 mt-3">
+                            <div className="flex items-center gap-2 sm:gap-3 mt-2 sm:mt-3">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleReopenClick(ticket.id);
                                 }}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-semibold text-sm transition-all duration-200 shadow-md hover:shadow-lg"
+                                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all duration-200 shadow-md hover:shadow-lg"
                               >
                                 <svg
                                   className="w-4 h-4"
@@ -1006,7 +1006,7 @@ export default function TicketsPage() {
                               </button>
                             </div>
                           )}
-                          <div className="flex items-center gap-4 text-sm text-gray-400">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm text-gray-400 mt-2">
                             <div className="flex items-center gap-1">
                               <svg
                                 className="w-4 h-4"
@@ -1075,8 +1075,8 @@ export default function TicketsPage() {
                   </div>
 
                   {/* Ticket Content */}
-                  <div className="bg-gray-700/20 rounded-xl p-6 mb-6">
-                    <h4 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+                  <div className="bg-gray-700/20 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+                    <h4 className="text-xs sm:text-sm font-semibold text-gray-300 mb-2 sm:mb-3 flex items-center gap-2">
                       <svg
                         className="w-4 h-4"
                         fill="none"
@@ -1092,15 +1092,15 @@ export default function TicketsPage() {
                       </svg>
                       Mesaj İçeriği
                     </h4>
-                    <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">
+                    <p className="text-sm sm:text-base text-gray-200 leading-relaxed whitespace-pre-wrap break-words">
                       {ticket.message}
                     </p>
                   </div>
 
                   {/* Attachments */}
                   {ticket.attachments && ticket.attachments.length > 0 && (
-                    <div className="bg-blue-900/10 rounded-xl p-6 mb-6 border border-blue-500/20">
-                      <h4 className="text-sm font-semibold text-blue-200 mb-4 flex items-center gap-2">
+                    <div className="bg-blue-900/10 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 border border-blue-500/20">
+                      <h4 className="text-xs sm:text-sm font-semibold text-blue-200 mb-3 sm:mb-4 flex items-center gap-2">
                         <svg
                           className="w-4 h-4"
                           fill="none"
@@ -1116,11 +1116,11 @@ export default function TicketsPage() {
                         </svg>
                         Ekli Dosyalar ({ticket.attachments.length})
                       </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         {ticket.attachments.map((attachment, index) => (
                           <div
                             key={index}
-                            className="flex items-center justify-between bg-gray-800/50 rounded-xl p-4 border border-gray-700/30"
+                            className="flex items-center justify-between bg-gray-800/50 rounded-xl p-3 sm:p-4 border border-gray-700/30"
                           >
                             <div className="flex items-center space-x-4 flex-1 min-w-0">
                               <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -1201,7 +1201,7 @@ export default function TicketsPage() {
         {/* Reopen Modal */}
         {showReopenModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-800 rounded-2xl p-8 max-w-md w-full border border-gray-700">
+            <div className="bg-gray-800 rounded-2xl p-4 sm:p-6 md:p-8 max-w-md w-full border border-gray-700">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center">
                   <svg
@@ -1278,17 +1278,17 @@ export default function TicketsPage() {
 
         {/* Chat Modal */}
         {showReplyModal && selectedTicketForReply && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-2xl">
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50">
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-3xl max-h-[90vh] sm:max-h-[85vh] overflow-hidden shadow-2xl">
               {/* Header */}
-              <div className="px-6 py-4 border-b border-gray-700 flex items-start justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-white">
+              <div className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-700 flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-sm sm:text-base md:text-lg font-semibold text-white truncate">
                     Bilet #
                     {selectedTicketForReply.ticketNumber ||
                       selectedTicketForReply.id}
                   </h2>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-xs sm:text-sm text-gray-400 truncate">
                     {selectedTicketForReply.subject}
                   </p>
                 </div>
@@ -1313,17 +1313,17 @@ export default function TicketsPage() {
               </div>
 
               {/* Conversation */}
-              <div className="flex flex-col h-[60vh]">
-                <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-900">
+              <div className="flex flex-col h-[65vh] sm:h-[60vh]">
+                <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-2 sm:space-y-3 bg-gray-900">
                   {/* Original ticket message (user) */}
-                  <div className="flex items-start gap-3 justify-end">
-                    <div className="max-w-xl bg-green-900/30 border border-green-700 rounded-2xl px-4 py-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-semibold text-green-300">
+                  <div className="flex items-start gap-2 sm:gap-3 justify-end">
+                    <div className="max-w-[85%] sm:max-w-xl bg-green-900/30 border border-green-700 rounded-2xl px-3 sm:px-4 py-2 sm:py-3">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
+                        <span className="text-[10px] sm:text-xs font-semibold text-green-300">
                           Siz
                         </span>
                         {selectedTicketForReply.createdAt && (
-                          <span className="text-[10px] text-gray-400">
+                          <span className="text-[9px] sm:text-[10px] text-gray-400">
                             {new Date(
                               selectedTicketForReply.createdAt
                             ).toLocaleDateString("tr-TR", {
@@ -1335,11 +1335,11 @@ export default function TicketsPage() {
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-200 whitespace-pre-wrap">
+                      <p className="text-xs sm:text-sm text-gray-200 whitespace-pre-wrap break-words">
                         {selectedTicketForReply.message}
                       </p>
                     </div>
-                    <div className="w-8 h-8 rounded-lg bg-green-700 flex items-center justify-center text-white text-xs font-bold">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-green-700 flex items-center justify-center text-white text-[10px] sm:text-xs font-bold flex-shrink-0">
                       S
                     </div>
                   </div>
@@ -1353,31 +1353,31 @@ export default function TicketsPage() {
                     return (
                       <div
                         key={idx}
-                        className={`flex items-start gap-3 ${
+                        className={`flex items-start gap-2 sm:gap-3 ${
                           alignRight ? "justify-end" : "justify-start"
                         }`}
                       >
                         {!alignRight && (
                           <div
-                            className={`w-8 h-8 rounded-lg ${
+                            className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg ${
                               isAdminR ? "bg-blue-700" : "bg-gray-600"
-                            } flex items-center justify-center text-white text-xs font-bold`}
+                            } flex items-center justify-center text-white text-[10px] sm:text-xs font-bold flex-shrink-0`}
                           >
                             {isAdminR ? "A" : "S"}
                           </div>
                         )}
                         <div
-                          className={`max-w-xl ${
+                          className={`max-w-[85%] sm:max-w-xl ${
                             isSystem
                               ? "bg-gray-800/70 border-gray-600"
                               : alignRight
                               ? "bg-green-900/30 border-green-700"
                               : "bg-blue-900/40 border-blue-700"
-                          } border rounded-2xl px-4 py-3`}
+                          } border rounded-2xl px-3 sm:px-4 py-2 sm:py-3`}
                         >
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
                             <span
-                              className={`text-xs font-semibold ${
+                              className={`text-[10px] sm:text-xs font-semibold ${
                                 isSystem
                                   ? "text-gray-300"
                                   : alignRight
@@ -1391,7 +1391,7 @@ export default function TicketsPage() {
                                 ? "Siz"
                                 : "Admin"}
                             </span>
-                            <span className="text-[10px] text-gray-400">
+                            <span className="text-[9px] sm:text-[10px] text-gray-400">
                               {new Date(response.createdAt).toLocaleDateString(
                                 "tr-TR",
                                 {
@@ -1403,12 +1403,12 @@ export default function TicketsPage() {
                               )}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-200 whitespace-pre-wrap">
+                          <p className="text-xs sm:text-sm text-gray-200 whitespace-pre-wrap break-words">
                             {response.message}
                           </p>
                         </div>
                         {alignRight && (
-                          <div className="w-8 h-8 rounded-lg bg-green-700 flex items-center justify-center text-white text-xs font-bold">
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-green-700 flex items-center justify-center text-white text-[10px] sm:text-xs font-bold flex-shrink-0">
                             S
                           </div>
                         )}
@@ -1417,20 +1417,20 @@ export default function TicketsPage() {
                   })}
                 </div>
                 {/* Composer */}
-                <div className="p-4 border-t border-gray-700 bg-gray-900">
-                  <div className="flex gap-3">
+                <div className="p-2 sm:p-3 md:p-4 border-t border-gray-700 bg-gray-900">
+                  <div className="flex gap-2 sm:gap-3">
                     <textarea
                       value={replyMessage}
                       onChange={(e) => setReplyMessage(e.target.value)}
                       rows={2}
-                      className="flex-1 px-4 py-3 bg-gray-800/70 border border-gray-700 rounded-xl focus:outline-none focus:border-green-500 text-white placeholder-gray-400 resize-none"
+                      className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-800/70 border border-gray-700 rounded-xl focus:outline-none focus:border-green-500 text-white placeholder-gray-400 resize-none text-xs sm:text-sm"
                       placeholder="Yanıt yazın..."
                       required
                     />
                     <button
                       onClick={handleReplySubmit}
                       disabled={isSubmittingReply || !replyMessage.trim()}
-                      className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm whitespace-nowrap"
                     >
                       {isSubmittingReply ? "Gönderiliyor..." : "Gönder"}
                     </button>
