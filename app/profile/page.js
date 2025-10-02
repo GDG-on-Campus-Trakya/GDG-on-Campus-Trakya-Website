@@ -35,7 +35,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import DeleteAccountModal from "../../components/DeleteAccountModal";
+import TermsConsentModal from "../../components/TermsConsentModal";
 import { Trash2 } from "lucide-react";
+import { signOut } from "firebase/auth";
 
 const formatDate = (date) => {
   const d = new Date(date);
@@ -57,6 +59,8 @@ const Profile = () => {
   const [registrationToDelete, setRegistrationToDelete] = useState(null);
   const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] =
     useState(false);
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
 
   const router = useRouter();
   const profileRef = useRef(null);
@@ -178,6 +182,36 @@ const Profile = () => {
     fetchUserEmailPreference();
   }, [user]);
 
+  // Check if user has accepted terms and privacy policy
+  useEffect(() => {
+    const checkConsentStatus = async () => {
+      if (user) {
+        try {
+          const userRef = doc(db, "users", user.uid);
+          const userSnap = await getDoc(userRef);
+
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            const hasAccepted = userData.termsAccepted || false;
+            setHasAcceptedTerms(hasAccepted);
+
+            // Show modal if user hasn't accepted terms yet
+            if (!hasAccepted) {
+              setShowConsentModal(true);
+            }
+          } else {
+            // New user, show consent modal
+            setShowConsentModal(true);
+          }
+        } catch (error) {
+          console.error("Error checking consent status:", error);
+        }
+      }
+    };
+
+    checkConsentStatus();
+  }, [user]);
+
   // Function to remove a registration
   const removeRegistration = async (registrationId) => {
     try {
@@ -273,6 +307,37 @@ const Profile = () => {
     }
     setIsDeleteDialogOpen(false);
     setRegistrationToDelete(null);
+  };
+
+  const handleAcceptTerms = async () => {
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await setDoc(
+        userRef,
+        {
+          termsAccepted: true,
+          termsAcceptedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+      setHasAcceptedTerms(true);
+      setShowConsentModal(false);
+      toast.success("Şartlar kabul edildi. Hoş geldiniz!");
+    } catch (error) {
+      console.error("Error accepting terms:", error);
+      toast.error("Bir hata oluştu. Lütfen tekrar deneyin.");
+    }
+  };
+
+  const handleDeclineTerms = async () => {
+    try {
+      await signOut(auth);
+      toast.info("Çıkış yapıldı.");
+      router.push("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast.error("Çıkış yapılırken bir hata oluştu.");
+    }
   };
 
   if (loadingAuth || loadingData) {
@@ -527,6 +592,13 @@ const Profile = () => {
       <DeleteAccountModal
         isOpen={isDeleteAccountModalOpen}
         onClose={() => setIsDeleteAccountModalOpen(false)}
+      />
+
+      {/* Terms and Privacy Consent Modal */}
+      <TermsConsentModal
+        isOpen={showConsentModal}
+        onAccept={handleAcceptTerms}
+        onDecline={handleDeclineTerms}
       />
 
       <ToastContainer
