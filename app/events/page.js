@@ -551,27 +551,41 @@ function EventsPageContent() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.6, duration: 0.5 }}
-              className="flex justify-between mt-3"
+              className="flex gap-3"
             >
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`flex-1 py-3 px-4 rounded bg-gray-700 text-gray-400 hover:bg-blue-500 hover:text-white transition-all ${
-                  filterStatus === "upcoming" ? "bg-blue-500 text-white" : ""
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`flex-1 py-3 px-4 rounded-xl font-semibold text-sm transition-all shadow-md ${
+                  filterStatus === "upcoming" 
+                    ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-blue-500/30" 
+                    : "bg-gray-700/50 text-gray-300 hover:bg-gray-700 border border-gray-600/50"
                 }`}
                 onClick={() => handleFilterChange("upcoming")}
               >
-                Yaklaşan
+                <div className="flex items-center justify-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  Yaklaşan
+                </div>
               </motion.button>
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`flex-1 py-3 px-4 rounded bg-gray-700 text-gray-400 hover:bg-blue-500 hover:text-white transition-all ${
-                  filterStatus === "past" ? "bg-blue-500 text-white" : ""
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`flex-1 py-3 px-4 rounded-xl font-semibold text-sm transition-all shadow-md ${
+                  filterStatus === "past" 
+                    ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-purple-500/30" 
+                    : "bg-gray-700/50 text-gray-300 hover:bg-gray-700 border border-gray-600/50"
                 }`}
                 onClick={() => handleFilterChange("past")}
               >
-                Geçmiş
+                <div className="flex items-center justify-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Geçmiş
+                </div>
               </motion.button>
             </motion.div>
           )}
@@ -618,10 +632,10 @@ function EventsPageContent() {
                           ease: "easeOut",
                         }}
                         whileHover={{
-                          scale: 1.01, // Reduced scale
-                          transition: { duration: 0.1 }, // Faster transition
+                          scale: 1.01,
+                          transition: { duration: 0.1 },
                         }}
-                        className="flex items-start bg-gray-800 rounded-lg p-5 shadow-lg cursor-pointer relative hover:bg-gray-700 transition-all active:scale-95"
+                        className="flex flex-col sm:flex-row items-start bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 sm:p-5 shadow-lg cursor-pointer relative hover:bg-gray-700/50 hover:shadow-xl transition-all active:scale-95 border border-gray-700/50"
                         onClick={() => handleEventClick(event)}
                       >
                         {/* Timeline Marker with animation */}
@@ -636,51 +650,63 @@ function EventsPageContent() {
                         >
                           <motion.div
                             whileHover={{ scale: 1.2 }}
-                            className={`w-5 h-5 ${statusColor} rounded-full z-10`}
+                            className={`w-5 h-5 ${statusColor} rounded-full z-10 shadow-lg`}
                           />
                         </motion.div>
 
-                        {/* Event Content */}
+                        {/* Event Image - Larger on mobile */}
                         <motion.div
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ delay: index * 0.1 + 0.2 }}
-                          className="mr-6"
+                          className="w-full sm:w-auto sm:mr-6 mb-4 sm:mb-0"
                         >
-                          <img
-                            src={event.imageUrl}
-                            alt={event.name}
-                            className="w-44 h-auto rounded"
-                            loading="lazy"
-                            decoding="async"
-                          />
+                          <div className="relative overflow-hidden rounded-lg group">
+                            <img
+                              src={event.imageUrl}
+                              alt={event.name}
+                              className="w-full sm:w-52 md:w-56 h-auto rounded-lg object-cover transition-transform duration-300 group-hover:scale-105"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg" />
+                          </div>
                         </motion.div>
 
                         {/* Event Details */}
                         <div className="flex flex-col w-full">
-                          <h4 className="text-xl text-blue-400">
+                          <h4 className="text-base sm:text-lg text-blue-400 font-medium">
                             {getDayLabel(event.date)}
                           </h4>
-                          <h3 className="mt-2 text-3xl">{event.name}</h3>
-                          <div className="mt-1 text-lg text-gray-400">
+                          <h3 className="mt-2 text-xl sm:text-2xl md:text-3xl font-bold text-white">
+                            {event.name}
+                          </h3>
+                          <div className="mt-2 flex items-center gap-2 text-sm sm:text-base text-gray-400">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
                             {event.time}
                           </div>
-                          <div className="mt-1 text-lg text-gray-400">
+                          <div className="mt-1 flex items-center gap-2 text-sm sm:text-base text-gray-400">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
                             {event.location}
                           </div>
 
                           {/* Category and Status Tags */}
-                          <div className="flex flex-wrap gap-2 mt-2">
+                          <div className="flex flex-wrap gap-2 mt-3">
                             {/* Category Tag */}
-                            <span className="inline-block px-3 py-1 bg-blue-600 text-white text-sm rounded-full">
+                            <span className="inline-flex items-center px-3 py-1.5 bg-blue-500/20 text-blue-300 text-xs sm:text-sm font-medium rounded-lg border border-blue-500/30">
                               {event.category}
                             </span>
                             {/* Status Tag */}
                             <span
-                              className={`inline-block px-3 py-1 text-white text-sm rounded-full ${
+                              className={`inline-flex items-center px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg border ${
                                 status === "Yaklaşan"
-                                  ? "bg-green-600"
-                                  : "bg-red-600"
+                                  ? "bg-green-500/20 text-green-300 border-green-500/30"
+                                  : "bg-red-500/20 text-red-300 border-red-500/30"
                               }`}
                             >
                               {status}
@@ -723,16 +749,20 @@ function EventsPageContent() {
             <DrawerHeader className="p-0">
               <div className="flex justify-end space-x-3 mb-6">
                 <button
-                  className="w-10 h-10 bg-gray-700 text-gray-400 rounded-full hover:bg-gray-600 transition-colors"
+                  className="w-10 h-10 bg-gray-700/50 text-white rounded-full hover:bg-gray-600 transition-all hover:scale-110 active:scale-95 border border-gray-600/50 backdrop-blur-sm"
                   onClick={showPreviousEvent}
                 >
-                  &#8592;
+                  <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
                 </button>
                 <button
-                  className="w-10 h-10 bg-gray-700 text-gray-400 rounded-full hover:bg-gray-600 transition-colors"
+                  className="w-10 h-10 bg-gray-700/50 text-white rounded-full hover:bg-gray-600 transition-all hover:scale-110 active:scale-95 border border-gray-600/50 backdrop-blur-sm"
                   onClick={showNextEvent}
                 >
-                  &#8594;
+                  <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
               </div>
               {selectedEvent && (
@@ -834,11 +864,11 @@ function EventsPageContent() {
                       href={selectedEvent.file_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                      className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg shadow-blue-500/30 font-semibold"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 mr-2"
+                        className="h-5 w-5"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -847,7 +877,7 @@ function EventsPageContent() {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M4 16l4-4m0 0l4 4m-4-4v12"
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                         />
                       </svg>
                       Etkinlik Dokümanları
@@ -862,26 +892,26 @@ function EventsPageContent() {
                 user ? (
                   hasSignedUp ? (
                     <button
-                      className="w-full py-3 bg-gray-500 text-white rounded cursor-not-allowed"
+                      className="w-full py-3.5 bg-gray-600/50 text-gray-300 rounded-xl cursor-not-allowed border border-gray-600/50 font-semibold"
                       disabled
                     >
-                      Kayıt Olundu
+                      ✓ Kayıt Olundu
                     </button>
                   ) : (
                     <>
                       <button
-                        className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                        className="w-full py-3.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl transition-all font-semibold shadow-lg shadow-green-500/30"
                         onClick={handleSignup}
                       >
                         Kayıt Ol
                       </button>
                       {signupMessage && (
-                        <h4 className="mt-3 text-green-500 text-sm">
+                        <h4 className="mt-3 text-green-400 text-sm bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-2">
                           {signupMessage}
                         </h4>
                       )}
                       {signupError && (
-                        <h4 className="mt-3 text-red-500 text-sm">
+                        <h4 className="mt-3 text-red-400 text-sm bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2">
                           {signupError}
                         </h4>
                       )}
@@ -889,7 +919,7 @@ function EventsPageContent() {
                   )
                 ) : (
                   <button
-                    className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                    className="w-full py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl transition-all font-semibold shadow-lg shadow-blue-500/30"
                     onClick={() => router.push("/")}
                   >
                     Kayıt Olmak için Giriş Yapın
@@ -897,13 +927,13 @@ function EventsPageContent() {
                 )
               ) : (
                 selectedEvent && (
-                  <h3 className="text-red-500 text-md">
-                    Bu etkinlik sona erdi.
-                  </h3>
+                  <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-center font-medium">
+                    ⏱ Bu etkinlik sona erdi.
+                  </div>
                 )
               )}
               <DrawerClose asChild>
-                <button className="w-full py-3 mt-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors">
+                <button className="w-full py-3.5 mt-3 bg-gray-700/50 hover:bg-gray-600 text-white rounded-xl transition-all border border-gray-600/50 font-semibold">
                   Kapat
                 </button>
               </DrawerClose>
