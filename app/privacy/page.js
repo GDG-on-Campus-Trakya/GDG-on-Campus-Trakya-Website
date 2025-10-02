@@ -7,14 +7,14 @@ export default function PrivacyPolicy() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#DB4437] via-[#F4B400] to-[#0F9D58] mb-4">
+            <h1 className="text-4xl sm:text-5xl font-bold bg-clip-text mb-4">
               Gizlilik Politikası
             </h1>
             <p className="text-xl text-gray-300">
               GDG on Campus Trakya Üniversitesi
             </p>
             <p className="text-sm text-gray-400 mt-2">
-              Son Güncelleme: 24 Ağustos 2025
+              Son Güncelleme: 2 Ekim 2025
             </p>
           </div>
 

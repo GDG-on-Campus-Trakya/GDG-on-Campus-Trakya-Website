@@ -162,13 +162,26 @@ class AuditLogger {
 
   generateSessionId() {
     if (typeof window !== 'undefined') {
-      // Client-side: use session storage
-      let sessionId = sessionStorage.getItem('auditSessionId');
-      if (!sessionId) {
-        sessionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-        sessionStorage.setItem('auditSessionId', sessionId);
+      // Client-side: check if functional cookies are allowed
+      try {
+        const consent = localStorage.getItem('cookieConsent');
+        const consentObj = consent ? JSON.parse(consent) : null;
+
+        // Only use sessionStorage if functional cookies are allowed
+        if (consentObj?.functional) {
+          let sessionId = sessionStorage.getItem('auditSessionId');
+          if (!sessionId) {
+            sessionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+            sessionStorage.setItem('auditSessionId', sessionId);
+          }
+          return sessionId;
+        }
+      } catch (error) {
+        console.error('Error checking cookie consent:', error);
       }
-      return sessionId;
+
+      // If functional cookies not allowed, generate temporary session ID
+      return Date.now().toString(36) + Math.random().toString(36).substr(2);
     } else {
       // Server-side: generate unique ID
       return Date.now().toString(36) + Math.random().toString(36).substr(2);

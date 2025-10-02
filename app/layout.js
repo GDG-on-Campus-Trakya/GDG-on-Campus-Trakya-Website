@@ -1,9 +1,10 @@
 // app/layout.js
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import CookieConsent from "@/components/CookieConsent";
+import ConditionalAnalytics from "@/components/ConditionalAnalytics";
 import "./globals.css";
 import AuthProvider from "./AuthProvider";
-import { Analytics } from "@vercel/analytics/next";
 import { Inter } from "next/font/google";
 
 const inter = Inter({
@@ -27,8 +28,9 @@ export default async function RootLayout({ children }) {
           <Navbar />
           <main className="flex-1 w-full">{children}</main>
           <Footer />
+          <CookieConsent />
         </AuthProvider>
-        <Analytics />
+        <ConditionalAnalytics />
       </body>
     </html>
   );

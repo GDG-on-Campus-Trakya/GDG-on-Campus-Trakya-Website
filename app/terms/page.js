@@ -7,14 +7,14 @@ export default function TermsOfService() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#DB4437] via-[#F4B400] to-[#0F9D58] mb-4">
+            <h1 className="text-4xl sm:text-5xl font-bold bg-clip-text mb-4">
               Kullanım Şartları
             </h1>
             <p className="text-xl text-gray-300">
               GDG on Campus Trakya Üniversitesi
             </p>
             <p className="text-sm text-gray-400 mt-2">
-              Son Güncelleme: 24 Ağustos 2025
+              Son Güncelleme: 2 Ekim 2025
             </p>
           </div>
 
@@ -303,7 +303,61 @@ export default function TermsOfService() {
 
             <section>
               <h2 className="text-2xl font-bold text-blue-400 mb-4">
-                12. Yasal Uygunluk
+                12. Çerez Kullanımı ve Veri İşleme
+              </h2>
+              <div className="space-y-4">
+                <div className="bg-orange-900/20 rounded-xl p-6 border border-orange-500/30">
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    Çerez ve Depolama Teknolojileri
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed mb-4">
+                    Platformumuz kullanıcı deneyimini iyileştirmek ve hizmetleri
+                    sağlayabilmek için çerezler ve yerel depolama teknolojileri
+                    kullanmaktadır:
+                  </p>
+                  <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
+                    <li>
+                      <strong className="text-white">Zorunlu Çerezler:</strong>{" "}
+                      Firebase Authentication, oturum yönetimi
+                    </li>
+                    <li>
+                      <strong className="text-white">Analitik Çerezler:</strong>{" "}
+                      Vercel Analytics (isteğe bağlı)
+                    </li>
+                    <li>
+                      <strong className="text-white">Fonksiyonel Çerezler:</strong>{" "}
+                      Kullanıcı tercihleri, oturum takibi
+                    </li>
+                  </ul>
+                  <p className="text-gray-300 leading-relaxed mt-4">
+                    Detaylı bilgi için{" "}
+                    <a
+                      href="/cookie-policy"
+                      className="text-blue-400 hover:underline font-semibold"
+                    >
+                      Çerez Politikası
+                    </a>{" "}
+                    sayfamızı inceleyebilirsiniz.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    KVKK ve Veri Güvenliği:
+                  </h3>
+                  <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
+                    <li>Kişisel verileriniz KVKK kapsamında korunur</li>
+                    <li>Verileriniz üçüncü taraflarla paylaşılmaz</li>
+                    <li>İstediğiniz zaman verilerinizi silebilirsiniz</li>
+                    <li>Veri işleme süreçleri şeffaf ve denetlenebilir</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-blue-400 mb-4">
+                13. Yasal Uygunluk
               </h2>
               <div className="space-y-4">
                 <p className="text-gray-300 leading-relaxed">
@@ -320,7 +374,7 @@ export default function TermsOfService() {
 
             <section>
               <h2 className="text-2xl font-bold text-blue-400 mb-4">
-                13. Değişiklik ve Güncellemeler
+                14. Değişiklik ve Güncellemeler
               </h2>
               <div className="bg-blue-900/20 rounded-xl p-6 border border-blue-500/30">
                 <p className="text-gray-300 leading-relaxed mb-4">
