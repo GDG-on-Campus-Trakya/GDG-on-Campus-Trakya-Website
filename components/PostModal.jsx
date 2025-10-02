@@ -53,13 +53,16 @@ export default function PostModal({
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
+      document.body.classList.add('modal-open');
       document.body.style.overflow = 'hidden';
     } else {
+      document.body.classList.remove('modal-open');
       document.body.style.overflow = 'unset';
     }
 
     // Cleanup on unmount
     return () => {
+      document.body.classList.remove('modal-open');
       document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
@@ -229,6 +232,7 @@ export default function PostModal({
     <div
       className="fixed inset-0 bg-black z-50 flex items-center justify-center"
       onClick={handleBackdropClick}
+      style={{ overscrollBehavior: 'contain' }}
     >
       {/* Mobile Layout - Instagram Style */}
       <div className="md:hidden w-full h-full flex flex-col">
@@ -502,7 +506,13 @@ export default function PostModal({
             </div>
 
             {/* Content */}
-            <div className="flex-1 p-4 overflow-y-auto">
+            <div 
+              className="flex-1 p-4 overflow-y-auto"
+              style={{ 
+                overscrollBehavior: 'contain',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
               {/* Description */}
               {post.description && (
                 <div className="mb-4 pb-3 border-b border-gray-700">
@@ -597,8 +607,14 @@ export default function PostModal({
 
       {/* Comments Drawer - Instagram Style */}
       {showCommentsDrawer && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 z-[60] flex items-end md:items-center justify-center">
-          <div className="bg-gray-900 w-full md:w-96 md:max-w-lg md:rounded-t-2xl rounded-t-2xl md:rounded-2xl max-h-[80vh] md:max-h-[70vh] flex flex-col border border-gray-700">
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 z-[60] flex items-end md:items-center justify-center"
+          style={{ overscrollBehavior: 'contain' }}
+        >
+          <div 
+            className="bg-gray-900 w-full md:w-96 md:max-w-lg md:rounded-t-2xl rounded-t-2xl md:rounded-2xl max-h-[80vh] md:max-h-[70vh] flex flex-col border border-gray-700"
+            style={{ overscrollBehavior: 'contain' }}
+          >
             {/* Drawer Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-700">
               <h3 className="text-lg font-semibold text-white">Yorumlar</h3>
@@ -611,7 +627,13 @@ export default function PostModal({
             </div>
 
             {/* Comments List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div 
+              className="flex-1 overflow-y-auto p-4 space-y-4"
+              style={{ 
+                overscrollBehavior: 'contain',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
               {isLoadingComments ? (
                 <div className="text-center text-gray-400 py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-2"></div>

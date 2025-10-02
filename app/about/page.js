@@ -19,14 +19,17 @@ export default function AboutPage() {
   useEffect(() => {
     if (selectedImage) {
       // Modal açıldığında scroll'u kapat
+      document.body.classList.add('modal-open');
       document.body.style.overflow = 'hidden';
     } else {
       // Modal kapandığında scroll'u aç
+      document.body.classList.remove('modal-open');
       document.body.style.overflow = 'unset';
     }
 
     // Cleanup: Component unmount olduğunda scroll'u geri aç
     return () => {
+      document.body.classList.remove('modal-open');
       document.body.style.overflow = 'unset';
     };
   }, [selectedImage]);
@@ -176,16 +179,16 @@ export default function AboutPage() {
                 width={1000}
                 height={1000}
                 priority
-                className="w-full h-auto"
+                className="w-full h-auto pointer-events-none"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent group-hover:via-black/40 transition-all" />
-              <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 bg-black/60 backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent group-hover:via-black/40 transition-all pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 bg-black/60 backdrop-blur-sm pointer-events-none">
                 <h2 className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">
                   {teamData.organizer.title}
                 </h2>
               </div>
               {/* Zoom Icon - Always visible on mobile, hover on desktop */}
-              <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full p-2 sm:p-3 opacity-70 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full p-2 sm:p-3 opacity-70 sm:opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
                 </svg>
@@ -207,16 +210,16 @@ export default function AboutPage() {
                 alt={teamData.koordinatorler.title}
                 width={1000}
                 height={1000}
-                className="w-full h-auto"
+                className="w-full h-auto pointer-events-none"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent group-hover:via-black/40 transition-all" />
-              <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 bg-black/60 backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent group-hover:via-black/40 transition-all pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 bg-black/60 backdrop-blur-sm pointer-events-none">
                 <h2 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">
                   {teamData.koordinatorler.title}
                 </h2>
               </div>
               {/* Zoom Icon - Always visible on mobile, hover on desktop */}
-              <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full p-2 sm:p-3 opacity-70 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full p-2 sm:p-3 opacity-70 sm:opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
                 </svg>
@@ -268,10 +271,10 @@ export default function AboutPage() {
                               alt={member.title}
                               width={800}
                               height={800}
-                              className="w-full h-auto"
+                              className="w-full h-auto pointer-events-none"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent group-hover:via-black/40 transition-all" />
-                            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 bg-black/60 backdrop-blur-sm">
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent group-hover:via-black/40 transition-all pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 bg-black/60 backdrop-blur-sm pointer-events-none">
                               <p className="text-sm sm:text-base text-gray-200 mb-1">
                                 {member.department}
                               </p>
@@ -280,7 +283,7 @@ export default function AboutPage() {
                               </h4>
                             </div>
                             {/* Zoom Icon - Always visible on mobile, hover on desktop */}
-                            <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-black/50 backdrop-blur-sm rounded-full p-2 opacity-70 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-black/50 backdrop-blur-sm rounded-full p-2 opacity-70 sm:opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                               <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
                               </svg>
@@ -361,6 +364,7 @@ export default function AboutPage() {
             exit={{ opacity: 0 }}
             onClick={() => setSelectedImage(null)}
             className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+            style={{ overscrollBehavior: 'contain' }}
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
@@ -427,17 +431,21 @@ export default function AboutPage() {
               {/* Previous Button */}
               <button
                 onClick={goToPrevious}
-                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-2xl transition-all z-10 hover:scale-110"
+                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 rounded-full flex items-center justify-center text-white shadow-2xl transition-all z-10 hover:scale-110"
               >
-                ←
+                <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
               </button>
 
               {/* Next Button */}
               <button
                 onClick={goToNext}
-                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-2xl transition-all z-10 hover:scale-110"
+                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 rounded-full flex items-center justify-center text-white shadow-2xl transition-all z-10 hover:scale-110"
               >
-                →
+                <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </button>
             </motion.div>
           </motion.div>

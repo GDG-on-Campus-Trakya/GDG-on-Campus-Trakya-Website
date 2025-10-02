@@ -42,13 +42,16 @@ const EventList = ({
   // Prevent body scroll when QR modal is open
   useEffect(() => {
     if (enlargedQR) {
+      document.body.classList.add('modal-open');
       document.body.style.overflow = 'hidden';
     } else {
+      document.body.classList.remove('modal-open');
       document.body.style.overflow = 'unset';
     }
 
     // Cleanup on unmount
     return () => {
+      document.body.classList.remove('modal-open');
       document.body.style.overflow = 'unset';
     };
   }, [enlargedQR]);

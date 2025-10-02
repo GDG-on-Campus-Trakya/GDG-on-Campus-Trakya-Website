@@ -74,13 +74,16 @@ export default function TicketsPage() {
   // Prevent body scroll when any modal is open
   useEffect(() => {
     if (showReopenModal || showReplyModal || showForm) {
+      document.body.classList.add('modal-open');
       document.body.style.overflow = 'hidden';
     } else {
+      document.body.classList.remove('modal-open');
       document.body.style.overflow = 'unset';
     }
 
     // Cleanup on unmount
     return () => {
+      document.body.classList.remove('modal-open');
       document.body.style.overflow = 'unset';
     };
   }, [showReopenModal, showReplyModal, showForm]);
@@ -1292,8 +1295,14 @@ export default function TicketsPage() {
 
         {/* Chat Modal */}
         {showReplyModal && selectedTicketForReply && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50">
-            <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-3xl max-h-[90vh] sm:max-h-[85vh] overflow-hidden shadow-2xl">
+          <div 
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50"
+            style={{ overscrollBehavior: 'contain' }}
+          >
+            <div 
+              className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-3xl max-h-[90vh] sm:max-h-[85vh] overflow-hidden shadow-2xl"
+              style={{ overscrollBehavior: 'contain' }}
+            >
               {/* Header */}
               <div className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-700 flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
@@ -1328,7 +1337,13 @@ export default function TicketsPage() {
 
               {/* Conversation */}
               <div className="flex flex-col h-[65vh] sm:h-[60vh]">
-                <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-2 sm:space-y-3 bg-gray-900">
+                <div 
+                  className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-2 sm:space-y-3 bg-gray-900"
+                  style={{ 
+                    overscrollBehavior: 'contain',
+                    WebkitOverflowScrolling: 'touch'
+                  }}
+                >
                   {/* Original ticket message (user) */}
                   <div className="flex items-start gap-2 sm:gap-3 justify-end">
                     <div className="max-w-[85%] sm:max-w-xl bg-green-900/30 border border-green-700 rounded-2xl px-3 sm:px-4 py-2 sm:py-3">
