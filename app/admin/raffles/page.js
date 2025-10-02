@@ -402,39 +402,39 @@ export default function AdminRafflesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <p className="text-lg text-gray-700">Loading...</p>
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <p className="text-lg text-gray-200">Loading...</p>
       </div>
     );
   }
 
   if (!isAdmin) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <p className="text-lg text-red-500">Access Denied</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
+    <div className="min-h-screen bg-gray-900 p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <button
               onClick={() => router.push('/admin')}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-100 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Admin Panel</span>
             </button>
-            <div className="border-l border-gray-300 h-8"></div>
+            <div className="border-l border-gray-500 h-8"></div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              <h1 className="text-3xl font-bold text-gray-100 mb-2">
                 Çekiliş Yönetimi
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-300">
                 Etkinlik çekilişlerini oluşturun ve yönetin
               </p>
             </div>
@@ -445,7 +445,7 @@ export default function AdminRafflesPage() {
             disabled={events.length === 0}
             className={`px-6 py-3 rounded-lg transition-colors flex items-center space-x-2 ${
               events.length === 0 
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
+                ? "bg-gray-300 text-gray-400 cursor-not-allowed" 
                 : "bg-blue-600 text-white hover:bg-blue-700"
             }`}
             title={events.length === 0 ? "Çekiliş için uygun etkinlik yok (3 gün içinde ve en az 1 post)" : ""}
@@ -458,42 +458,42 @@ export default function AdminRafflesPage() {
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gray-800 rounded-lg shadow p-6">
               <div className="flex items-center">
-                <Trophy className="w-8 h-8 text-yellow-600" />
+                <Trophy className="w-8 h-8 text-yellow-400" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Toplam Çekiliş</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalRaffles}</p>
+                  <p className="text-sm font-medium text-gray-300">Toplam Çekiliş</p>
+                  <p className="text-2xl font-bold text-gray-100">{stats.totalRaffles}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gray-800 rounded-lg shadow p-6">
               <div className="flex items-center">
-                <Clock className="w-8 h-8 text-blue-600" />
+                <Clock className="w-8 h-8 text-blue-400" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Aktif Çekiliş</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.activeRaffles}</p>
+                  <p className="text-sm font-medium text-gray-300">Aktif Çekiliş</p>
+                  <p className="text-2xl font-bold text-gray-100">{stats.activeRaffles}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gray-800 rounded-lg shadow p-6">
               <div className="flex items-center">
-                <CheckCircle className="w-8 h-8 text-green-600" />
+                <CheckCircle className="w-8 h-8 text-green-400" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Tamamlanan</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.completedRaffles}</p>
+                  <p className="text-sm font-medium text-gray-300">Tamamlanan</p>
+                  <p className="text-2xl font-bold text-gray-100">{stats.completedRaffles}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gray-800 rounded-lg shadow p-6">
               <div className="flex items-center">
-                <Users className="w-8 h-8 text-purple-600" />
+                <Users className="w-8 h-8 text-purple-400" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Toplam Katılım</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalParticipants}</p>
+                  <p className="text-sm font-medium text-gray-300">Toplam Katılım</p>
+                  <p className="text-2xl font-bold text-gray-100">{stats.totalParticipants}</p>
                 </div>
               </div>
             </div>
@@ -534,12 +534,12 @@ export default function AdminRafflesPage() {
               ))
             ) : (
               <div className="col-span-full text-center py-12">
-                <div className="bg-white rounded-lg p-8">
+                <div className="bg-gray-800 rounded-lg p-8">
                   <Trophy className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  <h3 className="text-xl font-semibold text-gray-100 mb-2">
                     Henüz çekiliş yok
                   </h3>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-300 mb-4">
                     İlk çekilişi oluşturun ve katılımcıları bekleyin!
                   </p>
                   <button
@@ -630,38 +630,38 @@ function RaffleCard({ raffle, onDrawWinner, onEndRaffle, onViewParticipants, onC
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-gray-800 rounded-lg shadow-md p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">{raffle.title}</h3>
+        <h3 className="text-lg font-semibold text-gray-100">{raffle.title}</h3>
         <span className={`px-2 py-1 rounded-full text-xs text-white ${getStatusColor()}`}>
           {getStatusText()}
         </span>
       </div>
 
       <div className="space-y-2 mb-4">
-        <div className="flex items-center text-sm text-gray-600">
+        <div className="flex items-center text-sm text-gray-300">
           <Calendar className="w-4 h-4 mr-2" />
           {raffle.eventName}
         </div>
-        <div className="flex items-center text-sm text-gray-600">
+        <div className="flex items-center text-sm text-gray-300">
           <Users className="w-4 h-4 mr-2" />
           {raffle.participants?.length || 0} katılımcı
         </div>
-        <div className="flex items-center text-sm text-gray-600">
+        <div className="flex items-center text-sm text-gray-300">
           <Award className="w-4 h-4 mr-2" />
           {raffle.prize}
         </div>
       </div>
 
       {raffle.description && (
-        <p className="text-gray-600 text-sm mb-4">{raffle.description}</p>
+        <p className="text-gray-300 text-sm mb-4">{raffle.description}</p>
       )}
 
       {raffle.winner && (
         <div className="bg-green-50 border border-green-200 rounded p-3 mb-4">
           <p className="text-green-800 font-medium">🎉 Kazanan: {raffle.winner}</p>
           {raffle.isAnnounced && (
-            <p className="text-green-600 text-sm mt-1">📢 Sonuç ilan edildi</p>
+            <p className="text-green-400 text-sm mt-1">📢 Sonuç ilan edildi</p>
           )}
         </div>
       )}
@@ -721,7 +721,7 @@ function RaffleCard({ raffle, onDrawWinner, onEndRaffle, onViewParticipants, onC
         )}
         
         {/* Delete button - always available for admins */}
-        <div className="mt-2 pt-2 border-t border-gray-200">
+        <div className="mt-2 pt-2 border-t border-gray-600">
           <button
             onClick={onDeleteRaffle}
             className="w-full bg-red-700 text-white py-2 px-4 rounded hover:bg-red-800 transition-colors text-sm font-medium"
@@ -754,19 +754,19 @@ function CreateRaffleModal({ events, onClose, onCreate }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
         <h2 className="text-xl font-bold mb-4">Yeni Çekiliş Oluştur</h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-200 mb-1">
               Etkinlik
             </label>
             <select
               value={formData.eventId}
               onChange={(e) => setFormData({...formData, eventId: e.target.value})}
               required
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-500 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">
                 {events.length > 0 ? "Etkinlik seçin" : "Çekiliş için uygun etkinlik yok"}
@@ -780,7 +780,7 @@ function CreateRaffleModal({ events, onClose, onCreate }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-200 mb-1">
               Çekiliş Başlığı
             </label>
             <input
@@ -788,12 +788,12 @@ function CreateRaffleModal({ events, onClose, onCreate }) {
               value={formData.title}
               onChange={(e) => setFormData({...formData, title: e.target.value})}
               required
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-500 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-200 mb-1">
               Ödül
             </label>
             <input
@@ -801,19 +801,19 @@ function CreateRaffleModal({ events, onClose, onCreate }) {
               value={formData.prize}
               onChange={(e) => setFormData({...formData, prize: e.target.value})}
               required
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-500 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-200 mb-1">
               Açıklama (İsteğe Bağlı)
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({...formData, description: e.target.value})}
               rows={3}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-500 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -821,7 +821,7 @@ function CreateRaffleModal({ events, onClose, onCreate }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400 transition-colors"
+              className="flex-1 bg-gray-300 text-gray-200 py-2 rounded hover:bg-gray-400 transition-colors"
             >
               İptal
             </button>
@@ -830,7 +830,7 @@ function CreateRaffleModal({ events, onClose, onCreate }) {
               disabled={events.length === 0}
               className={`flex-1 py-2 rounded transition-colors ${
                 events.length === 0 
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
+                  ? "bg-gray-300 text-gray-400 cursor-not-allowed" 
                   : "bg-blue-600 text-white hover:bg-blue-700"
               }`}
             >
@@ -847,14 +847,14 @@ function CreateRaffleModal({ events, onClose, onCreate }) {
 function ParticipantsModal({ raffle, participants, onClose, formatDate }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-hidden">
+      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-hidden">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">
             {raffle.title} - Katılımcılar ({participants.length})
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-400 hover:text-gray-200"
           >
             ✕
           </button>
@@ -867,17 +867,17 @@ function ParticipantsModal({ raffle, participants, onClose, formatDate }) {
                 <div key={participant.id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
                   <div>
                     <p className="font-medium">{participant.userEmail}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-300">
                       {formatDate(participant.participatedAt)}
                     </p>
                   </div>
-                  <span className="text-sm text-gray-500">#{index + 1}</span>
+                  <span className="text-sm text-gray-400">#{index + 1}</span>
                 </div>
               ))}
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">Henüz katılımcı yok</p>
+              <p className="text-gray-400">Henüz katılımcı yok</p>
             </div>
           )}
         </div>
@@ -904,36 +904,36 @@ function ChangeWinnerModal({ raffle, participants, onClose, onChangeWinner }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Kazananı Değiştir</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-400 hover:text-gray-200"
           >
             ✕
           </button>
         </div>
 
         <div className="mb-4">
-          <p className="text-sm text-gray-600 mb-2">
+          <p className="text-sm text-gray-300 mb-2">
             <strong>Çekiliş:</strong> {raffle.title}
           </p>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-gray-300 mb-4">
             <strong>Mevcut Kazanan:</strong> {raffle.winner || "Henüz seçilmedi"}
           </p>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Yeni Kazanan Seçin
             </label>
             <select
               value={selectedWinnerId}
               onChange={(e) => setSelectedWinnerId(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 max-h-40"
+              className="w-full border border-gray-500 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 max-h-40"
             >
               <option value="">Katılımcı seçin...</option>
               {participants.map((participant) => (
@@ -948,7 +948,7 @@ function ChangeWinnerModal({ raffle, participants, onClose, onChangeWinner }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400 transition-colors"
+              className="flex-1 bg-gray-300 text-gray-200 py-2 rounded hover:bg-gray-400 transition-colors"
             >
               İptal
             </button>
@@ -991,26 +991,26 @@ function EditRaffleModal({ raffle, onClose, onUpdate }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Çekiliş Düzenle</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-400 hover:text-gray-200"
           >
             ✕
           </button>
         </div>
 
         <div className="mb-4">
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-gray-300 mb-4">
             <strong>Etkinlik:</strong> {raffle.eventName}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-200 mb-1">
               Çekiliş Başlığı *
             </label>
             <input
@@ -1018,13 +1018,13 @@ function EditRaffleModal({ raffle, onClose, onUpdate }) {
               value={formData.title}
               onChange={(e) => setFormData({...formData, title: e.target.value})}
               required
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-500 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Çekiliş başlığını girin"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-200 mb-1">
               Ödül *
             </label>
             <input
@@ -1032,20 +1032,20 @@ function EditRaffleModal({ raffle, onClose, onUpdate }) {
               value={formData.prize}
               onChange={(e) => setFormData({...formData, prize: e.target.value})}
               required
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-500 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Ödülü girin"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-200 mb-1">
               Açıklama (İsteğe Bağlı)
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({...formData, description: e.target.value})}
               rows={3}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-500 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Çekiliş açıklamasını girin"
             />
           </div>
@@ -1054,7 +1054,7 @@ function EditRaffleModal({ raffle, onClose, onUpdate }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400 transition-colors"
+              className="flex-1 bg-gray-300 text-gray-200 py-2 rounded hover:bg-gray-400 transition-colors"
             >
               İptal
             </button>

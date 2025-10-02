@@ -159,39 +159,39 @@ export default function AdminSocialPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <p className="text-lg text-gray-700">Loading...</p>
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <p className="text-lg text-gray-200">Loading...</p>
       </div>
     );
   }
 
   if (!isAdmin) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <p className="text-lg text-red-500">Access Denied</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
+    <div className="min-h-screen bg-gray-900 p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-4">
             <button
               onClick={() => router.push('/admin')}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-100 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Admin Panel</span>
             </button>
-            <div className="border-l border-gray-300 h-8"></div>
+            <div className="border-l border-gray-500 h-8"></div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              <h1 className="text-3xl font-bold text-gray-100 mb-2">
                 Sosyal Platform Yönetimi
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-300">
                 Kullanıcı postlarını yönetin ve moderasyon yapın
               </p>
             </div>
@@ -201,42 +201,42 @@ export default function AdminSocialPage() {
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gray-800 rounded-lg shadow p-6">
               <div className="flex items-center">
-                <BarChart3 className="w-8 h-8 text-blue-600" />
+                <BarChart3 className="w-8 h-8 text-blue-400" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Toplam Post</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalPosts}</p>
+                  <p className="text-sm font-medium text-gray-300">Toplam Post</p>
+                  <p className="text-2xl font-bold text-gray-100">{stats.totalPosts}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gray-800 rounded-lg shadow p-6">
               <div className="flex items-center">
-                <Eye className="w-8 h-8 text-green-600" />
+                <Eye className="w-8 h-8 text-green-400" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Etkinlik Postları</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.eventPosts}</p>
+                  <p className="text-sm font-medium text-gray-300">Etkinlik Postları</p>
+                  <p className="text-2xl font-bold text-gray-100">{stats.eventPosts}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gray-800 rounded-lg shadow p-6">
               <div className="flex items-center">
-                <Filter className="w-8 h-8 text-purple-600" />
+                <Filter className="w-8 h-8 text-purple-400" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Genel Postlar</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.generalPosts}</p>
+                  <p className="text-sm font-medium text-gray-300">Genel Postlar</p>
+                  <p className="text-2xl font-bold text-gray-100">{stats.generalPosts}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gray-800 rounded-lg shadow p-6">
               <div className="flex items-center">
-                <BarChart3 className="w-8 h-8 text-red-600" />
+                <BarChart3 className="w-8 h-8 text-red-400" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Aktif Kullanıcı</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.uniqueUsers}</p>
+                  <p className="text-sm font-medium text-gray-300">Aktif Kullanıcı</p>
+                  <p className="text-2xl font-bold text-gray-100">{stats.uniqueUsers}</p>
                 </div>
               </div>
             </div>
@@ -244,7 +244,7 @@ export default function AdminSocialPage() {
         )}
 
         {/* Controls */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <div className="bg-gray-800 rounded-lg shadow p-6 mb-8">
           <div className="flex flex-col sm:flex-row gap-4 mb-4">
             {/* Search */}
             <div className="flex-1">
@@ -255,7 +255,7 @@ export default function AdminSocialPage() {
                   placeholder="Post, kullanıcı veya etkinlik ara..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2 bg-gray-700/60 text-gray-100 placeholder-gray-400 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 />
               </div>
             </div>
@@ -264,7 +264,7 @@ export default function AdminSocialPage() {
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 bg-gray-700/60 text-gray-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
             >
               <option value="all">Tüm Postlar ({posts.length})</option>
               <option value="visible">Görünür Postlar ({posts.filter(p => !p.isHidden).length})</option>
@@ -320,11 +320,11 @@ export default function AdminSocialPage() {
               ))
             ) : (
               <div className="col-span-full text-center py-12">
-                <div className="bg-white rounded-lg p-8">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                <div className="bg-gray-800 rounded-lg p-8">
+                  <h3 className="text-xl font-semibold text-gray-100 mb-2">
                     Post bulunamadı
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-gray-300">
                     Arama kriterlerinizi değiştirmeyi deneyin.
                   </p>
                 </div>

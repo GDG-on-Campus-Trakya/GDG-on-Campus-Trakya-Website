@@ -189,7 +189,7 @@ export default function AdminSponsorsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg text-gray-700">Loading...</p>
+        <p className="text-lg text-gray-200">Loading...</p>
       </div>
     );
   }
@@ -205,12 +205,12 @@ export default function AdminSponsorsPage() {
   const isEditing = !!sponsorFormData.firestoreId;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-blue-50 p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 sm:p-6">
       {/* Back to Admin Panel Button */}
       <div className="mb-6 sm:mb-8">
         <Link
           href="/admin"
-          className="inline-flex items-center px-4 py-3 text-sm sm:text-base bg-white/70 backdrop-blur-lg text-gray-700 rounded-2xl hover:bg-white/90 transition-all duration-300 border border-white/20 shadow-lg hover:shadow-xl transform hover:scale-105"
+          className="inline-flex items-center px-4 py-3 text-sm sm:text-base bg-gray-800/70 backdrop-blur-lg text-gray-200 rounded-2xl hover:bg-gray-700/90 transition-all duration-300 border border-gray-700/50 shadow-lg hover:shadow-xl transform hover:scale-105"
         >
           <svg
             className="w-4 h-4 mr-2"
@@ -232,31 +232,31 @@ export default function AdminSponsorsPage() {
       {/* Header */}
       <div className="text-center mb-8 sm:mb-12">
         <div className="inline-block">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-600 via-teal-600 to-blue-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-400 via-teal-400 to-blue-400 bg-clip-text text-transparent mb-2">
             Sponsor Yönetimi
           </h1>
-          <div className="h-1 bg-gradient-to-r from-green-600 via-teal-600 to-blue-600 rounded-full"></div>
+          <div className="h-1 bg-gradient-to-r from-green-400 via-teal-400 to-blue-400 rounded-full"></div>
         </div>
-        <p className="text-gray-600 mt-4 text-lg">
+        <p className="text-gray-300 mt-4 text-lg">
           Tüm sponsorları görüntüleyin ve yönetin
         </p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
-        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-sm font-medium text-gray-300">
                 Toplam Sponsor
               </p>
-              <p className="text-3xl font-bold text-green-600">
+              <p className="text-3xl font-bold text-green-400">
                 {sponsors.length}
               </p>
             </div>
-            <div className="p-3 bg-green-100 rounded-xl">
+            <div className="p-3 bg-green-500/20 rounded-xl">
               <svg
-                className="w-6 h-6 text-green-600"
+                className="w-6 h-6 text-green-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -272,19 +272,19 @@ export default function AdminSponsorsPage() {
           </div>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-sm font-medium text-gray-300">
                 Aktif Sponsorlar
               </p>
-              <p className="text-3xl font-bold text-teal-600">
+              <p className="text-3xl font-bold text-teal-400">
                 {sponsors.filter((s) => s.website_url && s.img_url).length}
               </p>
             </div>
-            <div className="p-3 bg-teal-100 rounded-xl">
+            <div className="p-3 bg-teal-500/20 rounded-xl">
               <svg
-                className="w-6 h-6 text-teal-600"
+                className="w-6 h-6 text-teal-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -300,15 +300,15 @@ export default function AdminSponsorsPage() {
           </div>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Bu Ay Eklenen</p>
-              <p className="text-3xl font-bold text-blue-600">0</p>
+              <p className="text-sm font-medium text-gray-300">Bu Ay Eklenen</p>
+              <p className="text-3xl font-bold text-blue-400">0</p>
             </div>
-            <div className="p-3 bg-blue-100 rounded-xl">
+            <div className="p-3 bg-blue-500/20 rounded-xl">
               <svg
-                className="w-6 h-6 text-blue-600"
+                className="w-6 h-6 text-blue-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -326,7 +326,7 @@ export default function AdminSponsorsPage() {
       </div>
 
       {/* Sponsor Form */}
-      <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 mb-8 border border-white/20 shadow-xl">
+      <section className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 mb-8 border border-gray-700/50 shadow-xl">
         <div className="flex items-center mb-6">
           <div className="p-2 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg mr-3">
             <svg
@@ -343,7 +343,7 @@ export default function AdminSponsorsPage() {
               />
             </svg>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-100">
             {isEditing ? "Sponsor Düzenle" : "Yeni Sponsor Ekle"}
           </h2>
         </div>
@@ -353,7 +353,7 @@ export default function AdminSponsorsPage() {
           className="space-y-6"
         >
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Sponsor Adı *
             </label>
             <input
@@ -363,13 +363,13 @@ export default function AdminSponsorsPage() {
               value={sponsorFormData.name}
               onChange={handleSponsorChange}
               required
-              className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500"
+              className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-200 placeholder-gray-500"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-200 mb-2">
                 Logo URL *
               </label>
               <input
@@ -379,11 +379,11 @@ export default function AdminSponsorsPage() {
                 value={sponsorFormData.img_url}
                 onChange={handleSponsorChange}
                 required
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500"
+                className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-200 placeholder-gray-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-200 mb-2">
                 Website URL *
               </label>
               <input
@@ -393,31 +393,31 @@ export default function AdminSponsorsPage() {
                 value={sponsorFormData.website_url}
                 onChange={handleSponsorChange}
                 required
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500"
+                className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-200 placeholder-gray-500"
               />
             </div>
           </div>
 
           {/* Preview */}
           {sponsorFormData.img_url && (
-            <div className="bg-white/40 rounded-xl p-4">
-              <p className="text-sm font-medium text-gray-700 mb-3">
+            <div className="bg-gray-700/40 rounded-xl p-4">
+              <p className="text-sm font-medium text-gray-200 mb-3">
                 Logo Önizlemesi:
               </p>
               <div className="flex items-center space-x-4">
                 <img
                   src={sponsorFormData.img_url}
                   alt="Sponsor Logo Preview"
-                  className="w-16 h-16 object-contain bg-white rounded-lg border border-gray-200"
+                  className="w-16 h-16 object-contain bg-gray-800 rounded-lg border border-gray-600"
                   onError={(e) => {
                     e.target.style.display = "none";
                   }}
                 />
                 <div>
-                  <p className="font-medium text-gray-800">
+                  <p className="font-medium text-gray-100">
                     {sponsorFormData.name || "Sponsor Adı"}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-300">
                     {sponsorFormData.website_url || "Website URL"}
                   </p>
                 </div>
@@ -450,7 +450,7 @@ export default function AdminSponsorsPage() {
       </section>
 
       {/* Manage Sponsors */}
-      <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-white/20 shadow-xl">
+      <section className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-gray-700/50 shadow-xl">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <div className="p-2 bg-gradient-to-r from-teal-500 to-blue-500 rounded-lg mr-3">
@@ -468,7 +468,7 @@ export default function AdminSponsorsPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-100">
               Tüm Sponsorlar ({sponsors.length})
             </h2>
           </div>
@@ -476,7 +476,7 @@ export default function AdminSponsorsPage() {
 
         {sponsors.length === 0 ? (
           <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <div className="w-16 h-16 mx-auto bg-gray-900 rounded-full flex items-center justify-center mb-4">
               <svg
                 className="w-8 h-8 text-gray-400"
                 fill="none"
@@ -491,7 +491,7 @@ export default function AdminSponsorsPage() {
                 />
               </svg>
             </div>
-            <p className="text-lg text-gray-500 mb-2">
+            <p className="text-lg text-gray-400 mb-2">
               Henüz sponsor bulunmuyor
             </p>
             <p className="text-sm text-gray-400">
@@ -503,10 +503,10 @@ export default function AdminSponsorsPage() {
             {sponsors.map((sponsor) => (
               <div
                 key={sponsor.firestoreId}
-                className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/30 shadow-md hover:shadow-lg transition-all duration-300"
+                className="bg-gray-700/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-600/30 shadow-md hover:shadow-lg transition-all duration-300"
               >
                 <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-16 h-16 bg-white rounded-xl border border-gray-200 flex items-center justify-center overflow-hidden">
+                  <div className="w-16 h-16 bg-gray-800 rounded-xl border border-gray-600 flex items-center justify-center overflow-hidden">
                     {sponsor.img_url ? (
                       <img
                         src={sponsor.img_url}
@@ -525,14 +525,14 @@ export default function AdminSponsorsPage() {
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-800 mb-1">
+                    <h3 className="text-lg font-bold text-gray-100 mb-1">
                       {sponsor.name}
                     </h3>
                     <a
                       href={sponsor.website_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:text-blue-800 underline break-all"
+                      className="text-sm text-blue-400 hover:text-blue-800 underline break-all"
                     >
                       {sponsor.website_url}
                     </a>

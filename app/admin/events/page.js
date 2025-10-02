@@ -408,7 +408,7 @@ export default function AdminEventsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg text-gray-700">Loading...</p>
+        <p className="text-lg text-gray-200">Loading...</p>
       </div>
     );
   }
@@ -422,12 +422,12 @@ export default function AdminEventsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-purple-50 p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 sm:p-6">
       {/* Back to Admin Panel Button */}
       <div className="mb-6 sm:mb-8">
         <Link
           href="/admin"
-          className="inline-flex items-center px-4 py-3 text-sm sm:text-base bg-white/70 backdrop-blur-lg text-gray-700 rounded-2xl hover:bg-white/90 transition-all duration-300 border border-white/20 shadow-lg hover:shadow-xl transform hover:scale-105"
+          className="inline-flex items-center px-4 py-3 text-sm sm:text-base bg-gray-800/70 backdrop-blur-lg text-gray-200 rounded-2xl hover:bg-gray-700/90 transition-all duration-300 border border-gray-700/50 shadow-lg hover:shadow-xl transform hover:scale-105"
         >
           <svg
             className="w-4 h-4 mr-2"
@@ -449,31 +449,31 @@ export default function AdminEventsPage() {
       {/* Header */}
       <div className="text-center mb-8 sm:mb-12">
         <div className="inline-block">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 via-cyan-600 to-purple-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent mb-2">
             Etkinlik Yönetimi
           </h1>
-          <div className="h-1 bg-gradient-to-r from-blue-600 via-cyan-600 to-purple-600 rounded-full"></div>
+          <div className="h-1 bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400 rounded-full"></div>
         </div>
-        <p className="text-gray-600 mt-4 text-lg">
+        <p className="text-gray-300 mt-4 text-lg">
           Tüm etkinlikleri görüntüleyin ve yönetin
         </p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-6 mb-8">
-        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-sm font-medium text-gray-300">
                 Aktif Etkinlik
               </p>
-              <p className="text-3xl font-bold text-blue-600">
+              <p className="text-3xl font-bold text-blue-400">
                 {getCurrentEvents().length}
               </p>
             </div>
-            <div className="p-3 bg-blue-100 rounded-xl">
+            <div className="p-3 bg-blue-500/20 rounded-xl">
               <svg
-                className="w-6 h-6 text-blue-600"
+                className="w-6 h-6 text-blue-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -489,17 +489,17 @@ export default function AdminEventsPage() {
           </div>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Arşivlenen</p>
-              <p className="text-3xl font-bold text-orange-600">
+              <p className="text-sm font-medium text-gray-300">Arşivlenen</p>
+              <p className="text-3xl font-bold text-orange-400">
                 {getArchivedEvents().length}
               </p>
             </div>
-            <div className="p-3 bg-orange-100 rounded-xl">
+            <div className="p-3 bg-orange-500/20 rounded-xl">
               <svg
-                className="w-6 h-6 text-orange-600"
+                className="w-6 h-6 text-orange-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -515,11 +515,11 @@ export default function AdminEventsPage() {
           </div>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Sponsorlu</p>
-              <p className="text-3xl font-bold text-purple-600">
+              <p className="text-sm font-medium text-gray-300">Sponsorlu</p>
+              <p className="text-3xl font-bold text-purple-400">
                 {
                   getCurrentEvents().filter(
                     (e) => e.sponsors && e.sponsors.length > 0
@@ -527,9 +527,9 @@ export default function AdminEventsPage() {
                 }
               </p>
             </div>
-            <div className="p-3 bg-purple-100 rounded-xl">
+            <div className="p-3 bg-purple-500/20 rounded-xl">
               <svg
-                className="w-6 h-6 text-purple-600"
+                className="w-6 h-6 text-purple-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -545,17 +545,17 @@ export default function AdminEventsPage() {
           </div>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Kategoriler</p>
-              <p className="text-3xl font-bold text-cyan-600">
+              <p className="text-sm font-medium text-gray-300">Kategoriler</p>
+              <p className="text-3xl font-bold text-cyan-400">
                 {new Set(getCurrentEvents().map((e) => e.category)).size}
               </p>
             </div>
-            <div className="p-3 bg-cyan-100 rounded-xl">
+            <div className="p-3 bg-cyan-500/20 rounded-xl">
               <svg
-                className="w-6 h-6 text-cyan-600"
+                className="w-6 h-6 text-cyan-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -573,14 +573,14 @@ export default function AdminEventsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-2 mb-8 border border-white/20 shadow-xl">
+      <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-2 mb-8 border border-gray-700/50 shadow-xl">
         <div className="flex space-x-2">
           <button
             onClick={() => setActiveTab("current")}
             className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${
               activeTab === "current"
                 ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg transform scale-105"
-                : "text-gray-600 hover:bg-white/50"
+                : "text-gray-300 hover:bg-gray-700/50"
             }`}
           >
             Aktif Etkinlikler ({getCurrentEvents().length})
@@ -590,7 +590,7 @@ export default function AdminEventsPage() {
             className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${
               activeTab === "archive"
                 ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg transform scale-105"
-                : "text-gray-600 hover:bg-white/50"
+                : "text-gray-300 hover:bg-gray-700/50"
             }`}
           >
             Arşiv ({getArchivedEvents().length})
@@ -599,7 +599,7 @@ export default function AdminEventsPage() {
       </div>
 
       {/* Add / Edit Event Form */}
-      <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 mb-8 border border-white/20 shadow-xl">
+      <section className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 mb-8 border border-gray-700/50 shadow-xl">
         <div className="flex items-center mb-6">
           <div className="p-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg mr-3">
             <svg
@@ -616,7 +616,7 @@ export default function AdminEventsPage() {
               />
             </svg>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-100">
             {isEditing ? "Etkinlik Düzenle" : "Yeni Etkinlik Ekle"}
           </h2>
         </div>
@@ -626,7 +626,7 @@ export default function AdminEventsPage() {
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-200 mb-2">
                 Etkinlik Adı *
               </label>
               <input
@@ -636,11 +636,11 @@ export default function AdminEventsPage() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500"
+                className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-200 placeholder-gray-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-200 mb-2">
                 Kategori *
               </label>
               <select
@@ -648,7 +648,7 @@ export default function AdminEventsPage() {
                 value={formData.category}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700"
+                className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-200"
               >
                 <option value="Konferans">Konferans</option>
                 <option value="DevFest">DevFest</option>
@@ -659,7 +659,7 @@ export default function AdminEventsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Açıklama *
             </label>
             <textarea
@@ -669,13 +669,13 @@ export default function AdminEventsPage() {
               onChange={handleChange}
               required
               rows={4}
-              className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500 resize-none"
+              className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-200 placeholder-gray-500 resize-none"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-200 mb-2">
                 Tarih *
               </label>
               <input
@@ -684,11 +684,11 @@ export default function AdminEventsPage() {
                 value={formData.date}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700"
+                className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-200"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-200 mb-2">
                 Saat *
               </label>
               <input
@@ -697,11 +697,11 @@ export default function AdminEventsPage() {
                 value={formData.time}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700"
+                className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-200"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-200 mb-2">
                 Konum *
               </label>
               <input
@@ -711,16 +711,16 @@ export default function AdminEventsPage() {
                 value={formData.location}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500"
+                className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-200 placeholder-gray-500"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Etkinlik Resmi
             </label>
-            <div className="bg-white/40 rounded-xl p-4">
+            <div className="bg-gray-700/40 rounded-xl p-4">
               <ImageUpload
                 onImageUpload={handleImageUpload}
                 currentImageUrl={formData.imageUrl}
@@ -732,7 +732,7 @@ export default function AdminEventsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Doküman URL'si
             </label>
             <input
@@ -741,27 +741,27 @@ export default function AdminEventsPage() {
               placeholder="https://example.com/document.pdf"
               value={formData.file_url}
               onChange={handleChange}
-              className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500"
+              className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-200 placeholder-gray-500"
             />
           </div>
 
           {/* Sponsors Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Sponsorlar
             </label>
-            <div className="bg-white/40 rounded-xl p-4">
+            <div className="bg-gray-700/40 rounded-xl p-4">
               <div className="relative">
                 <button
                   type="button"
-                  className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl text-left focus:outline-none focus:border-blue-400 transition-all duration-300"
+                  className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl text-left text-gray-200 focus:outline-none focus:border-blue-400 transition-all duration-300"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
                   {formData.sponsors.length > 0
                     ? `${formData.sponsors.length} sponsor seçildi`
                     : "Sponsor seçin"}
                   <svg
-                    className="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2"
+                    className="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -775,11 +775,11 @@ export default function AdminEventsPage() {
                   </svg>
                 </button>
                 {isDropdownOpen && (
-                  <div className="absolute z-20 mt-2 bg-white border border-gray-200 rounded-2xl shadow-2xl max-h-60 w-full overflow-auto">
+                  <div className="absolute z-20 mt-2 bg-gray-800 border border-gray-600 rounded-2xl shadow-2xl max-h-60 w-full overflow-auto">
                     {sponsors.map((sponsor) => (
                       <div
                         key={sponsor.firestoreId}
-                        className="px-4 py-3 cursor-pointer hover:bg-blue-50 transition-colors duration-200"
+                        className="px-4 py-3 cursor-pointer hover:bg-gray-700 transition-colors duration-200"
                         onClick={() => {
                           if (
                             !formData.sponsors.includes(sponsor.firestoreId)
@@ -799,7 +799,7 @@ export default function AdminEventsPage() {
                             className="w-8 h-8 object-contain rounded-lg"
                             onError={(e) => (e.target.style.display = "none")}
                           />
-                          <span className="font-medium">{sponsor.name}</span>
+                          <span className="font-medium text-gray-200">{sponsor.name}</span>
                         </div>
                       </div>
                     ))}
@@ -816,12 +816,12 @@ export default function AdminEventsPage() {
                     return (
                       <span
                         key={index}
-                        className="inline-flex items-center px-3 py-2 bg-blue-100 text-blue-800 text-sm rounded-xl font-medium"
+                        className="inline-flex items-center px-3 py-2 bg-blue-500/20 text-blue-800 text-sm rounded-xl font-medium"
                       >
                         {sponsor?.name || "Bilinmeyen Sponsor"}
                         <button
                           type="button"
-                          className="ml-2 text-blue-600 hover:text-blue-800 font-bold"
+                          className="ml-2 text-blue-400 hover:text-blue-800 font-bold"
                           onClick={() =>
                             setFormData((prev) => ({
                               ...prev,
@@ -857,7 +857,7 @@ export default function AdminEventsPage() {
       </section>
 
       {/* Manage Events */}
-      <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-white/20 shadow-xl">
+      <section className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-gray-700/50 shadow-xl">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg mr-3">
@@ -875,7 +875,7 @@ export default function AdminEventsPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-100">
               Tüm Etkinlikler ({events.length})
             </h2>
           </div>
@@ -888,7 +888,7 @@ export default function AdminEventsPage() {
           if (displayEvents.length === 0) {
             return (
               <div className="text-center py-12">
-                <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <div className="w-16 h-16 mx-auto bg-gray-900 rounded-full flex items-center justify-center mb-4">
                   <svg
                     className="w-8 h-8 text-gray-400"
                     fill="none"
@@ -903,7 +903,7 @@ export default function AdminEventsPage() {
                     />
                   </svg>
                 </div>
-                <p className="text-lg text-gray-500 mb-2">
+                <p className="text-lg text-gray-400 mb-2">
                   {activeTab === "current"
                     ? "Henüz aktif etkinlik bulunmuyor"
                     : "Arşivlenmiş etkinlik bulunmuyor"}
@@ -924,7 +924,7 @@ export default function AdminEventsPage() {
                 return (
                   <div
                     key={event.firestoreId}
-                    className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/30 shadow-md hover:shadow-lg transition-all duration-300"
+                    className="bg-gray-700/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-600/30 shadow-md hover:shadow-lg transition-all duration-300"
                   >
                     <div className="flex flex-col lg:flex-row gap-6">
                       {/* Event Info */}
@@ -934,32 +934,32 @@ export default function AdminEventsPage() {
                             <img
                               src={event.imageUrl}
                               alt={event.name}
-                              className="w-16 h-16 rounded-xl object-cover border border-gray-200"
+                              className="w-16 h-16 rounded-xl object-cover border border-gray-600"
                             />
                           )}
                           <div className="flex-1">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
-                              <h3 className="text-xl font-bold text-gray-800 mb-1">
+                              <h3 className="text-xl font-bold text-gray-100 mb-1">
                                 {event.name}
                               </h3>
                               <span
                                 className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                                   event.category === "DevFest"
-                                    ? "bg-purple-100 text-purple-800"
+                                    ? "bg-purple-500/20 text-purple-800"
                                     : event.category === "Konferans"
-                                    ? "bg-blue-100 text-blue-800"
+                                    ? "bg-blue-500/20 text-blue-800"
                                     : event.category === "Gezi"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-yellow-100 text-yellow-800"
+                                    ? "bg-green-500/20 text-green-800"
+                                    : "bg-yellow-500/20 text-yellow-800"
                                 }`}
                               >
                                 {event.category}
                               </span>
                             </div>
-                            <p className="text-gray-600 mb-3 line-clamp-2">
+                            <p className="text-gray-300 mb-3 line-clamp-2">
                               {event.description}
                             </p>
-                            <div className="flex flex-wrap gap-3 text-sm text-gray-500">
+                            <div className="flex flex-wrap gap-3 text-sm text-gray-400">
                               <div className="flex items-center">
                                 <svg
                                   className="w-4 h-4 mr-1 text-blue-500"
@@ -1087,7 +1087,7 @@ export default function AdminEventsPage() {
       {/* QR Code Modal */}
       {qrCodeModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-          <div className="bg-white/90 backdrop-blur-lg p-8 rounded-3xl shadow-2xl max-w-md w-full border border-white/20">
+          <div className="bg-gray-700/90 backdrop-blur-lg p-8 rounded-3xl shadow-2xl max-w-md w-full border border-gray-700/50">
             <div className="text-center">
               <div className="flex items-center justify-center mb-6">
                 <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mr-3">
@@ -1105,10 +1105,10 @@ export default function AdminEventsPage() {
                     />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">QR Kodu</h2>
+                <h2 className="text-2xl font-bold text-gray-100">QR Kodu</h2>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 mb-6 shadow-inner border border-gray-100">
+              <div className="bg-gray-800 rounded-2xl p-6 mb-6 shadow-inner border border-gray-100">
                 <img
                   src={currentQRCodeDataURL}
                   alt="QR Kodu"
@@ -1116,9 +1116,9 @@ export default function AdminEventsPage() {
                 />
               </div>
 
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-4 mb-6">
-                <p className="text-sm text-gray-600 font-medium">QR Kodu ID:</p>
-                <p className="text-lg font-bold text-gray-800 font-mono">
+              <div className="bg-gradient-to-r from-gray-700 to-gray-800 rounded-2xl p-4 mb-6">
+                <p className="text-sm text-gray-300 font-medium">QR Kodu ID:</p>
+                <p className="text-lg font-bold text-gray-100 font-mono">
                   {currentQRCodeId}
                 </p>
               </div>

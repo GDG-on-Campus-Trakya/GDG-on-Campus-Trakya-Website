@@ -206,12 +206,12 @@ export default function AdminUsersPage() {
 
   return (
     <AdminProtection>
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 sm:p-6">
       {/* Back to Admin Panel Button */}
       <div className="mb-6 sm:mb-8">
         <Link
           href="/admin"
-          className="inline-flex items-center px-4 py-3 text-sm sm:text-base bg-white/70 backdrop-blur-lg text-gray-700 rounded-2xl hover:bg-white/90 transition-all duration-300 border border-white/20 shadow-lg hover:shadow-xl transform hover:scale-105"
+          className="inline-flex items-center px-4 py-3 text-sm sm:text-base bg-gray-800/70 backdrop-blur-lg text-gray-200 rounded-2xl hover:bg-gray-700/90 transition-all duration-300 border border-gray-700/50 shadow-lg hover:shadow-xl transform hover:scale-105"
         >
           <svg
             className="w-4 h-4 mr-2"
@@ -233,31 +233,31 @@ export default function AdminUsersPage() {
       {/* Header */}
       <div className="text-center mb-8 sm:mb-12">
         <div className="inline-block">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent mb-2">
             Kullanıcı Yönetimi
           </h1>
-          <div className="h-1 bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 rounded-full"></div>
+          <div className="h-1 bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 rounded-full"></div>
         </div>
-        <p className="text-gray-600 mt-4 text-lg">
+        <p className="text-gray-300 mt-4 text-lg">
           Tüm kullanıcıları görüntüleyin ve yönetin
         </p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
-        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-sm font-medium text-gray-400">
                 Toplam Kullanıcı
               </p>
-              <p className="text-3xl font-bold text-blue-600">
+              <p className="text-3xl font-bold text-blue-400">
                 {usersList.length}
               </p>
             </div>
-            <div className="p-3 bg-blue-100 rounded-xl">
+            <div className="p-3 bg-blue-500/20 rounded-xl">
               <svg
-                className="w-6 h-6 text-blue-600"
+                className="w-6 h-6 text-blue-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -273,19 +273,19 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-sm font-medium text-gray-400">
                 Email Almak İsteyen
               </p>
-              <p className="text-3xl font-bold text-green-600">
+              <p className="text-3xl font-bold text-green-400">
                 {usersList.filter((u) => u.wantsToGetEmails).length}
               </p>
             </div>
-            <div className="p-3 bg-green-100 rounded-xl">
+            <div className="p-3 bg-green-500/20 rounded-xl">
               <svg
-                className="w-6 h-6 text-green-600"
+                className="w-6 h-6 text-green-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -301,11 +301,11 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Bu Ay Kayıt</p>
-              <p className="text-3xl font-bold text-purple-600">
+              <p className="text-sm font-medium text-gray-400">Bu Ay Kayıt</p>
+              <p className="text-3xl font-bold text-purple-400">
                 {
                   usersList.filter((u) => {
                     const createdAt = u.createdAt;
@@ -323,9 +323,9 @@ export default function AdminUsersPage() {
                 }
               </p>
             </div>
-            <div className="p-3 bg-purple-100 rounded-xl">
+            <div className="p-3 bg-purple-500/20 rounded-xl">
               <svg
-                className="w-6 h-6 text-purple-600"
+                className="w-6 h-6 text-purple-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -343,7 +343,7 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Add / Edit User Form */}
-      <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 mb-8 border border-white/20 shadow-xl">
+      <section className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 mb-8 border border-gray-700/50 shadow-xl">
         <div className="flex items-center mb-6">
           <div className="p-2 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg mr-3">
             <svg
@@ -360,7 +360,7 @@ export default function AdminUsersPage() {
               />
             </svg>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-100">
             {isEditing ? "Kullanıcı Düzenle" : "Yeni Kullanıcı Ekle"}
           </h2>
         </div>
@@ -371,7 +371,7 @@ export default function AdminUsersPage() {
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Kullanıcı Adı *
               </label>
               <input
@@ -381,11 +381,11 @@ export default function AdminUsersPage() {
                 value={userFormData.name}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500"
+                className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-100 placeholder-gray-400"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Email Adresi *
               </label>
               <input
@@ -395,12 +395,12 @@ export default function AdminUsersPage() {
                 value={userFormData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500"
+                className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-100 placeholder-gray-400"
               />
             </div>
           </div>
 
-          <div className="bg-white/40 rounded-xl p-4">
+          <div className="bg-gray-700/40 rounded-xl p-4">
             <div className="flex items-center space-x-3">
               <input
                 type="checkbox"
@@ -408,16 +408,16 @@ export default function AdminUsersPage() {
                 checked={userFormData.wantsToGetEmails}
                 onChange={handleChange}
                 id="wantsEmails"
-                className="h-5 w-5 text-blue-600 border-2 border-gray-300 rounded-lg focus:ring-blue-500 focus:ring-2"
+                className="h-5 w-5 text-blue-600 border-2 border-gray-500 rounded-lg focus:ring-blue-500 focus:ring-2"
               />
               <label
                 htmlFor="wantsEmails"
-                className="text-gray-700 select-none cursor-pointer font-medium"
+                className="text-gray-200 select-none cursor-pointer font-medium"
               >
                 Email bildirimleri almak istiyor
               </label>
             </div>
-            <p className="text-xs text-gray-500 mt-1 ml-8">
+            <p className="text-xs text-gray-400 mt-1 ml-8">
               Etkinlik duyuruları ve önemli güncellemeler için
             </p>
           </div>
@@ -447,7 +447,7 @@ export default function AdminUsersPage() {
       </section>
 
       {/* Display / Manage Users */}
-      <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-white/20 shadow-xl">
+      <section className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-gray-700/50 shadow-xl">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg mr-3">
@@ -465,7 +465,7 @@ export default function AdminUsersPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-100">
               Tüm Kullanıcılar ({usersList.length})
             </h2>
           </div>
@@ -473,7 +473,7 @@ export default function AdminUsersPage() {
 
         {usersList.length === 0 ? (
           <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <div className="w-16 h-16 mx-auto bg-gray-700 rounded-full flex items-center justify-center mb-4">
               <svg
                 className="w-8 h-8 text-gray-400"
                 fill="none"
@@ -488,7 +488,7 @@ export default function AdminUsersPage() {
                 />
               </svg>
             </div>
-            <p className="text-lg text-gray-500 mb-2">
+            <p className="text-lg text-gray-300 mb-2">
               Henüz kullanıcı bulunmuyor
             </p>
             <p className="text-sm text-gray-400">
@@ -500,7 +500,7 @@ export default function AdminUsersPage() {
             {usersList.map((usr) => (
               <div
                 key={usr.firestoreId}
-                className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/30 shadow-md hover:shadow-lg transition-all duration-300"
+                className="bg-gray-700/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-600/30 shadow-md hover:shadow-lg transition-all duration-300"
               >
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                   <div className="flex items-center space-x-4 flex-1">
@@ -511,12 +511,12 @@ export default function AdminUsersPage() {
                     </div>
                     <div className="flex-1">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
-                        <h3 className="text-lg font-bold text-gray-800">
+                        <h3 className="text-lg font-bold text-gray-100">
                           {usr.name}
                         </h3>
                         <div className="flex items-center space-x-2">
                           {usr.wantsToGetEmails ? (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-900/50 text-green-300 border border-green-700">
                               <svg
                                 className="w-3 h-3 mr-1"
                                 fill="currentColor"
@@ -531,7 +531,7 @@ export default function AdminUsersPage() {
                               Email Alıyor
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-900/50 text-red-300 border border-red-700">
                               <svg
                                 className="w-3 h-3 mr-1"
                                 fill="currentColor"
@@ -548,7 +548,7 @@ export default function AdminUsersPage() {
                           )}
                         </div>
                       </div>
-                      <p className="text-gray-600 mb-1">{usr.email}</p>
+                      <p className="text-gray-300 mb-1">{usr.email}</p>
                       <p className="text-xs text-gray-400">
                         Kayıt Tarihi: {usr.createdAt}
                       </p>

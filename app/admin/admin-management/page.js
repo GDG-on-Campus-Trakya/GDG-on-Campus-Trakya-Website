@@ -246,7 +246,7 @@ export default function AdminManagementPage() {
 
   return (
     <AdminProtection requiredRole={ROLES.ADMIN}>
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 sm:p-6">
       <div className="text-center mb-8 sm:mb-12">
         <div className="inline-block">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
@@ -254,36 +254,36 @@ export default function AdminManagementPage() {
           </h1>
           <div className="h-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-full"></div>
         </div>
-        <p className="text-gray-600 mt-4 text-lg">Admin ve Etkinlik Sorumlusu rollerini yönetin</p>
+        <p className="text-gray-300 mt-4 text-lg">Admin ve Etkinlik Sorumlusu rollerini yönetin</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
-        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Toplam Admin</p>
-              <p className="text-3xl font-bold text-red-600">
+              <p className="text-sm font-medium text-gray-300">Toplam Admin</p>
+              <p className="text-3xl font-bold text-red-400">
                 {admins.filter(admin => admin.role === ROLES.ADMIN || !admin.role).length}
               </p>
             </div>
-            <div className="p-3 bg-red-100 rounded-xl">
-              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="p-3 bg-red-500/20 rounded-xl">
+              <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
               </svg>
             </div>
           </div>
         </div>
         
-        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Etkinlik Sorumlusu</p>
-              <p className="text-3xl font-bold text-blue-600">
+              <p className="text-sm font-medium text-gray-300">Etkinlik Sorumlusu</p>
+              <p className="text-3xl font-bold text-blue-400">
                 {admins.filter(admin => admin.role === ROLES.EVENT_MANAGER).length}
               </p>
             </div>
-            <div className="p-3 bg-blue-100 rounded-xl">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="p-3 bg-blue-500/20 rounded-xl">
+              <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
@@ -291,14 +291,14 @@ export default function AdminManagementPage() {
         </div>
       </div>
 
-      <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 mb-8 border border-white/20 shadow-xl">
+      <section className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 mb-8 border border-gray-700/50 shadow-xl">
         <div className="flex items-center mb-6">
           <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg mr-3">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-100">
             Yeni Yönetici Ekle
           </h2>
         </div>
@@ -317,15 +317,15 @@ export default function AdminManagementPage() {
                   }
                 }}
                 required
-                className="w-full px-6 py-4 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700 placeholder-gray-500"
+                className="w-full px-6 py-4 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-200 placeholder-gray-500"
               />
               {showSuggestions && (
-                <div className="absolute z-10 w-full mt-1 bg-white rounded-2xl shadow-xl border border-gray-200 max-h-60 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-gray-800 rounded-2xl shadow-xl border border-gray-600 max-h-60 overflow-y-auto">
                   {filteredUsers.map((user) => (
                     <div
                       key={user.id}
                       onClick={() => selectUser(user.email)}
-                      className="flex items-center p-4 hover:bg-blue-50 cursor-pointer transition-colors duration-200 first:rounded-t-2xl last:rounded-b-2xl"
+                      className="flex items-center p-4 hover:bg-gray-700/60 cursor-pointer transition-colors duration-200 first:rounded-t-2xl last:rounded-b-2xl"
                     >
                       <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center mr-3">
                         <span className="text-white font-semibold text-sm">
@@ -333,8 +333,8 @@ export default function AdminManagementPage() {
                         </span>
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium text-gray-800">{user.name || 'İsimsiz'}</p>
-                        <p className="text-sm text-gray-600">{user.email}</p>
+                        <p className="font-medium text-gray-100">{user.name || 'İsimsiz'}</p>
+                        <p className="text-sm text-gray-300">{user.email}</p>
                       </div>
                     </div>
                   ))}
@@ -345,7 +345,7 @@ export default function AdminManagementPage() {
               <select
                 value={newAdminRole}
                 onChange={(e) => setNewAdminRole(e.target.value)}
-                className="w-full px-6 py-4 bg-white/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white/80 transition-all duration-300 text-gray-700"
+                className="w-full px-6 py-4 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-200 [&>option]:text-gray-200 [&>option]:bg-gray-800"
               >
                 <option value={ROLES.EVENT_MANAGER}>Etkinlik Sorumlusu</option>
                 <option value={ROLES.ADMIN}>Admin</option>
@@ -361,14 +361,14 @@ export default function AdminManagementPage() {
         </form>
       </section>
 
-      <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-white/20 shadow-xl">
+      <section className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-gray-700/50 shadow-xl">
         <div className="flex items-center mb-6">
           <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg mr-3">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-100">
             Yöneticiler
           </h2>
         </div>
@@ -377,7 +377,7 @@ export default function AdminManagementPage() {
           {admins.map((admin) => (
             <div
               key={admin.id}
-              className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white/60 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-md border border-white/30 gap-4 sm:gap-0"
+              className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-700/60 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-md border border-gray-600/30 gap-4 sm:gap-0"
             >
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center">
@@ -386,7 +386,7 @@ export default function AdminManagementPage() {
                   </span>
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-gray-800">
+                  <p className="text-lg font-semibold text-gray-100">
                     {admin.email}
                   </p>
                   <div className="flex items-center space-x-2">
@@ -394,7 +394,7 @@ export default function AdminManagementPage() {
                       {getRoleText(admin.role || ROLES.ADMIN)}
                     </span>
                     {admin.id === user.email && (
-                      <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
+                      <span className="px-2 py-1 bg-yellow-500/20 text-yellow-800 rounded-full text-xs font-medium">
                         Siz
                       </span>
                     )}
@@ -407,7 +407,7 @@ export default function AdminManagementPage() {
                   <select
                     value={admin.role || ROLES.ADMIN}
                     onChange={(e) => handleUpdateRole(admin.id, e.target.value)}
-                    className="px-4 py-2 bg-white/70 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 transition-all duration-300"
+                    className="px-4 py-2 bg-gray-700/70 border border-gray-500 rounded-xl focus:outline-none focus:border-blue-400 transition-all duration-300 text-gray-200 [&>option]:text-gray-200 [&>option]:bg-gray-800"
                   >
                     <option value={ROLES.ADMIN}>Admin</option>
                     <option value={ROLES.EVENT_MANAGER}>Etkinlik Sorumlusu</option>

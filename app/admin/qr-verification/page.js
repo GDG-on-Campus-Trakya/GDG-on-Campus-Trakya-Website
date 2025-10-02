@@ -230,7 +230,7 @@ export default function AdminQRVerificationPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg text-gray-700">Loading...</p>
+        <p className="text-lg text-gray-200">Loading...</p>
       </div>
     );
   }
@@ -244,7 +244,7 @@ export default function AdminQRVerificationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-gray-900 p-6">
       {/* Back to Admin Panel Button */}
       <div className="mb-6">
         <Link
@@ -255,13 +255,13 @@ export default function AdminQRVerificationPage() {
         </Link>
       </div>
 
-      <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
+      <h1 className="text-3xl font-bold text-center mb-8 text-gray-100">
         Admin QR Kodu Doğrulama
       </h1>
 
-      <div className="max-w-md mx-auto bg-white rounded-lg p-6 shadow-md">
+      <div className="max-w-md mx-auto bg-gray-800 rounded-lg p-6 shadow-md">
         {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+          <div className="mb-4 p-3 bg-red-500/20 text-red-700 rounded-md">
             {error}
           </div>
         )}
@@ -288,8 +288,8 @@ export default function AdminQRVerificationPage() {
 
         {qrCodeData && (
           <div className="mt-4 p-3 bg-gray-50 rounded-md">
-            <h2 className="font-semibold text-gray-700">Taranan QR Kod:</h2>
-            <p className="text-gray-600 break-all">{qrCodeData}</p>
+            <h2 className="font-semibold text-gray-200">Taranan QR Kod:</h2>
+            <p className="text-gray-300 break-all">{qrCodeData}</p>
           </div>
         )}
 
@@ -297,8 +297,8 @@ export default function AdminQRVerificationPage() {
           <div
             className={`mt-4 p-3 rounded-md ${
               verificationResult.startsWith("Verified")
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
+                ? "bg-green-500/20 text-green-700"
+                : "bg-red-500/20 text-red-700"
             }`}
           >
             <p>{verificationResult}</p>

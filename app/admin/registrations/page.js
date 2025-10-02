@@ -140,7 +140,7 @@ export default function AdminRegistrationsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg text-gray-700">Loading...</p>
+        <p className="text-lg text-gray-200">Loading...</p>
       </div>
     );
   }
@@ -154,12 +154,12 @@ export default function AdminRegistrationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 sm:p-6">
       {/* Back to Admin Panel Button */}
       <div className="mb-6 sm:mb-8">
         <Link
           href="/admin"
-          className="inline-flex items-center px-4 py-3 text-sm sm:text-base bg-white/70 backdrop-blur-lg text-gray-700 rounded-2xl hover:bg-white/90 transition-all duration-300 border border-white/20 shadow-lg hover:shadow-xl transform hover:scale-105"
+          className="inline-flex items-center px-4 py-3 text-sm sm:text-base bg-gray-800/70 backdrop-blur-lg text-gray-200 rounded-2xl hover:bg-gray-700/90 transition-all duration-300 border border-gray-700/50 shadow-lg hover:shadow-xl transform hover:scale-105"
         >
           <svg
             className="w-4 h-4 mr-2"
@@ -181,17 +181,17 @@ export default function AdminRegistrationsPage() {
       {/* Header */}
       <div className="text-center mb-8 sm:mb-12">
         <div className="inline-block">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">
             Etkinlik Kayıtları
           </h1>
-          <div className="h-1 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-full"></div>
+          <div className="h-1 bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 rounded-full"></div>
         </div>
-        <p className="text-gray-600 mt-4 text-lg">
+        <p className="text-gray-300 mt-4 text-lg">
           Tüm etkinlik kayıtlarını görüntüleyin ve yönetin
         </p>
       </div>
 
-      <section className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-white/20 shadow-xl">
+      <section className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-gray-700/50 shadow-xl">
         <div className="flex items-center mb-6">
           <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg mr-3">
             <svg
@@ -208,12 +208,12 @@ export default function AdminRegistrationsPage() {
               />
             </svg>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-100">
             Etkinlik Kayıtlarını Yönet
           </h2>
         </div>
         {events.length === 0 ? (
-          <p className="text-gray-500">Etkinlik bulunamadı.</p>
+          <p className="text-gray-400">Etkinlik bulunamadı.</p>
         ) : (
           <ul className="space-y-4 sm:space-y-6">
             {events.map((event) => {
@@ -225,33 +225,33 @@ export default function AdminRegistrationsPage() {
               return (
                 <li
                   key={event.firestoreId}
-                  className="bg-gray-50 rounded-md shadow-sm overflow-hidden"
+                  className="bg-gray-800/70 backdrop-blur-lg rounded-md shadow-sm overflow-hidden border border-gray-700/50"
                 >
                   <button
                     onClick={() => toggleEventExpansion(event.firestoreId)}
-                    className="w-full p-3 sm:p-4 flex justify-between items-start gap-4 hover:bg-gray-100 transition-colors"
+                    className="w-full p-3 sm:p-4 flex justify-between items-start gap-4 hover:bg-gray-700/70 transition-colors"
                   >
                     <div className="flex flex-col items-start flex-1 min-w-0">
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-800 break-words w-full">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-100 break-words w-full">
                         {event.name}
                       </h3>
-                      <span className="text-sm text-gray-500 mt-1">
+                      <span className="text-sm text-gray-400 mt-1">
                         {registrationCount}{" "}
                         {registrationCount === 1
                           ? "registration"
                           : "registrations"}
                       </span>
                     </div>
-                    <span className="text-xl font-medium text-gray-500 w-6 h-6 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xl font-medium text-gray-400 w-6 h-6 flex items-center justify-center flex-shrink-0">
                       {expandedEvents[event.firestoreId] ? "−" : "+"}
                     </span>
                   </button>
 
                   {expandedEvents[event.firestoreId] && (
-                    <div className="border-t border-gray-200 p-3 sm:p-4">
+                    <div className="border-t border-gray-600 p-3 sm:p-4">
                       <ul className="space-y-2 sm:space-y-3">
                         {registrationCount === 0 ? (
-                          <p className="text-sm sm:text-base text-gray-500">
+                          <p className="text-sm sm:text-base text-gray-400">
                             Bu etkinlik için kayıtlı kullanıcı bulunamadı.
                           </p>
                         ) : (
@@ -272,18 +272,18 @@ export default function AdminRegistrationsPage() {
                             return (
                               <li
                                 key={reg.firestoreId}
-                                className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 rounded-md gap-3 sm:gap-0 border border-gray-100"
+                                className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-700/60 backdrop-blur-sm p-3 rounded-md gap-3 sm:gap-0 border border-gray-600/30 hover:bg-gray-700/80 transition-all duration-300"
                               >
                                 <div className="w-full sm:w-auto">
-                                  <p className="text-sm sm:text-base text-gray-700">
+                                  <p className="text-sm sm:text-base text-gray-200">
                                     {userData
                                       ? `Name: ${userData.name}`
                                       : `User ID: ${reg.userId}`}
                                   </p>
-                                  <p className="text-sm sm:text-base text-gray-700">
+                                  <p className="text-sm sm:text-base text-gray-200">
                                     {userData ? `Email: ${userData.email}` : ""}
                                   </p>
-                                  <p className="text-xs sm:text-sm text-gray-500">
+                                  <p className="text-xs sm:text-sm text-gray-400">
                                     Kayıt Tarihi: {signedUpDate}
                                   </p>
                                 </div>

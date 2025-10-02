@@ -274,10 +274,10 @@ export default function AdminEventStatsPage() {
   
   if (loading || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-lg text-gray-700">İstatistikler yükleniyor...</p>
+          <p className="text-lg text-gray-200">İstatistikler yükleniyor...</p>
         </div>
       </div>
     );
@@ -285,14 +285,14 @@ export default function AdminEventStatsPage() {
 
   if (!isAdmin) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-50 to-pink-50">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
         <div className="text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 mx-auto">
-            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <p className="text-lg text-red-600 font-semibold">Erişim Reddedildi</p>
+          <p className="text-lg text-red-400 font-semibold">Erişim Reddedildi</p>
         </div>
       </div>
     );
@@ -312,12 +312,12 @@ export default function AdminEventStatsPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 sm:p-6">
       {/* Back to Admin Panel Button */}
       <div className="mb-6 sm:mb-8">
         <Link
           href="/admin"
-          className="inline-flex items-center px-4 py-3 text-sm sm:text-base bg-white/70 backdrop-blur-lg text-gray-700 rounded-2xl hover:bg-white/90 transition-all duration-300 border border-white/20 shadow-lg hover:shadow-xl transform hover:scale-105"
+          className="inline-flex items-center px-4 py-3 text-sm sm:text-base bg-gray-800/70 backdrop-blur-lg text-gray-200 rounded-2xl hover:bg-gray-700/90 transition-all duration-300 border border-gray-700/50 shadow-lg hover:shadow-xl transform hover:scale-105"
         >
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -334,47 +334,47 @@ export default function AdminEventStatsPage() {
           </h1>
           <div className="h-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-full"></div>
         </div>
-        <p className="text-gray-600 mt-4 text-lg">Tüm etkinlik verilerini analiz edin</p>
+        <p className="text-gray-300 mt-4 text-lg">Tüm etkinlik verilerini analiz edin</p>
       </div>
       
       {/* Overall Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
-        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Toplam Kayıt</p>
-              <p className="text-3xl font-bold text-blue-600">{totalRegistrations}</p>
+              <p className="text-sm font-medium text-gray-300">Toplam Kayıt</p>
+              <p className="text-3xl font-bold text-blue-400">{totalRegistrations}</p>
             </div>
-            <div className="p-3 bg-blue-100 rounded-xl">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="p-3 bg-blue-500/20 rounded-xl">
+              <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
           </div>
         </div>
         
-        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Toplam Katılım</p>
-              <p className="text-3xl font-bold text-green-600">{totalAttendees}</p>
+              <p className="text-sm font-medium text-gray-300">Toplam Katılım</p>
+              <p className="text-3xl font-bold text-green-400">{totalAttendees}</p>
             </div>
-            <div className="p-3 bg-green-100 rounded-xl">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="p-3 bg-green-500/20 rounded-xl">
+              <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
               </svg>
             </div>
           </div>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl">
+        <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50 shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Ortalama Katılım</p>
-              <p className="text-3xl font-bold text-purple-600">{averageAttendance}%</p>
+              <p className="text-sm font-medium text-gray-300">Ortalama Katılım</p>
+              <p className="text-3xl font-bold text-purple-400">{averageAttendance}%</p>
             </div>
-            <div className="p-3 bg-purple-100 rounded-xl">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="p-3 bg-purple-500/20 rounded-xl">
+              <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
@@ -383,14 +383,14 @@ export default function AdminEventStatsPage() {
       </div>
       
       {/* Tabs */}
-      <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-2 mb-8 border border-white/20 shadow-xl">
+      <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-2 mb-8 border border-gray-700/50 shadow-xl">
         <div className="flex space-x-2">
           <button
             onClick={() => setActiveTab('current')}
             className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${
               activeTab === 'current'
                 ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg transform scale-105'
-                : 'text-gray-600 hover:bg-white/50'
+                : 'text-gray-300 hover:bg-gray-700/50'
             }`}
           >
             Aktif Etkinlikler ({currentEvents.length})
@@ -400,7 +400,7 @@ export default function AdminEventStatsPage() {
             className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${
               activeTab === 'archive'
                 ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg transform scale-105'
-                : 'text-gray-600 hover:bg-white/50'
+                : 'text-gray-300 hover:bg-gray-700/50'
             }`}
           >
             Arşiv ({archivedEvents.length})
@@ -411,12 +411,12 @@ export default function AdminEventStatsPage() {
       <div className="grid gap-6">
         {filteredEvents.length === 0 ? (
           <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <div className="w-16 h-16 mx-auto bg-gray-900 rounded-full flex items-center justify-center mb-4">
               <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
-            <p className="text-lg text-gray-500 mb-2">
+            <p className="text-lg text-gray-400 mb-2">
               {activeTab === 'current' ? 'Henüz aktif etkinlik bulunmuyor' : 'Arşivlenmiş etkinlik bulunmuyor'}
             </p>
           </div>
@@ -424,15 +424,15 @@ export default function AdminEventStatsPage() {
           filteredEvents.map((event) => (
             <div
               key={event.id}
-              className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden border border-white/20"
+              className="bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden border border-gray-700/50"
             >
             <button
               onClick={() => toggleEvent(event.id)}
-              className="w-full p-6 text-left border-b border-white/30 hover:bg-white/50 transition-all duration-300 focus:outline-none"
+              className="w-full p-6 text-left border-b border-gray-600/30 hover:bg-gray-700/50 transition-all duration-300 focus:outline-none"
             >
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div className="flex items-center space-x-2">
-                  <span className="text-xl sm:text-2xl font-semibold text-gray-800">
+                  <span className="text-xl sm:text-2xl font-semibold text-gray-100">
                     {event.name}
                   </span>
                   <span
@@ -446,7 +446,7 @@ export default function AdminEventStatsPage() {
                     ▼
                   </span>
                 </div>
-                <div className="mt-2 sm:mt-0 text-sm sm:text-base text-gray-600">
+                <div className="mt-2 sm:mt-0 text-sm sm:text-base text-gray-300">
                   <span className="font-medium">Tarih:</span>{" "}
                   {new Date(event.date).toLocaleDateString("tr-TR", {
                     year: "numeric",
@@ -471,50 +471,50 @@ export default function AdminEventStatsPage() {
             >
               <div className="p-4 sm:p-6">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-2xl border border-blue-200">
+                  <div className="bg-gradient-to-r from-blue-900/50 to-blue-800/50 p-6 rounded-2xl border border-blue-700">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-blue-600 mb-1 font-medium">Toplam Kayıt</p>
-                        <p className="text-3xl font-bold text-blue-700">
+                        <p className="text-sm text-blue-300 mb-1 font-medium">Toplam Kayıt</p>
+                        <p className="text-3xl font-bold text-blue-400">
                           {event.totalRegistrations}
                         </p>
                       </div>
-                      <div className="p-2 bg-blue-200 rounded-xl">
-                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="p-2 bg-blue-700/50 rounded-xl">
+                        <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                       </div>
                     </div>
                   </div>
-                  <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-2xl border border-green-200">
+                  <div className="bg-gradient-to-r from-green-900/50 to-green-800/50 p-6 rounded-2xl border border-green-700">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-green-600 mb-1 font-medium">
+                        <p className="text-sm text-green-300 mb-1 font-medium">
                           Katılım Sağlayan
                         </p>
-                        <p className="text-3xl font-bold text-green-700">
+                        <p className="text-3xl font-bold text-green-400">
                           {event.verifiedAttendees}
                         </p>
                       </div>
-                      <div className="p-2 bg-green-200 rounded-xl">
-                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="p-2 bg-green-700/50 rounded-xl">
+                        <svg className="w-5 h-5 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
                     </div>
                   </div>
-                  <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-6 rounded-2xl border border-purple-200">
+                  <div className="bg-gradient-to-r from-purple-900/50 to-purple-800/50 p-6 rounded-2xl border border-purple-700">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-purple-600 mb-1 font-medium">
+                        <p className="text-sm text-purple-300 mb-1 font-medium">
                           Katılım Oranı
                         </p>
-                        <p className="text-3xl font-bold text-purple-700">
+                        <p className="text-3xl font-bold text-purple-400">
                           {event.attendanceRate}%
                         </p>
                       </div>
                       <div className="p-2 bg-purple-200 rounded-xl">
-                        <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
                       </div>
@@ -522,41 +522,41 @@ export default function AdminEventStatsPage() {
                   </div>
                 </div>
 
-                <div className="bg-white/50 rounded-2xl overflow-hidden border border-gray-200">
+                <div className="bg-gray-700/50 rounded-2xl overflow-hidden border border-gray-600">
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                    <table className="min-w-full divide-y divide-gray-700">
+                      <thead className="bg-gradient-to-r from-gray-800 to-gray-700">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                           Katılımcı
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                           Email
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                           Durum
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                           Kayıt Tarihi
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                           Katılım Tarihi
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                           Onaylayan
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-gray-800/50 divide-y divide-gray-700">
                       {event.registrants.map((registrant) => (
-                        <tr key={registrant.firestoreId}>
+                        <tr key={registrant.firestoreId} className="hover:bg-gray-700/50 transition-colors">
                           <td className="px-4 py-3 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-gray-100">
                               {registrant.user.name}
                             </div>
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-400">
                               {registrant.user.email}
                             </div>
                           </td>
@@ -564,10 +564,10 @@ export default function AdminEventStatsPage() {
                             <span
                               className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                 registrant.didJoinEvent
-                                  ? "bg-green-100 text-green-800"
+                                  ? "bg-green-900/50 text-green-300 border border-green-700"
                                   : new Date(event.date) < new Date()
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-yellow-100 text-yellow-800"
+                                  ? "bg-red-900/50 text-red-300 border border-red-700"
+                                  : "bg-yellow-900/50 text-yellow-300 border border-yellow-700"
                               }`}
                             >
                               {registrant.didJoinEvent
@@ -577,19 +577,19 @@ export default function AdminEventStatsPage() {
                                 : "Kayıtlı"}
                             </span>
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-400">
                             {new Date(
                               registrant.signedUpAt?.seconds * 1000
                             ).toLocaleString("tr-TR")}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-400">
                             {registrant.didJoinEvent
                               ? new Date(
                                   registrant.verifiedAt?.seconds * 1000
                                 ).toLocaleString("tr-TR")
                               : "-"}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-400">
                             {registrant.didJoinEvent
                               ? registrant.verifiedBy || "-"
                               : "-"}
