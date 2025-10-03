@@ -32,12 +32,15 @@ import { motion, AnimatePresence } from "framer-motion";
 
 function SearchParamsHandler({ onQRCodeRedirect, events }) {
   const searchParams = useSearchParams();
+  const processedQRCodes = useRef(new Set());
   
   useEffect(() => {
     const handleQRCodeRedirect = async () => {
       const qrCodeId = searchParams.get("qrCode");
 
-      if (qrCodeId && events.length > 0) {
+      // Only process if we have a QR code, events are loaded, and we haven't processed this QR code yet
+      if (qrCodeId && events.length > 0 && !processedQRCodes.current.has(qrCodeId)) {
+        processedQRCodes.current.add(qrCodeId);
         onQRCodeRedirect(qrCodeId);
       }
     };
@@ -224,6 +227,15 @@ function EventsPageContent() {
   const handleQRCodeRedirect = async (qrCodeId) => {
     if (qrCodeId && !selectedEvent && events.length > 0) {
       try {
+        // Clear QR code from URL immediately to prevent re-triggering
+        if (isClient) {
+          const url = new URL(window.location);
+          if (url.searchParams.has('qrCode')) {
+            url.searchParams.delete('qrCode');
+            window.history.replaceState(null, '', url.toString());
+          }
+        }
+
         const qrCodeRef = doc(db, "eventQrCodes", qrCodeId);
         const qrCodeSnap = await getDoc(qrCodeRef);
 
@@ -339,14 +351,8 @@ function EventsPageContent() {
 
   const closeDrawer = () => {
     setSelectedEvent(null);
-    // Clear QR code parameter from URL when closing drawer
-    if (isClient) {
-      const url = new URL(window.location);
-      if (url.searchParams.has('qrCode')) {
-        url.searchParams.delete('qrCode');
-        window.history.replaceState(null, '', url.toString());
-      }
-    }
+    // Don't clear QR code from URL here - it's already cleared in handleQRCodeRedirect
+    
     // Force cleanup of any potential body style issues - more aggressive for mobile
     if (isClient) {
       setTimeout(() => {
