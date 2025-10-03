@@ -77,6 +77,23 @@ function EventsPageContent() {
     setCurrentMonth(new Date());
   }, []);
 
+  // Prevent body scroll when drawer is open
+  useEffect(() => {
+    if (selectedEvent) {
+      document.body.classList.add('modal-open');
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedEvent]);
+
   // Advanced image loading with caching and optimization
   const loadImageOptimized = (imageUrl, isMobile = false) => {
     return new Promise((resolve) => {
