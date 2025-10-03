@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { auth, db } from "../../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRouter } from "next/navigation";
@@ -28,6 +28,7 @@ export default function AdminTicketsPage() {
   const [filterCategory, setFilterCategory] = useState("all");
   const [availableAdmins, setAvailableAdmins] = useState([]);
   const router = useRouter();
+  const conversationRef = useRef(null);
 
   useEffect(() => {
     const checkAdminPrivileges = async () => {
@@ -38,8 +39,8 @@ export default function AdminTicketsPage() {
 
         if (adminSnap.exists()) {
           setIsAdmin(true);
-          fetchTickets();
           fetchAvailableAdmins();
+          // fetchTickets will be replaced with real-time listener below
         } else {
           router.push("/");
         }
@@ -53,6 +54,48 @@ export default function AdminTicketsPage() {
       checkAdminPrivileges();
     }
   }, [user, loading, router]);
+
+  // Real-time listener for all tickets
+  useEffect(() => {
+    if (!isAdmin) return;
+    
+    let unsubscribe;
+    (async () => {
+      try {
+        const { collection, onSnapshot, query, orderBy } = await import("firebase/firestore");
+        const { db } = await import("../../../firebase");
+        
+        const ticketsCollection = collection(db, "tickets");
+        const q = query(ticketsCollection);
+        
+        unsubscribe = onSnapshot(q, (snapshot) => {
+          const ticketsData = snapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              ...data,
+              createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
+              updatedAt: data.updatedAt?.toDate?.()?.toISOString() || null,
+              closedAt: data.closedAt || null,
+            };
+          });
+          
+          // Sort by createdAt in descending order (newest first)
+          ticketsData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          
+          setTickets(ticketsData);
+          setIsLoading(false);
+        });
+      } catch (err) {
+        console.error("Error subscribing to tickets:", err);
+        setIsLoading(false);
+      }
+    })();
+    
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [isAdmin]);
 
   // Live subscribe to selected ticket updates while modal is open
   useEffect(() => {
@@ -102,6 +145,13 @@ export default function AdminTicketsPage() {
       document.body.style.overflow = 'unset';
     };
   }, [selectedTicket]);
+
+  // Auto scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (selectedTicket && conversationRef.current) {
+      conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
+    }
+  }, [selectedTicket?.responses]);
 
   const fetchTickets = async () => {
     try {
@@ -179,6 +229,13 @@ export default function AdminTicketsPage() {
       toast.success("Yanıt başarıyla gönderildi!");
       setResponseMessage("");
       // Ticket live güncellenecek, fetchTickets kaldırıldı
+      
+      // Scroll to bottom after sending message
+      setTimeout(() => {
+        if (conversationRef.current) {
+          conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
+        }
+      }, 100);
     } catch (error) {
       console.error("Error sending response:", error);
       toast.error("Yanıt gönderilirken bir hata oluştu");
@@ -212,9 +269,7 @@ export default function AdminTicketsPage() {
         `Bilet başarıyla ${action === "close" ? "kapatıldı" : "açıldı"}!`
       );
       // fetchTickets kaldırıldı - live güncellenecek
-      if (selectedTicket?.id === ticketId) {
-        setSelectedTicket(null);
-      }
+      // Modal açık kalacak, ticket otomatik güncellenecek
     } catch (error) {
       console.error("Error updating status:", error);
       toast.error("Durum güncellenirken bir hata oluştu");
@@ -611,43 +666,64 @@ export default function AdminTicketsPage() {
           style={{ overscrollBehavior: 'contain' }}
         >
           <div 
-            className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-2xl"
+            className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-5xl h-[90vh] overflow-hidden shadow-2xl flex flex-col"
             style={{ overscrollBehavior: 'contain' }}
           >
             {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-700 flex items-start justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-white">
-                  Bilet #{selectedTicket.ticketNumber || selectedTicket.id}
-                </h2>
-                <p className="text-sm text-gray-400">
-                  {selectedTicket.subject} — {selectedTicket.userName}
-                </p>
-              </div>
-              <button
-                onClick={() => setSelectedTicket(null)}
-                className="text-gray-400 hover:text-gray-200"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            <div className="px-6 py-4 border-b border-gray-700 flex-shrink-0">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h2 className="text-lg font-semibold text-white">
+                    Bilet #{selectedTicket.ticketNumber || selectedTicket.id}
+                  </h2>
+                  <p className="text-sm text-gray-400">
+                    {selectedTicket.subject} — {selectedTicket.userName}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedTicket(null)}
+                  className="text-gray-400 hover:text-gray-200 flex-shrink-0"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+              
+              {/* Mobile-only info */}
+              <div className="lg:hidden grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="text-gray-400">Durum:</span>{" "}
+                  <span className="text-gray-200">{getStatusText(selectedTicket.status)}</span>
+                </div>
+                <div>
+                  <span className="text-gray-400">Kategori:</span>{" "}
+                  <span className="text-gray-200">{getCategoryText(selectedTicket.category)}</span>
+                </div>
+                {selectedTicket.assignedTo && (
+                  <div className="col-span-2">
+                    <span className="text-gray-400">Atanan:</span>{" "}
+                    <span className="text-gray-200">{selectedTicket.assignedTo}</span>
+                  </div>
+                )}
+              </div>
             </div>
             {/* Body */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr,320px] gap-0 overflow-hidden min-h-0">
               {/* Conversation */}
-              <div className="lg:col-span-2 flex flex-col h-[60vh]">
+              <div className="flex flex-col h-full overflow-hidden">
                 <div 
+                  ref={conversationRef}
                   className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-900"
                   style={{ 
                     overscrollBehavior: 'contain',
@@ -780,10 +856,56 @@ export default function AdminTicketsPage() {
                     );
                   })}
                 </div>
+                
+                {/* Mobile Admin Actions */}
+                <div className="lg:hidden p-4 border-t border-gray-700 bg-gray-800 space-y-3">
+                  <div className="flex gap-2 flex-wrap">
+                    {selectedTicket.status === "open" ? (
+                      <button
+                        onClick={() =>
+                          handleStatusChange(selectedTicket.id, "close")
+                        }
+                        className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium"
+                      >
+                        Kapat
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() =>
+                          handleStatusChange(selectedTicket.id, "reopen")
+                        }
+                        className="flex-1 px-3 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-sm font-medium"
+                      >
+                        Tekrar Aç
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDeleteTicket(selectedTicket.id)}
+                      className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium"
+                    >
+                      Sil
+                    </button>
+                  </div>
+                  <select
+                    value={selectedTicket.assignedTo || ""}
+                    onChange={(e) =>
+                      handleAssignAdmin(selectedTicket.id, e.target.value)
+                    }
+                    className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="">Atanmamış</option>
+                    {availableAdmins.map((admin) => (
+                      <option key={admin.email} value={admin.email}>
+                        {admin.email}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
                 {/* Composer */}
                 <form
                   onSubmit={handleResponse}
-                  className="p-4 border-t border-gray-700 bg-gray-900"
+                  className="p-4 border-t border-gray-700 bg-gray-900 flex-shrink-0"
                 >
                   <div className="flex gap-3">
                     <textarea
@@ -805,12 +927,13 @@ export default function AdminTicketsPage() {
                 </form>
               </div>
               {/* Sidebar */}
-              <div className="border-l border-gray-800 bg-gray-900 p-6 space-y-4">
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-200 mb-2">
-                    Bilet Bilgileri
-                  </h3>
-                  <div className="text-sm text-gray-300 space-y-1">
+              <div className="hidden lg:flex lg:flex-col border-l border-gray-800 bg-gray-900 overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>
+                <div className="p-6 space-y-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-200 mb-2">
+                      Bilet Bilgileri
+                    </h3>
+                    <div className="text-sm text-gray-300 space-y-1">
                     <p>
                       <span className="text-gray-400">Durum:</span>{" "}
                       {getStatusText(selectedTicket.status)}
@@ -944,6 +1067,7 @@ export default function AdminTicketsPage() {
                       </option>
                     ))}
                   </select>
+                </div>
                 </div>
               </div>
             </div>
