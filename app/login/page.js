@@ -73,7 +73,10 @@ export default function LoginPage() {
 
       router.push("/");
     } catch (error) {
-      console.error("Authentication error:", error);
+      // Only log in development mode
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Authentication error:", error);
+      }
       
       switch (error.code) {
         case "auth/email-already-in-use":
@@ -133,7 +136,10 @@ export default function LoginPage() {
 
       router.push("/");
     } catch (error) {
-      console.error("Google sign-in error:", error);
+      // Only log in development mode
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Google sign-in error:", error);
+      }
       
       if (error.code === 'auth/popup-blocked') {
         setError('Popup engellendi! Lütfen tarayıcınızda popup engellemesini kapatın.');
@@ -158,7 +164,10 @@ export default function LoginPage() {
       setResetEmailSent(true);
       setTimeout(() => setResetEmailSent(false), 5000);
     } catch (error) {
-      console.error("Password reset error:", error);
+      // Only log in development mode
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Password reset error:", error);
+      }
       
       switch (error.code) {
         case "auth/user-not-found":
