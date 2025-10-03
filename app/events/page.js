@@ -926,7 +926,7 @@ function EventsPageContent() {
                 ) : (
                   <button
                     className="w-full py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl transition-all font-semibold shadow-lg shadow-blue-500/30"
-                    onClick={() => router.push("/")}
+                    onClick={() => router.push("/login")}
                   >
                     Kayıt Olmak için Giriş Yapın
                   </button>
