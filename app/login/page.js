@@ -6,7 +6,8 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
   signInWithPopup,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  sendEmailVerification
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { motion } from "framer-motion";
@@ -22,6 +23,7 @@ export default function LoginPage() {
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [verificationEmailSent, setVerificationEmailSent] = useState(false);
   const router = useRouter();
 
   const handleEmailAuth = async (e) => {
@@ -34,6 +36,14 @@ export default function LoginPage() {
       
       if (isLogin) {
         result = await signInWithEmailAndPassword(auth, email, password);
+        
+        // Check if email is verified
+        if (!result.user.emailVerified) {
+          setError("Lütfen email adresinizi doğrulayın. Email kutunuzu kontrol edin.");
+          await auth.signOut(); // Sign out the user
+          setLoading(false);
+          return;
+        }
       } else {
         if (!name.trim()) {
           setError("Lütfen adınızı girin");
@@ -43,6 +53,9 @@ export default function LoginPage() {
         
         result = await createUserWithEmailAndPassword(auth, email, password);
         
+        // Send email verification
+        await sendEmailVerification(result.user);
+        
         const userRef = doc(db, "users", result.user.uid);
         await setDoc(userRef, {
           name: name.trim(),
@@ -50,6 +63,12 @@ export default function LoginPage() {
           createdAt: new Date().toISOString(),
           wantsToGetEmails: true,
         });
+        
+        // Sign out the user and show verification message
+        await auth.signOut();
+        setVerificationEmailSent(true);
+        setLoading(false);
+        return;
       }
 
       router.push("/");
@@ -313,6 +332,17 @@ export default function LoginPage() {
                 className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm"
               >
                 Şifre sıfırlama emaili gönderildi! Lütfen email kutunuzu kontrol edin.
+              </motion.div>
+            )}
+
+            {/* Email Doğrulama Mesajı */}
+            {verificationEmailSent && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm"
+              >
+                Kayıt başarılı! Email doğrulama linki gönderildi. Lütfen email kutunuzu kontrol edin ve doğrulama linkine tıklayın. Ardından giriş yapabilirsiniz.
               </motion.div>
             )}
 
