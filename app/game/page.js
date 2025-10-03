@@ -149,50 +149,50 @@ export default function GameJoinPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-indigo-900">
-        <div className="max-w-md w-full px-6">
-          <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20 animate-pulse">
-            <div className="space-y-6">
+        <div className="max-w-md w-full px-4 sm:px-6">
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-white/20 animate-pulse">
+            <div className="space-y-5 sm:space-y-6">
               {/* Title skeleton */}
-              <div className="h-8 bg-white/20 rounded-xl w-3/4 mx-auto"></div>
-              <div className="h-6 bg-white/20 rounded-xl w-1/2 mx-auto"></div>
+              <div className="h-6 sm:h-8 bg-white/20 rounded-xl w-3/4 mx-auto"></div>
+              <div className="h-5 sm:h-6 bg-white/20 rounded-xl w-1/2 mx-auto"></div>
 
               {/* Input skeleton */}
-              <div className="space-y-3 mt-8">
-                <div className="h-5 bg-white/20 rounded w-24"></div>
-                <div className="h-16 bg-white/20 rounded-xl"></div>
+              <div className="space-y-2 sm:space-y-3 mt-6 sm:mt-8">
+                <div className="h-4 sm:h-5 bg-white/20 rounded w-20 sm:w-24"></div>
+                <div className="h-12 sm:h-16 bg-white/20 rounded-xl"></div>
               </div>
 
               {/* Button skeleton */}
-              <div className="h-14 bg-white/20 rounded-xl mt-6"></div>
+              <div className="h-12 sm:h-14 bg-white/20 rounded-xl mt-5 sm:mt-6"></div>
             </div>
           </div>
 
           {/* Loading text */}
-          <p className="text-center text-white/80 mt-6">Yükleniyor...</p>
+          <p className="text-center text-sm sm:text-base text-white/80 mt-5 sm:mt-6">Yükleniyor...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-indigo-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-indigo-900 flex items-center justify-center p-4 sm:p-6">
       <div className="max-w-md w-full">
-        <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold text-white mb-4">Oyun!</h1>
-          <p className="text-xl text-white/80">Oyuna katılmak için kodu girin</p>
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-4xl sm:text-6xl font-bold text-white mb-3 sm:mb-4">Oyun!</h1>
+          <p className="text-base sm:text-xl text-white/80">Oyuna katılmak için kodu girin</p>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20">
-          <form onSubmit={handleJoinGame} className="space-y-6">
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-white/20">
+          <form onSubmit={handleJoinGame} className="space-y-5 sm:space-y-6">
             <div>
-              <label className="block text-white mb-3 text-lg font-semibold">
+              <label className="block text-white mb-2 sm:mb-3 text-base sm:text-lg font-semibold">
                 Oyun Kodu
               </label>
               <input
                 type="text"
                 value={gameCode}
                 onChange={handleCodeInput}
-                className="w-full px-6 py-4 text-center text-4xl font-bold bg-white/20 border-2 border-white/30 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-white tracking-widest"
+                className="w-full px-4 sm:px-6 py-3 sm:py-4 text-center text-2xl sm:text-4xl font-bold bg-white/20 border-2 border-white/30 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-white tracking-widest"
                 placeholder="000000"
                 maxLength="6"
                 required
@@ -201,8 +201,8 @@ export default function GameJoinPage() {
             </div>
 
             {!user && (
-              <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-xl p-4">
-                <p className="text-yellow-200 text-sm text-center">
+              <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-xl p-3 sm:p-4">
+                <p className="text-yellow-200 text-xs sm:text-sm text-center">
                   Oyuna katılmak için önce giriş yapmalısınız
                 </p>
               </div>
@@ -211,7 +211,7 @@ export default function GameJoinPage() {
             <button
               type="submit"
               disabled={!user || gameCode.length !== 6 || joining}
-              className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl transition-colors font-bold text-xl disabled:opacity-50 disabled:cursor-not-allowed relative"
+              className="w-full py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl transition-colors font-bold text-base sm:text-xl disabled:opacity-50 disabled:cursor-not-allowed relative"
             >
               {joining ? (
                 <span className="flex items-center justify-center gap-2">
@@ -228,10 +228,10 @@ export default function GameJoinPage() {
           </form>
 
           {!user && (
-            <div className="mt-6 text-center">
+            <div className="mt-5 sm:mt-6 text-center">
               <button
                 onClick={() => router.push("/")}
-                className="text-white hover:text-white/80 underline"
+                className="text-sm sm:text-base text-white hover:text-white/80 underline"
               >
                 Giriş Yap
               </button>
@@ -239,10 +239,10 @@ export default function GameJoinPage() {
           )}
         </div>
 
-        <div className="mt-8 text-center">
+        <div className="mt-6 sm:mt-8 text-center">
           <button
             onClick={() => router.push("/")}
-            className="text-white/70 hover:text-white transition-colors"
+            className="text-sm sm:text-base text-white/70 hover:text-white transition-colors"
           >
             ← Ana Sayfaya Dön
           </button>

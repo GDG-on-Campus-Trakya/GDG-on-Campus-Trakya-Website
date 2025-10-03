@@ -218,55 +218,55 @@ export default function HostGamePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-3 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 mb-6">
-          <div className="flex items-center justify-between">
+        <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">{game.quizTitle}</h1>
-              <div className="flex items-center gap-4 text-gray-300">
-                <span className="text-2xl font-mono">{game.gameCode}</span>
-                <span>•</span>
-                <span>👥 {connectedPlayerCount}/{playerCount} Oyuncu</span>
-                <span>•</span>
+              <h1 className="text-xl sm:text-3xl font-bold text-white mb-2">{game.quizTitle}</h1>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-base text-gray-300">
+                <span className="text-lg sm:text-2xl font-mono">{game.gameCode}</span>
+                <span className="hidden sm:inline">•</span>
+                <span>👥 {connectedPlayerCount}/{playerCount}</span>
+                <span className="hidden sm:inline">•</span>
                 <span>
-                  📝 Soru {game.currentQuestion + 1}/{game.totalQuestions}
+                  📝 {game.currentQuestion + 1}/{game.totalQuestions}
                 </span>
               </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
               {game.status === "finished" ? (
                 <button
                   onClick={handleDeleteAndExit}
-                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                  className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm sm:text-base"
                 >
                   Çıkış
                 </button>
               ) : (
                 <button
                   onClick={handleEndGame}
-                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                  className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm sm:text-base"
                 >
-                  Oyunu Bitir
+                  Bitir
                 </button>
               )}
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Waiting State */}
             {game.status === "waiting" && (
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-12 border border-white/20 text-center">
-                <div className="mb-6">
-                  <div className="text-6xl font-bold text-white mb-4">{game.gameCode}</div>
-                  <p className="text-xl text-gray-300">
+              <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-6 sm:p-12 border border-white/20 text-center">
+                <div className="mb-4 sm:mb-6">
+                  <div className="text-4xl sm:text-6xl font-bold text-white mb-3 sm:mb-4">{game.gameCode}</div>
+                  <p className="text-base sm:text-xl text-gray-300">
                     Oyuncular bu kodu kullanarak katılabilir
                   </p>
-                  <p className="text-gray-400 mt-2">
+                  <p className="text-sm sm:text-base text-gray-400 mt-2">
                     gdgoncampustrakya.com/game
                   </p>
                 </div>
@@ -274,25 +274,25 @@ export default function HostGamePage() {
                 <button
                   onClick={handleStartGame}
                   disabled={playerCount === 0}
-                  className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg transition-colors font-bold text-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg transition-colors font-bold text-base sm:text-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Oyunu Başlat ({playerCount} Oyuncu)
+                  Oyunu Başlat ({playerCount})
                 </button>
               </div>
             )}
 
             {/* Playing State */}
             {game.status === "playing" && currentQuestion && !showResults && (
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Timer */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-gray-300">Kalan Süre</span>
-                    <div className="text-5xl font-bold text-white">
+                <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
+                    <span className="text-sm sm:text-base text-gray-300">Kalan Süre</span>
+                    <div className="text-3xl sm:text-5xl font-bold text-white">
                       {timeLeft}s
                     </div>
                   </div>
-                  <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+                  <div className="w-full bg-gray-700 rounded-full h-3 sm:h-4 overflow-hidden">
                     <div
                       className={`h-full transition-all duration-1000 ${
                         timeLeft > 10 ? "bg-green-500" : timeLeft > 5 ? "bg-yellow-500" : "bg-red-500"
@@ -305,10 +305,10 @@ export default function HostGamePage() {
                 </div>
 
                 {/* Question */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
+                <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-8 border border-white/20">
                   {/* Question Image */}
                   {currentQuestion.imageUrl && (
-                    <div className="mb-6">
+                    <div className="mb-4 sm:mb-6">
                       <img
                         src={currentQuestion.imageUrl}
                         alt="Question"
@@ -317,11 +317,11 @@ export default function HostGamePage() {
                     </div>
                   )}
 
-                  <h2 className="text-3xl font-bold text-white mb-6">
+                  <h2 className="text-xl sm:text-3xl font-bold text-white mb-4 sm:mb-6">
                     {currentQuestion.question}
                   </h2>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {currentQuestion.options.map((option, index) => {
                       const colors = [
                         "from-red-500 to-pink-500",
@@ -333,7 +333,7 @@ export default function HostGamePage() {
                       return (
                         <div
                           key={index}
-                          className={`bg-gradient-to-r ${colors[index]} p-6 rounded-xl text-white font-semibold text-lg`}
+                          className={`bg-gradient-to-r ${colors[index]} p-4 sm:p-6 rounded-xl text-white font-semibold text-sm sm:text-lg`}
                         >
                           {option}
                         </div>
@@ -343,16 +343,16 @@ export default function HostGamePage() {
                 </div>
 
                 {/* Answer Stats */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-white font-semibold">Cevaplayan</span>
-                    <span className="text-2xl font-bold text-white">
+                <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
+                    <span className="text-sm sm:text-base text-white font-semibold">Cevaplayan</span>
+                    <span className="text-xl sm:text-2xl font-bold text-white">
                       {questionStats.totalAnswers}/{connectedPlayerCount}
                     </span>
                   </div>
                   <button
                     onClick={handleShowResults}
-                    className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-semibold"
+                    className="w-full py-2 sm:py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-semibold text-sm sm:text-base"
                   >
                     Sonuçları Göster
                   </button>
@@ -362,12 +362,12 @@ export default function HostGamePage() {
 
             {/* Results State */}
             {(game.status === "question_review" || showResults) && currentQuestion && (
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Correct Answer */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
+                <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-8 border border-white/20">
                   {/* Question Image */}
                   {currentQuestion.imageUrl && (
-                    <div className="mb-6">
+                    <div className="mb-4 sm:mb-6">
                       <img
                         src={currentQuestion.imageUrl}
                         alt="Question"
@@ -376,11 +376,11 @@ export default function HostGamePage() {
                     </div>
                   )}
 
-                  <h2 className="text-2xl font-bold text-white mb-6">
+                  <h2 className="text-lg sm:text-2xl font-bold text-white mb-4 sm:mb-6">
                     {currentQuestion.question}
                   </h2>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {currentQuestion.options.map((option, index) => {
                       const isCorrect = index === currentQuestion.correctAnswer;
                       const answerCount = questionStats.optionCounts?.[index] || 0;
@@ -391,16 +391,16 @@ export default function HostGamePage() {
                       return (
                         <div
                           key={index}
-                          className={`p-6 rounded-xl border-4 ${
+                          className={`p-4 sm:p-6 rounded-xl border-4 ${
                             isCorrect
                               ? "bg-green-500/30 border-green-500"
                               : "bg-gray-700/30 border-gray-600"
                           }`}
                         >
-                          <div className="text-white font-semibold text-lg mb-2">
+                          <div className="text-white font-semibold text-sm sm:text-lg mb-1 sm:mb-2">
                             {option}
                           </div>
-                          <div className="text-gray-300">
+                          <div className="text-xs sm:text-base text-gray-300">
                             {answerCount} cevap ({percentage}%)
                           </div>
                         </div>
@@ -408,8 +408,8 @@ export default function HostGamePage() {
                     })}
                   </div>
 
-                  <div className="mt-6 text-center text-white">
-                    <div className="text-lg">
+                  <div className="mt-4 sm:mt-6 text-center text-white">
+                    <div className="text-sm sm:text-lg">
                       ✅ Doğru: {questionStats.correctCount} / {questionStats.totalAnswers}
                     </div>
                   </div>
@@ -418,7 +418,7 @@ export default function HostGamePage() {
                 {/* Next Button */}
                 <button
                   onClick={handleNextQuestion}
-                  className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-colors font-bold text-xl"
+                  className="w-full py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-colors font-bold text-base sm:text-xl"
                 >
                   {game.currentQuestion + 1 >= game.totalQuestions
                     ? "Oyunu Bitir"
@@ -429,13 +429,13 @@ export default function HostGamePage() {
 
             {/* Finished State */}
             {game.status === "finished" && (
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-12 border border-white/20 text-center">
-                <div className="text-6xl mb-4">🎉</div>
-                <h2 className="text-4xl font-bold text-white mb-4">Oyun Bitti!</h2>
-                <p className="text-xl text-gray-300 mb-8">Kazananları görmek için yan paneli kontrol edin</p>
+              <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-6 sm:p-12 border border-white/20 text-center">
+                <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🎉</div>
+                <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">Oyun Bitti!</h2>
+                <p className="text-base sm:text-xl text-gray-300 mb-6 sm:mb-8">Kazananları görmek için yan paneli kontrol edin</p>
                 <button
                   onClick={handleDeleteAndExit}
-                  className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-colors font-bold text-xl"
+                  className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-colors font-bold text-base sm:text-xl"
                 >
                   Quiz Yönetimine Dön
                 </button>
@@ -444,16 +444,16 @@ export default function HostGamePage() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Leaderboard */}
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-              <h3 className="text-2xl font-bold text-white mb-4">🏆 Sıralama</h3>
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
+              <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">🏆 Sıralama</h3>
               {leaderboard.length > 0 ? (
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {leaderboard.slice(0, 10).map((player, index) => (
                     <div
                       key={player.userId}
-                      className={`p-3 rounded-lg ${
+                      className={`p-2 sm:p-3 rounded-lg ${
                         index === 0
                           ? "bg-yellow-500/20 border border-yellow-500"
                           : index === 1
@@ -464,12 +464,12 @@ export default function HostGamePage() {
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl font-bold text-white">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <span className="text-lg sm:text-2xl font-bold text-white">
                             {index + 1}
                           </span>
                           <div>
-                            <div className="text-white font-semibold">
+                            <div className="text-sm sm:text-base text-white font-semibold truncate max-w-[120px] sm:max-w-none">
                               {player.name}
                             </div>
                             <div className="text-xs text-gray-400">
@@ -477,7 +477,7 @@ export default function HostGamePage() {
                             </div>
                           </div>
                         </div>
-                        <div className="text-xl font-bold text-white">
+                        <div className="text-lg sm:text-xl font-bold text-white">
                           {player.score}
                         </div>
                       </div>
@@ -485,22 +485,22 @@ export default function HostGamePage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-400 text-center">Henüz sıralama yok</p>
+                <p className="text-sm sm:text-base text-gray-400 text-center">Henüz sıralama yok</p>
               )}
             </div>
 
             {/* Players */}
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4">
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">
                 👥 Oyuncular ({connectedPlayerCount})
               </h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
+              <div className="space-y-2 max-h-48 sm:max-h-64 overflow-y-auto">
                 {Object.values(players).map((player) => (
                   <div
                     key={player.userId}
                     className="flex items-center justify-between p-2 bg-white/5 rounded-lg"
                   >
-                    <span className="text-white">{player.name}</span>
+                    <span className="text-xs sm:text-sm text-white truncate max-w-[150px] sm:max-w-none">{player.name}</span>
                     <span
                       className={`w-2 h-2 rounded-full ${
                         player.isConnected ? "bg-green-500" : "bg-red-500"

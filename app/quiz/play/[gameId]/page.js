@@ -182,37 +182,37 @@ export default function PlayGamePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
       {/* Header */}
-      <div className="bg-black/30 backdrop-blur-sm p-4">
+      <div className="bg-black/30 backdrop-blur-sm p-3 sm:p-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="text-white font-bold text-xl">{game.quizTitle}</div>
-            <div className="text-gray-400">
-              Soru {game.currentQuestion + 1}/{game.totalQuestions}
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="text-white font-bold text-sm sm:text-xl truncate max-w-[120px] sm:max-w-none">{game.quizTitle}</div>
+            <div className="text-gray-400 text-xs sm:text-base">
+              {game.currentQuestion + 1}/{game.totalQuestions}
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {playerRank && (
-              <div className="text-yellow-400 font-bold">
+              <div className="text-yellow-400 font-bold text-sm sm:text-base">
                 #{playerRank}
               </div>
             )}
-            <div className="text-white font-bold text-xl">
-              {playerScore} puan
+            <div className="text-white font-bold text-sm sm:text-xl">
+              {playerScore} <span className="hidden sm:inline">puan</span><span className="sm:hidden">p</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-3 sm:p-6">
         <div className="max-w-4xl mx-auto">
           {/* Waiting State */}
           {game.status === "waiting" && (
-            <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-12 border border-white/20 text-center">
-              <div className="text-6xl mb-6">⏳</div>
-              <h2 className="text-4xl font-bold text-white mb-4">
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-6 sm:p-12 border border-white/20 text-center">
+              <div className="text-4xl sm:text-6xl mb-4 sm:mb-6">⏳</div>
+              <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
                 Oyun Başlamayı Bekliyor...
               </h2>
-              <p className="text-xl text-gray-300">
+              <p className="text-base sm:text-xl text-gray-300">
                 Host oyunu başlattığında sorular görünecek
               </p>
             </div>
@@ -220,12 +220,12 @@ export default function PlayGamePage() {
 
           {/* Playing State */}
           {game.status === "playing" && currentQuestion && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Timer & Question */}
-              <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="text-white/70">Kalan Süre</div>
-                  <div className={`text-5xl font-bold ${
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-white/20">
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <div className="text-white/70 text-sm sm:text-base">Kalan Süre</div>
+                  <div className={`text-3xl sm:text-5xl font-bold ${
                     timeLeft <= 5 ? "text-red-500" : "text-white"
                   }`}>
                     {timeLeft}s
@@ -234,7 +234,7 @@ export default function PlayGamePage() {
 
                 {/* Question Image */}
                 {currentQuestion.imageUrl && (
-                  <div className="mb-6">
+                  <div className="mb-4 sm:mb-6">
                     <img
                       src={currentQuestion.imageUrl}
                       alt="Question"
@@ -243,25 +243,25 @@ export default function PlayGamePage() {
                   </div>
                 )}
 
-                <h2 className="text-3xl font-bold text-white text-center">
+                <h2 className="text-xl sm:text-3xl font-bold text-white text-center">
                   {currentQuestion.question}
                 </h2>
               </div>
 
               {/* Answer Status */}
               {hasAnswered ? (
-                <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20 text-center">
-                  <div className="text-6xl mb-4">✓</div>
-                  <h3 className="text-2xl font-bold text-white mb-2">
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-white/20 text-center">
+                  <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">✓</div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
                     Cevabınız Alındı!
                   </h3>
-                  <p className="text-gray-300">
+                  <p className="text-sm sm:text-base text-gray-300">
                     Sonuçları görmek için diğer oyuncuları bekleyin
                   </p>
                 </div>
               ) : (
                 /* Options */
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {currentQuestion.options.map((option, index) => (
                     <button
                       key={index}
@@ -269,15 +269,15 @@ export default function PlayGamePage() {
                       disabled={hasAnswered || timeLeft <= 0}
                       className={`
                         bg-gradient-to-r ${optionColors[index]}
-                        p-8 rounded-2xl text-white font-bold text-xl
+                        p-4 sm:p-8 rounded-xl sm:rounded-2xl text-white font-bold text-base sm:text-xl
                         hover:scale-105 active:scale-95 transition-all
                         disabled:opacity-50 disabled:cursor-not-allowed
-                        flex items-center justify-center gap-4
+                        flex items-center justify-center gap-2 sm:gap-4
                         ${selectedAnswer === index ? "ring-4 ring-white" : ""}
                       `}
                     >
-                      <span className="text-4xl">{optionShapes[index]}</span>
-                      <span>{option}</span>
+                      <span className="text-2xl sm:text-4xl">{optionShapes[index]}</span>
+                      <span className="text-sm sm:text-xl">{option}</span>
                     </button>
                   ))}
                 </div>
@@ -287,53 +287,53 @@ export default function PlayGamePage() {
 
           {/* Question Review State */}
           {game.status === "question_review" && currentQuestion && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Result */}
-              <div className={`bg-white/10 backdrop-blur-lg rounded-3xl p-12 border border-white/20 text-center ${
+              <div className={`bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-6 sm:p-12 border border-white/20 text-center ${
                 selectedAnswer === currentQuestion.correctAnswer
                   ? "border-green-500"
                   : "border-red-500"
               }`}>
-                <div className="text-6xl mb-4">
+                <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">
                   {selectedAnswer === currentQuestion.correctAnswer ? "🎉" : "😔"}
                 </div>
-                <h2 className="text-4xl font-bold text-white mb-4">
+                <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
                   {selectedAnswer === currentQuestion.correctAnswer
                     ? "Doğru Cevap!"
                     : "Yanlış Cevap"}
                 </h2>
-                <p className="text-xl text-gray-300">
+                <p className="text-base sm:text-xl text-gray-300">
                   Doğru cevap: {currentQuestion.options[currentQuestion.correctAnswer]}
                 </p>
               </div>
 
               {/* Leaderboard Preview */}
               {leaderboard.length > 0 && (
-                <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20">
-                  <h3 className="text-2xl font-bold text-white mb-4 text-center">
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-white/20">
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 text-center">
                     🏆 İlk 5
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {leaderboard.slice(0, 5).map((player, index) => {
                       const isCurrentPlayer = player.userId === user.uid;
                       return (
                         <div
                           key={player.userId}
-                          className={`flex items-center justify-between p-3 rounded-lg ${
+                          className={`flex items-center justify-between p-2 sm:p-3 rounded-lg ${
                             isCurrentPlayer
                               ? "bg-purple-500/30 border border-purple-500"
                               : "bg-white/5"
                           }`}
                         >
-                          <div className="flex items-center gap-3">
-                            <span className="text-2xl font-bold text-white">
+                          <div className="flex items-center gap-2 sm:gap-3">
+                            <span className="text-xl sm:text-2xl font-bold text-white">
                               {index + 1}
                             </span>
-                            <span className="text-white font-semibold">
+                            <span className="text-sm sm:text-base text-white font-semibold truncate max-w-[150px] sm:max-w-none">
                               {player.name}
                             </span>
                           </div>
-                          <span className="text-xl font-bold text-white">
+                          <span className="text-lg sm:text-xl font-bold text-white">
                             {player.score}
                           </span>
                         </div>
@@ -343,7 +343,7 @@ export default function PlayGamePage() {
                 </div>
               )}
 
-              <div className="text-center text-gray-300">
+              <div className="text-center text-sm sm:text-base text-gray-300">
                 Sonraki soruyu bekleyin...
               </div>
             </div>
@@ -351,17 +351,17 @@ export default function PlayGamePage() {
 
           {/* Finished State */}
           {game.status === "finished" && (
-            <div className="space-y-6">
-              <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-12 border border-white/20 text-center">
-                <div className="text-6xl mb-6">🎊</div>
-                <h2 className="text-4xl font-bold text-white mb-4">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-6 sm:p-12 border border-white/20 text-center">
+                <div className="text-4xl sm:text-6xl mb-4 sm:mb-6">🎊</div>
+                <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
                   Oyun Bitti!
                 </h2>
-                <div className="text-3xl font-bold text-purple-400 mb-2">
+                <div className="text-2xl sm:text-3xl font-bold text-purple-400 mb-2">
                   {playerScore} Puan
                 </div>
                 {playerRank && (
-                  <div className="text-xl text-gray-300">
+                  <div className="text-lg sm:text-xl text-gray-300">
                     Sıralamanız: #{playerRank}
                   </div>
                 )}
@@ -369,17 +369,17 @@ export default function PlayGamePage() {
 
               {/* Final Leaderboard */}
               {leaderboard.length > 0 && (
-                <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20">
-                  <h3 className="text-3xl font-bold text-white mb-6 text-center">
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-white/20">
+                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 text-center">
                     🏆 Final Sıralaması
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {leaderboard.map((player, index) => {
                       const isCurrentPlayer = player.userId === user.uid;
                       return (
                         <div
                           key={player.userId}
-                          className={`flex items-center justify-between p-4 rounded-lg ${
+                          className={`flex items-center justify-between p-3 sm:p-4 rounded-lg ${
                             index === 0
                               ? "bg-yellow-500/20 border-2 border-yellow-500"
                               : index === 1
@@ -391,20 +391,20 @@ export default function PlayGamePage() {
                               : "bg-white/5"
                           }`}
                         >
-                          <div className="flex items-center gap-4">
-                            <span className="text-3xl font-bold text-white w-12">
+                          <div className="flex items-center gap-2 sm:gap-4">
+                            <span className="text-2xl sm:text-3xl font-bold text-white w-8 sm:w-12">
                               {index + 1}
                             </span>
                             <div>
-                              <div className="text-white font-bold text-lg">
+                              <div className="text-sm sm:text-lg text-white font-bold truncate max-w-[150px] sm:max-w-none">
                                 {player.name}
                               </div>
-                              <div className="text-sm text-gray-400">
+                              <div className="text-xs sm:text-sm text-gray-400">
                                 ✅ {player.correctAnswers}/{game.totalQuestions} doğru
                               </div>
                             </div>
                           </div>
-                          <div className="text-2xl font-bold text-white">
+                          <div className="text-xl sm:text-2xl font-bold text-white">
                             {player.score}
                           </div>
                         </div>
@@ -416,7 +416,7 @@ export default function PlayGamePage() {
 
               <button
                 onClick={() => router.push("/quiz/join")}
-                className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl transition-colors font-bold text-xl"
+                className="w-full py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl transition-colors font-bold text-lg sm:text-xl"
               >
                 Yeni Oyuna Katıl
               </button>

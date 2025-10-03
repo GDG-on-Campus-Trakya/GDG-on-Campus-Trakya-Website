@@ -329,15 +329,15 @@ export default function CreateQuizPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-3 sm:p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Quiz Oluştur</h1>
-          <p className="text-gray-300">Yeni bir canlı quiz'i oluşturun</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2">Quiz Oluştur</h1>
+          <p className="text-sm sm:text-base text-gray-300">Yeni bir canlı quiz'i oluşturun</p>
         </div>
 
         {/* Import/Export Buttons */}
-        <div className="flex gap-3 mb-6">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6">
           <input
             type="file"
             ref={fileInputRef}
@@ -348,7 +348,7 @@ export default function CreateQuizPage() {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            className="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm sm:text-base"
           >
             📥 JSON Import
           </button>
@@ -356,47 +356,47 @@ export default function CreateQuizPage() {
             type="button"
             onClick={exportToJSON}
             disabled={!quizTitle || questions.length === 0}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50"
+            className="w-full sm:w-auto px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 text-sm sm:text-base"
           >
             📤 JSON Export
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           {/* Quiz Info */}
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-            <h2 className="text-2xl font-bold text-white mb-4">Quiz Bilgileri</h2>
+          <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">Quiz Bilgileri</h2>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div>
-                <label className="block text-white mb-2">Başlık *</label>
+                <label className="block text-white mb-2 text-sm sm:text-base">Başlık *</label>
                 <input
                   type="text"
                   value={quizTitle}
                   onChange={(e) => setQuizTitle(e.target.value)}
-                  className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 sm:px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500 text-sm sm:text-base"
                   placeholder="Quiz başlığını girin"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-white mb-2">Açıklama</label>
+                <label className="block text-white mb-2 text-sm sm:text-base">Açıklama</label>
                 <textarea
                   value={quizDescription}
                   onChange={(e) => setQuizDescription(e.target.value)}
-                  className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 sm:px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500 text-sm sm:text-base"
                   placeholder="Quiz açıklaması (opsiyonel)"
                   rows="3"
                 />
               </div>
 
               <div>
-                <label className="block text-white mb-2">Kategori</label>
+                <label className="block text-white mb-2 text-sm sm:text-base">Kategori</label>
                 <select
                   value={quizCategory}
                   onChange={(e) => setQuizCategory(e.target.value)}
-                  className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 sm:px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500 text-sm sm:text-base"
                 >
                   <option value="Genel">Genel</option>
                   <option value="Teknoloji">Teknoloji</option>
@@ -414,25 +414,25 @@ export default function CreateQuizPage() {
           {questions.map((q, qIndex) => (
             <div
               key={qIndex}
-              className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20"
+              className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20"
             >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-white">Soru {qIndex + 1}</h3>
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 className="text-lg sm:text-xl font-bold text-white">Soru {qIndex + 1}</h3>
                 {questions.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removeQuestion(qIndex)}
-                    className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                    className="px-2 sm:px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm"
                   >
                     Sil
                   </button>
                 )}
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {/* Image Upload */}
                 <div>
-                  <label className="block text-white mb-2">Soru Görseli (Opsiyonel)</label>
+                  <label className="block text-white mb-2 text-sm sm:text-base">Soru Görseli (Opsiyonel)</label>
                   {q.imageUrl ? (
                     <div className="relative">
                       <img
@@ -474,27 +474,27 @@ export default function CreateQuizPage() {
                 </div>
 
                 <div>
-                  <label className="block text-white mb-2">Soru Metni *</label>
+                  <label className="block text-white mb-2 text-sm sm:text-base">Soru Metni *</label>
                   <input
                     type="text"
                     value={q.question}
                     onChange={(e) => updateQuestion(qIndex, "question", e.target.value)}
-                    className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                    className="w-full px-3 sm:px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500 text-sm sm:text-base"
                     placeholder="Soruyu girin"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-white mb-2">Seçenekler *</label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <label className="block text-white mb-2 text-sm sm:text-base">Seçenekler *</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
                     {q.options.map((opt, oIndex) => (
                       <div key={oIndex} className="relative">
                         <input
                           type="text"
                           value={opt}
                           onChange={(e) => updateOption(qIndex, oIndex, e.target.value)}
-                          className={`w-full px-4 py-2 pr-10 bg-white/5 border rounded-lg text-white focus:outline-none ${
+                          className={`w-full px-3 sm:px-4 py-2 pr-10 bg-white/5 border rounded-lg text-white focus:outline-none text-sm sm:text-base ${
                             q.correctAnswer === oIndex
                               ? "border-green-500 bg-green-500/10"
                               : "border-white/20"
@@ -505,7 +505,7 @@ export default function CreateQuizPage() {
                         <button
                           type="button"
                           onClick={() => updateQuestion(qIndex, "correctAnswer", oIndex)}
-                          className={`absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full ${
+                          className={`absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full text-xs ${
                             q.correctAnswer === oIndex
                               ? "bg-green-500"
                               : "bg-white/20 hover:bg-white/30"
@@ -522,30 +522,30 @@ export default function CreateQuizPage() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="block text-white mb-2">Süre (saniye) *</label>
+                    <label className="block text-white mb-2 text-sm sm:text-base">Süre (saniye) *</label>
                     <input
                       type="number"
                       value={q.timeLimit}
                       onChange={(e) =>
                         updateQuestion(qIndex, "timeLimit", parseInt(e.target.value))
                       }
-                      className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                      className="w-full px-3 sm:px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500 text-sm sm:text-base"
                       min="5"
                       max="120"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-white mb-2">Puan</label>
+                    <label className="block text-white mb-2 text-sm sm:text-base">Puan</label>
                     <input
                       type="number"
                       value={q.points}
                       onChange={(e) =>
                         updateQuestion(qIndex, "points", parseInt(e.target.value))
                       }
-                      className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                      className="w-full px-3 sm:px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500 text-sm sm:text-base"
                       min="100"
                       max="2000"
                       step="100"
@@ -561,17 +561,17 @@ export default function CreateQuizPage() {
           <button
             type="button"
             onClick={addQuestion}
-            className="w-full py-3 bg-white/10 hover:bg-white/20 border-2 border-dashed border-white/30 text-white rounded-lg transition-colors"
+            className="w-full py-2 sm:py-3 bg-white/10 hover:bg-white/20 border-2 border-dashed border-white/30 text-white rounded-lg transition-colors text-sm sm:text-base"
           >
             + Soru Ekle
           </button>
 
           {/* Submit Buttons */}
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <button
               type="button"
               onClick={() => router.push("/admin/quiz/manage")}
-              className="flex-1 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              className="w-full sm:flex-1 py-2 sm:py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors text-sm sm:text-base"
               disabled={uploading}
             >
               İptal
@@ -579,7 +579,7 @@ export default function CreateQuizPage() {
             <button
               type="submit"
               disabled={uploading}
-              className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-colors font-semibold disabled:opacity-50"
+              className="w-full sm:flex-1 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-colors font-semibold disabled:opacity-50 text-sm sm:text-base"
             >
               {uploading ? "Yükleniyor..." : "Quiz Oluştur"}
             </button>
