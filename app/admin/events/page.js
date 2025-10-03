@@ -379,6 +379,7 @@ export default function AdminEventsPage() {
         },
         body: JSON.stringify({
           eventId: eventId,
+          adminEmail: user.email, // Pass admin's email for verification
         }),
       });
 
