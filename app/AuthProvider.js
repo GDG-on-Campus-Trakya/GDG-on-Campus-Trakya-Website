@@ -16,7 +16,7 @@ export default function AuthProvider({ children }) {
 
           if (!userSnap.exists()) {
             await setDoc(userRef, {
-              name: user.displayName || "New User",
+              name: user.displayName || user.email?.split('@')[0] || "New User",
               email: user.email,
               wantsToGetEmails: true,
               language: "tr",

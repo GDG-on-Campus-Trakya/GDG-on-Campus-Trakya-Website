@@ -352,10 +352,10 @@ function NavbarContent() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={loginWithGoogle}
+            onClick={() => router.push('/login')}
             onTouchEnd={(e) => {
               e.preventDefault();
-              loginWithGoogle();
+              router.push('/login');
             }}
             className="px-3 sm:px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg text-white font-semibold transition duration-300 text-sm sm:text-base touch-manipulation select-none"
           >
