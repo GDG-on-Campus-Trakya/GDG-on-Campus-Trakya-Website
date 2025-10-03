@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { auth, db } from "../../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { logger } from "@/utils/logger";
 import {
   collection,
   getDocs,
@@ -38,7 +39,7 @@ export default function AdminEventStatsPage() {
           router.push("/");
         }
       } catch (error) {
-        console.error("Error checking admin privileges:", error);
+        logger.error("Error checking admin privileges:", error);
         router.push("/");
       }
     };
@@ -142,7 +143,7 @@ export default function AdminEventStatsPage() {
         setEventStats(statsWithCategory);
         setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching event stats:", error);
+        logger.error("Error fetching event stats:", error);
         setIsLoading(false);
       }
     };
@@ -267,7 +268,7 @@ export default function AdminEventStatsPage() {
       setEventStats(statsWithCategory);
       setIsLoading(false);
     } catch (error) {
-      console.error("Error fetching event stats:", error);
+      logger.error("Error fetching event stats:", error);
       setIsLoading(false);
     }
   };

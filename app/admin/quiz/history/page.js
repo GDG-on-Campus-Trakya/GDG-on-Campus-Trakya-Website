@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../../../firebase";
+import { logger } from "@/utils/logger";
 import {
   collection,
   getDocs,
@@ -62,7 +63,7 @@ export default function GameHistoryPage() {
 
       setGameResults(results);
     } catch (error) {
-      console.error("Error fetching game results:", error);
+      logger.error("Error fetching game results:", error);
       toast.error("Oyun geçmişi yüklenirken hata oluştu!");
     } finally {
       setLoadingResults(false);

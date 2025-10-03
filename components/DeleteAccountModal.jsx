@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
+import { logger } from "@/utils/logger";
 import { 
   collection, 
   query, 
@@ -162,7 +163,7 @@ const DeleteAccountModal = ({ isOpen, onClose }) => {
             router.push("/");
             onClose();
           } catch (reauthError) {
-            console.error("Reauthentication error:", reauthError);
+            logger.error("Reauthentication error:", reauthError);
             if (reauthError.code === 'auth/popup-closed-by-user') {
               toast.error("Tekrar giriş işlemi iptal edildi. Güvenlik nedeniyle çıkış yapılıyor...");
             } else {
@@ -178,7 +179,7 @@ const DeleteAccountModal = ({ isOpen, onClose }) => {
       }
 
     } catch (error) {
-      console.error("Error deleting account:", error);
+      logger.error("Error deleting account:", error);
       toast.error("Hesap silinirken bir hata oluştu. Lütfen tekrar deneyin.");
     } finally {
       setIsDeleting(false);

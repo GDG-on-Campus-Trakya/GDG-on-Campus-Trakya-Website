@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import { uploadImage } from '../utils/storageUtils';
 import { toast } from 'react-toastify';
+import { logger } from "@/utils/logger";
 
 const ImageUpload = ({ 
   onImageUpload, 
@@ -32,7 +33,7 @@ const ImageUpload = ({
       
       toast.success('Resim başarıyla yüklendi!');
     } catch (error) {
-      console.error('Resim yükleme hatası:', error);
+      logger.error('Resim yükleme hatası:', error);
       toast.error(error.message || 'Resim yüklenirken hata oluştu');
       setPreviewUrl(currentImageUrl);
     } finally {

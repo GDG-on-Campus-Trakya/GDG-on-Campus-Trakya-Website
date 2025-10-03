@@ -7,6 +7,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
+import { logger } from "@/utils/logger";
 
 export default function PostUpload({ onUploadComplete, onCancel }) {
   const [user] = useAuthState(auth);
@@ -33,7 +34,7 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
         setUserProfileData(userDoc.data());
       }
     } catch (error) {
-      console.error("Error loading user profile:", error);
+      logger.error("Error loading user profile:", error);
     }
   };
 
@@ -126,7 +127,7 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
       reader.readAsDataURL(compressedFile);
     } catch (error) {
       toast.error("Resim sıkıştırılırken hata oluştu!");
-      console.error("Compression error:", error);
+      logger.error("Compression error:", error);
     }
   };
 
@@ -219,7 +220,7 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
       onUploadComplete && onUploadComplete();
       
     } catch (error) {
-      console.error("Upload error:", error);
+      logger.error("Upload error:", error);
       toast.error("Beklenmeyen bir hata oluştu!");
     }
     

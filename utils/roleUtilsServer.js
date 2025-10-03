@@ -1,5 +1,6 @@
 import 'server-only';
 import { getFirestore } from './firebaseAdmin';
+import { logger } from './logger';
 
 export const ROLES = {
   ADMIN: "admin",
@@ -12,7 +13,7 @@ export const checkUserRoleServer = async (userEmail) => {
   try {
     const db = getFirestore();
     if (!db) {
-      console.error('Firebase Admin not initialized');
+      logger.error('Firebase Admin not initialized');
       return null;
     }
 
@@ -26,7 +27,7 @@ export const checkUserRoleServer = async (userEmail) => {
 
     return null;
   } catch (error) {
-    console.error("Error checking user role (server):", error);
+    logger.error("Error checking user role (server):", error);
     return null;
   }
 };

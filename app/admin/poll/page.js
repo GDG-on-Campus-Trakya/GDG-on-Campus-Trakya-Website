@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { createPoll, getPollResults } from "../../../utils/pollUtils";
+import { logger } from "@/utils/logger";
 import { getAllDatasets } from "../../../utils/datasetUtils";
 
 export default function PollAdminPage() {
@@ -47,7 +48,7 @@ export default function PollAdminPage() {
       const datasets = await getAllDatasets();
       setSavedDatasets(datasets);
     } catch (error) {
-      console.error("Error loading datasets:", error);
+      logger.error("Error loading datasets:", error);
       toast.error("Veri setleri yüklenirken hata oluştu!");
     }
   };
@@ -71,7 +72,7 @@ export default function PollAdminPage() {
       const results = await getPollResults(50);
       setPollHistory(results);
     } catch (error) {
-      console.error("Error loading poll history:", error);
+      logger.error("Error loading poll history:", error);
       toast.error("Geçmiş yüklenirken hata oluştu!");
     }
     setLoadingHistory(false);
@@ -143,7 +144,7 @@ export default function PollAdminPage() {
 
       toast.success("Poll oluşturuldu!");
     } catch (error) {
-      console.error("Error creating poll:", error);
+      logger.error("Error creating poll:", error);
       toast.error("Poll oluşturulurken hata oluştu!");
     }
 

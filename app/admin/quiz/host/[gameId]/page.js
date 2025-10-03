@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { checkUserRole } from "../../../../../utils/roleUtils";
+import { logger } from "@/utils/logger";
 import {
   subscribeToGame,
   subscribeToPlayers,
@@ -139,7 +140,7 @@ export default function HostGamePage() {
       setShowResults(false);
       toast.success("Oyun başladı!");
     } catch (error) {
-      console.error("Error starting game:", error);
+      logger.error("Error starting game:", error);
       toast.error("Oyun başlatılırken hata oluştu!");
     }
   };
@@ -150,7 +151,7 @@ export default function HostGamePage() {
       await updateLeaderboard(gameId);
       setShowResults(true);
     } catch (error) {
-      console.error("Error showing results:", error);
+      logger.error("Error showing results:", error);
       toast.error("Sonuçlar gösterilirken hata oluştu!");
     }
   };
@@ -168,7 +169,7 @@ export default function HostGamePage() {
       setShowResults(false);
       toast.success("Sonraki soru!");
     } catch (error) {
-      console.error("Error moving to next question:", error);
+      logger.error("Error moving to next question:", error);
       toast.error("Sonraki soruya geçilirken hata oluştu!");
     }
   };
@@ -180,7 +181,7 @@ export default function HostGamePage() {
       await endGame(gameId);
       toast.success("Oyun sonlandı!");
     } catch (error) {
-      console.error("Error ending game:", error);
+      logger.error("Error ending game:", error);
       toast.error("Oyun sonlandırılırken hata oluştu!");
     }
   };
@@ -193,7 +194,7 @@ export default function HostGamePage() {
       toast.success("Oyun silindi!");
       router.push("/admin/quiz/manage");
     } catch (error) {
-      console.error("Error deleting game:", error);
+      logger.error("Error deleting game:", error);
       toast.error("Oyun silinirken hata oluştu!");
     }
   };

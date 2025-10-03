@@ -3,6 +3,7 @@ import { createRateLimitMiddleware } from '../../../utils/rateLimiter';
 import { logDataAccess, AUDIT_EVENTS } from '../../../utils/auditLog';
 import { collection, query, orderBy, limit, where, getDocs, startAfter, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
+import { logger } from '../../../utils/logger';
 
 const rateLimitMiddleware = createRateLimitMiddleware({
   type: 'api',
@@ -139,7 +140,7 @@ const handler = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Get audit logs error:', error);
+    logger.error('Get audit logs error:', error);
     
     await logDataAccess(
       req.user.email,

@@ -2,6 +2,7 @@
 import { useState, useRef } from "react";
 import { uploadImage } from "../utils/storageUtils";
 import { toast } from "react-toastify";
+import { logger } from "@/utils/logger";
 
 const ProfileImageUpload = ({
   onImageUpload,
@@ -33,7 +34,7 @@ const ProfileImageUpload = ({
       onImageUpload(result);
       toast.success("Profil fotoğrafı başarıyla güncellendi!");
     } catch (error) {
-      console.error("Profil fotoğrafı yükleme hatası:", error);
+      logger.error("Profil fotoğrafı yükleme hatası:", error);
 
       // More specific error messages
       if (error.code === "storage/unauthorized") {

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { auth, db } from "../../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { logger } from "@/utils/logger";
 import {
   collection,
   getDocs,
@@ -43,7 +44,7 @@ export default function AdminRegistrationsPage() {
           router.push("/");
         }
       } catch (error) {
-        console.error("Error checking admin privileges:", error);
+        logger.error("Error checking admin privileges:", error);
         router.push("/");
       }
     };
@@ -97,7 +98,7 @@ export default function AdminRegistrationsPage() {
           setUsersMap(usersData);
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        logger.error("Error fetching data:", error);
       }
     };
 
@@ -124,7 +125,7 @@ export default function AdminRegistrationsPage() {
       );
       toast.success("Kayıt başarıyla silindi.");
     } catch (error) {
-      console.error("Error removing registration:", error);
+      logger.error("Error removing registration:", error);
       toast.error("Kayıt silinirken bir hata oluştu. Lütfen tekrar deneyin.");
     }
   };

@@ -5,6 +5,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { logger } from "@/utils/logger";
 
 export default function TicketsPage() {
   const [user, loading] = useAuthState(auth);
@@ -63,7 +64,7 @@ export default function TicketsPage() {
           }));
         });
       } catch (err) {
-        console.error("Error subscribing to ticket:", err);
+        logger.error("Error subscribing to ticket:", err);
       }
     })();
     return () => {
@@ -114,7 +115,7 @@ export default function TicketsPage() {
 
       setTickets(ticketsData);
     } catch (error) {
-      console.error("Error fetching tickets:", error);
+      logger.error("Error fetching tickets:", error);
       toast.error("Biletler yüklenirken bir hata oluştu");
     } finally {
       setIsLoading(false);
@@ -166,7 +167,7 @@ export default function TicketsPage() {
 
       return recentTickets.length < 5; // Max 5 tickets per day
     } catch (error) {
-      console.error("Error checking rate limit:", error);
+      logger.error("Error checking rate limit:", error);
       return true; // Allow if check fails
     }
   };
@@ -197,7 +198,7 @@ export default function TicketsPage() {
 
       return recentReopens.length < 5; // Max 5 reopens per day
     } catch (error) {
-      console.error("Error checking reopen rate limit:", error);
+      logger.error("Error checking reopen rate limit:", error);
       return true; // Allow if check fails
     }
   };
@@ -250,7 +251,7 @@ export default function TicketsPage() {
       fetchUserTickets(); // Refresh the tickets
       return true;
     } catch (error) {
-      console.error("Error reopening ticket:", error);
+      logger.error("Error reopening ticket:", error);
       toast.error("Bilet yeniden açılırken bir hata oluştu");
       return false;
     }
@@ -334,9 +335,12 @@ export default function TicketsPage() {
     const success = await reopenTicket(selectedTicketId, reopenReason);
 
     if (success) {
-      setShowReopenModal(false);
-      setSelectedTicketId(null);
-      setReopenReason("");
+      // Toast'ın görünmesi için modal'ı kapatmadan önce kısa bir gecikme ekle
+      setTimeout(() => {
+        setShowReopenModal(false);
+        setSelectedTicketId(null);
+        setReopenReason("");
+      }, 100);
     }
     setIsReopening(false);
   };
@@ -384,7 +388,7 @@ export default function TicketsPage() {
       setReplyMessage("");
       // fetchUserTickets(); // Modal açık kalacak, ticket güncellenmesi live olacak
     } catch (error) {
-      console.error("Error sending reply:", error);
+      logger.error("Error sending reply:", error);
       toast.error("Yanıt gönderilirken bir hata oluştu");
     } finally {
       setIsSubmittingReply(false);
@@ -463,7 +467,7 @@ export default function TicketsPage() {
       setShowForm(false);
       fetchUserTickets();
     } catch (error) {
-      console.error("Error submitting ticket:", error);
+      logger.error("Error submitting ticket:", error);
       toast.error("Bilet gönderilirken bir hata oluştu");
     } finally {
       setIsSubmitting(false);

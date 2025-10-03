@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { db } from "../../../firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { logger } from "@/utils/logger";
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -26,7 +27,7 @@ export async function POST(request) {
 
     // Enhanced credential validation
     if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
-      console.error("Missing email credentials in environment variables");
+      logger.error("Missing email credentials in environment variables");
       return NextResponse.json(
         { message: "Server configuration error" },
         { status: 500 }
@@ -64,7 +65,7 @@ export async function POST(request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Email sending error:", error);
+    logger.error("Email sending error:", error);
     return NextResponse.json(
       {
         message: "Failed to send email",

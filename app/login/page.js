@@ -12,6 +12,7 @@ import {
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { logger } from "@/utils/logger";
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -75,7 +76,7 @@ export default function LoginPage() {
     } catch (error) {
       // Only log in development mode
       if (process.env.NODE_ENV === 'development') {
-        console.error("Authentication error:", error);
+        logger.error("Authentication error:", error);
       }
       
       switch (error.code) {
@@ -138,7 +139,7 @@ export default function LoginPage() {
     } catch (error) {
       // Only log in development mode
       if (process.env.NODE_ENV === 'development') {
-        console.error("Google sign-in error:", error);
+        logger.error("Google sign-in error:", error);
       }
       
       if (error.code === 'auth/popup-blocked') {
@@ -166,7 +167,7 @@ export default function LoginPage() {
     } catch (error) {
       // Only log in development mode
       if (process.env.NODE_ENV === 'development') {
-        console.error("Password reset error:", error);
+        logger.error("Password reset error:", error);
       }
       
       switch (error.code) {

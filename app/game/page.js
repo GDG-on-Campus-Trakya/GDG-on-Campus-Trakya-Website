@@ -6,6 +6,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { logger } from "@/utils/logger";
 import { findGameByCode, addPlayerToGame } from "../../utils/quizUtils";
 import { findPollByCode, addPlayerToPoll } from "../../utils/pollUtils";
 import { debounce, withTimeout, isSafari } from "../../utils/debounce";
@@ -121,7 +122,7 @@ export default function GameJoinPage() {
       toast.error("Oyun bulunamadı! Kodu kontrol edin.");
       setJoining(false);
     } catch (error) {
-      console.error("Error joining game:", error);
+      logger.error("Error joining game:", error);
       const errorMessage = error.message === "İşlem çok uzun sürdü. Lütfen tekrar deneyin."
         ? error.message
         : "Oyuna katılırken hata oluştu!";

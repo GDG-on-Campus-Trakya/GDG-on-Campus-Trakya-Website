@@ -4,6 +4,7 @@ import { logAdminAction, AUDIT_EVENTS } from '../../../utils/auditLog';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { ROLES } from '../../../utils/roleUtils';
+import { logger } from '../../../utils/logger';
 
 const rateLimitMiddleware = createRateLimitMiddleware({
   type: 'admin',
@@ -98,7 +99,7 @@ const handler = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Update role error:', error);
+    logger.error('Update role error:', error);
     
     await logAdminAction(
       req.user.email,

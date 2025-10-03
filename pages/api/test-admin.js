@@ -1,5 +1,6 @@
 // Test endpoint - Firebase Admin bağlantısını kontrol eder
 import { getAuth, isFirebaseAdminAvailable } from '../../utils/firebaseAdmin';
+import { logger } from '../../utils/logger';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -51,7 +52,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Firebase Admin test error:', error);
+    logger.error('Firebase Admin test error:', error);
     
     return res.status(500).json({
       error: 'Firebase Admin test failed',

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../../firebase";
 import { useRouter } from "next/navigation";
+import { logger } from "@/utils/logger";
 import {
   collection,
   getDocs,
@@ -52,7 +53,7 @@ export default function AdminUsersPage() {
         })
       );
     } catch (error) {
-      console.error("Error fetching users:", error);
+      logger.error("Error fetching users:", error);
     }
   };
 
@@ -113,7 +114,7 @@ export default function AdminUsersPage() {
       resetUserForm();
       toast.success("Kullanıcı başarıyla eklendi!");
     } catch (error) {
-      console.error("Error adding user:", error);
+      logger.error("Error adding user:", error);
       toast.error("Kullanıcı eklenirken bir hata oluştu!");
     }
   };
@@ -157,7 +158,7 @@ export default function AdminUsersPage() {
       resetUserForm();
       toast.success("Kullanıcı başarıyla güncellendi!");
     } catch (error) {
-      console.error("Error updating user:", error);
+      logger.error("Error updating user:", error);
       toast.error("Kullanıcı güncellenirken bir hata oluştu!");
     }
   };
@@ -199,7 +200,7 @@ export default function AdminUsersPage() {
       );
       toast.success("Kullanıcı ve ilgili kayıtları başarıyla silindi!");
     } catch (error) {
-      console.error("Error deleting user:", error);
+      logger.error("Error deleting user:", error);
       toast.error("Kullanıcı silinirken bir hata oluştu!");
     }
   };

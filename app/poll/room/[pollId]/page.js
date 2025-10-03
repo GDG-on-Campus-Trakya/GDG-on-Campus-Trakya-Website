@@ -5,6 +5,7 @@ import { auth } from "../../../../firebase";
 import { useRouter, useParams } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { logger } from "@/utils/logger";
 import {
   subscribeToPoll,
   subscribeToPlayers,
@@ -94,7 +95,7 @@ export default function PollRoomPage() {
       await submitVote(pollId, playerId, poll.currentMatchIndex, choice);
       toast.success("Oyunuz kaydedildi!");
     } catch (error) {
-      console.error("Error submitting vote:", error);
+      logger.error("Error submitting vote:", error);
       toast.error("Oy gönderilirken hata oluştu!");
       setHasVoted(false);
       setSelectedChoice(null);

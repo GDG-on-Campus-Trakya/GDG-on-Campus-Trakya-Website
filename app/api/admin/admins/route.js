@@ -2,6 +2,7 @@ import 'server-only';
 import { NextResponse } from "next/server";
 import { getFirestore } from "../../../../utils/firebaseAdmin";
 import { withAuth } from "../../../../middleware/adminAuthApp";
+import { logger } from "@/utils/logger";
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -26,7 +27,7 @@ export async function GET(request) {
 
       return NextResponse.json({ admins });
     } catch (error) {
-      console.error('Error fetching admins:', error);
+      logger.error('Error fetching admins:', error);
       return NextResponse.json(
         { error: 'Failed to fetch admins' },
         { status: 500 }
@@ -68,7 +69,7 @@ export async function POST(request) {
         message: 'Admin added successfully'
       });
     } catch (error) {
-      console.error('Error adding admin:', error);
+      logger.error('Error adding admin:', error);
       return NextResponse.json(
         { error: 'Failed to add admin' },
         { status: 500 }
@@ -114,7 +115,7 @@ export async function DELETE(request) {
         message: 'Admin removed successfully'
       });
     } catch (error) {
-      console.error('Error removing admin:', error);
+      logger.error('Error removing admin:', error);
       return NextResponse.json(
         { error: 'Failed to remove admin' },
         { status: 500 }
@@ -163,7 +164,7 @@ export async function PUT(request) {
         message: 'Admin role updated successfully'
       });
     } catch (error) {
-      console.error('Error updating admin role:', error);
+      logger.error('Error updating admin role:', error);
       return NextResponse.json(
         { error: 'Failed to update admin role' },
         { status: 500 }

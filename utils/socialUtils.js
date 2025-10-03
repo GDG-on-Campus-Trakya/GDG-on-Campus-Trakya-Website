@@ -18,6 +18,7 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { db, storage } from "../firebase";
+import { logger } from "./logger";
 
 export const socialUtils = {
   // Post Operations
@@ -36,7 +37,7 @@ export const socialUtils = {
       });
       return { success: true, id: docRef.id };
     } catch (error) {
-      console.error("Error creating post:", error);
+      logger.error("Error creating post:", error);
       return { success: false, error: error.message };
     }
   },
@@ -78,7 +79,7 @@ export const socialUtils = {
 
       return { success: true, posts, lastDoc: querySnapshot.docs[querySnapshot.docs.length - 1] };
     } catch (error) {
-      console.error("Error fetching posts:", error);
+      logger.error("Error fetching posts:", error);
       return { success: false, error: error.message };
     }
   },
@@ -111,7 +112,7 @@ export const socialUtils = {
         return { success: true, action: "liked" };
       }
     } catch (error) {
-      console.error("Error toggling like:", error);
+      logger.error("Error toggling like:", error);
       return { success: false, error: error.message };
     }
   },
@@ -131,7 +132,7 @@ export const socialUtils = {
             const imageRef = ref(storage, postData.imageUrl);
             await deleteObject(imageRef);
           } catch (storageError) {
-            console.warn("Error deleting image from storage:", storageError);
+            logger.warn("Error deleting image from storage:", storageError);
           }
         }
       }
@@ -140,7 +141,7 @@ export const socialUtils = {
       await deleteDoc(postRef);
       return { success: true };
     } catch (error) {
-      console.error("Error deleting post:", error);
+      logger.error("Error deleting post:", error);
       return { success: false, error: error.message };
     }
   },
@@ -151,7 +152,7 @@ export const socialUtils = {
       await updateDoc(postRef, { isHidden: hidden });
       return { success: true };
     } catch (error) {
-      console.error("Error hiding post:", error);
+      logger.error("Error hiding post:", error);
       return { success: false, error: error.message };
     }
   },
@@ -169,7 +170,7 @@ export const socialUtils = {
 
       return { success: true, url: downloadURL };
     } catch (error) {
-      console.error("Error uploading image:", error);
+      logger.error("Error uploading image:", error);
       return { success: false, error: error.message };
     }
   },
@@ -223,7 +224,7 @@ export const socialUtils = {
 
       return { success: true, events };
     } catch (error) {
-      console.error("Error fetching active events:", error);
+      logger.error("Error fetching active events:", error);
       return { success: false, error: error.message };
     }
   },
@@ -289,7 +290,7 @@ export const socialUtils = {
 
       return { success: true, message: "Added to raffle successfully" };
     } catch (error) {
-      console.error("Error adding to raffle:", error);
+      logger.error("Error adding to raffle:", error);
       return { success: false, error: error.message };
     }
   },
@@ -317,7 +318,7 @@ export const socialUtils = {
 
       return { success: true, id: docRef.id, comment: commentData };
     } catch (error) {
-      console.error("Error adding comment:", error);
+      logger.error("Error adding comment:", error);
       return { success: false, error: error.message };
     }
   },
@@ -351,7 +352,7 @@ export const socialUtils = {
                 };
               }
             } catch (error) {
-              console.error("Error loading comment user profile:", error);
+              logger.error("Error loading comment user profile:", error);
             }
           }
           return comment;
@@ -367,7 +368,7 @@ export const socialUtils = {
 
       return { success: true, comments: sortedComments };
     } catch (error) {
-      console.error("Error fetching comments:", error);
+      logger.error("Error fetching comments:", error);
       return { success: false, error: error.message };
     }
   },
@@ -384,7 +385,7 @@ export const socialUtils = {
 
       return { success: true };
     } catch (error) {
-      console.error("Error deleting comment:", error);
+      logger.error("Error deleting comment:", error);
       return { success: false, error: error.message };
     }
   },
@@ -417,7 +418,7 @@ export const socialUtils = {
         lastDoc: querySnapshot.docs[querySnapshot.docs.length - 1] 
       };
     } catch (error) {
-      console.error("Error fetching announcements:", error);
+      logger.error("Error fetching announcements:", error);
       return { success: false, error: error.message };
     }
   },
@@ -461,7 +462,7 @@ export const socialUtils = {
         lastDoc: postsResult.lastDoc // Use posts lastDoc for pagination
       };
     } catch (error) {
-      console.error("Error fetching combined feed:", error);
+      logger.error("Error fetching combined feed:", error);
       return { success: false, error: error.message };
     }
   },
@@ -488,7 +489,7 @@ export const socialUtils = {
 
       return { success: true, stats };
     } catch (error) {
-      console.error("Error getting post stats:", error);
+      logger.error("Error getting post stats:", error);
       return { success: false, error: error.message };
     }
   },

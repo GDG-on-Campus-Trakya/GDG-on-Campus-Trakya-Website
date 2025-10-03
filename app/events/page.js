@@ -2,6 +2,7 @@
 // events/page.js
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../firebase";
+import { logger } from "@/utils/logger";
 import {
   addDoc,
   collection,
@@ -162,7 +163,7 @@ function EventsPageContent() {
         const querySnapshot = await getDocs(signupQuery);
         setHasSignedUp(!querySnapshot.empty);
       } catch (error) {
-        console.error("Error checking signup status:", error);
+        logger.error("Error checking signup status:", error);
       }
     };
 
@@ -236,7 +237,7 @@ function EventsPageContent() {
       toast.success("Etkinliğe başarıyla kayıt oldunuz!");
       setHasSignedUp(true);
     } catch (error) {
-      console.error("Error signing up for event:", error);
+      logger.error("Error signing up for event:", error);
       toast.error("Kayıt olurken bir hata oluştu. Lütfen tekrar deneyin.");
     }
   };
@@ -269,7 +270,7 @@ function EventsPageContent() {
           toast.error("Geçersiz QR kod.");
         }
       } catch (error) {
-        console.error("Error handling QR code redirect:", error);
+        logger.error("Error handling QR code redirect:", error);
         toast.error("QR kod işlenirken bir hata oluştu.");
       }
     }
@@ -302,7 +303,7 @@ function EventsPageContent() {
           setSponsors([]);
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        logger.error("Error fetching data:", error);
         // Set empty arrays to prevent undefined errors
         setEvents([]);
         setSponsors([]);

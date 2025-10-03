@@ -1,5 +1,6 @@
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import { logger } from "./logger";
 
 export const ROLES = {
   ADMIN: "admin",
@@ -20,7 +21,7 @@ export const checkUserRole = async (userEmail) => {
     
     return null;
   } catch (error) {
-    console.error("Error checking user role:", error);
+    logger.error("Error checking user role:", error);
     return null;
   }
 };

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import QRCode from "qrcode";
 import { getFirestore } from "../../../utils/firebaseAdmin";
 import { v4 as uuidv4 } from "uuid";
+import { logger } from "@/utils/logger";
 
 export async function POST(request) {
   try {
@@ -69,7 +70,7 @@ export async function POST(request) {
 
     return NextResponse.json({ qrCodeDataURL, qrCodeId });
   } catch (error) {
-    console.error(error);
+    logger.error("QR Code generation error:", error);
     return NextResponse.json(
       { message: "Failed to generate QR code.", error: error.message },
       { status: 500 }

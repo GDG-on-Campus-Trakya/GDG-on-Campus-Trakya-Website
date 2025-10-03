@@ -1,4 +1,5 @@
 // Cookie consent utility functions
+import { logger } from './logger';
 
 export const CONSENT_KEY = 'cookieConsent';
 
@@ -16,7 +17,7 @@ export async function getCookieConsent(userEmail = null) {
       return JSON.parse(localConsent);
     }
   } catch (error) {
-    console.error('Error reading cookie consent from localStorage:', error);
+    logger.error('Error reading cookie consent from localStorage:', error);
   }
 
   // If user is logged in, also try to fetch from Firestore
@@ -35,7 +36,7 @@ export async function getCookieConsent(userEmail = null) {
         return firestoreConsent;
       }
     } catch (error) {
-      console.error('Error reading cookie consent from Firestore:', error);
+      logger.error('Error reading cookie consent from Firestore:', error);
     }
   }
 
@@ -105,7 +106,7 @@ export async function saveCookieConsent(preferences, userEmail = null) {
           updatedAt: serverTimestamp()
         });
       } catch (error) {
-        console.error('Error saving cookie consent to Firestore:', error);
+        logger.error('Error saving cookie consent to Firestore:', error);
         // Continue anyway since we have localStorage
       }
     }
@@ -117,7 +118,7 @@ export async function saveCookieConsent(preferences, userEmail = null) {
 
     return consent;
   } catch (error) {
-    console.error('Error saving cookie consent:', error);
+    logger.error('Error saving cookie consent:', error);
     return null;
   }
 }
@@ -136,7 +137,7 @@ export async function clearNonNecessaryCookies(userEmail = null) {
     try {
       sessionStorage.removeItem('auditSessionId');
     } catch (error) {
-      console.error('Error clearing session storage:', error);
+      logger.error('Error clearing session storage:', error);
     }
   }
 }
@@ -158,9 +159,9 @@ export function initializeCookieConsent() {
 
     // Reload analytics if consent changed
     if (consent.analytics) {
-      console.log('Analytics enabled');
+      logger.log('Analytics enabled');
     } else {
-      console.log('Analytics disabled');
+      logger.log('Analytics disabled');
     }
   });
 }

@@ -2,6 +2,7 @@ import 'server-only';
 import { NextResponse } from 'next/server';
 import { verifyIdToken } from '../utils/firebaseAdmin';
 import { checkUserRoleServer, ROLES } from '../utils/roleUtilsServer';
+import { logger } from '../utils/logger';
 
 // Rate limiting için basit in-memory store
 const attempts = new Map();
@@ -44,7 +45,7 @@ export const requireAuth = async (request) => {
     return { user: decodedToken };
 
   } catch (error) {
-    console.error('Auth verification failed:', error);
+    logger.error('Auth verification failed:', error);
     return NextResponse.json(
       { error: 'Invalid authentication token', code: 'INVALID_TOKEN' },
       { status: 401 }
@@ -77,7 +78,7 @@ export const requireAdmin = async (request) => {
     return { user: { ...authResult.user, role } };
 
   } catch (error) {
-    console.error('Admin auth failed:', error);
+    logger.error('Admin auth failed:', error);
     return NextResponse.json(
       { error: 'Authentication service error', code: 'AUTH_SERVICE_ERROR' },
       { status: 500 }
@@ -110,7 +111,7 @@ export const requireEventManager = async (request) => {
     return { user: { ...authResult.user, role } };
 
   } catch (error) {
-    console.error('Event Manager auth failed:', error);
+    logger.error('Event Manager auth failed:', error);
     return NextResponse.json(
       { error: 'Authentication service error', code: 'AUTH_SERVICE_ERROR' },
       { status: 500 }
@@ -143,7 +144,7 @@ export const requireAdminOrEventManager = async (request) => {
     return { user: { ...authResult.user, role } };
 
   } catch (error) {
-    console.error('Role auth failed:', error);
+    logger.error('Role auth failed:', error);
     return NextResponse.json(
       { error: 'Authentication service error', code: 'AUTH_SERVICE_ERROR' },
       { status: 500 }
@@ -180,7 +181,7 @@ export const withAuth = (handler, authType = 'auth') => {
       return await handler(request, authResult.user);
 
     } catch (error) {
-      console.error('Middleware error:', error);
+      logger.error('Middleware error:', error);
       return NextResponse.json(
         { error: 'Server error', code: 'MIDDLEWARE_ERROR' },
         { status: 500 }

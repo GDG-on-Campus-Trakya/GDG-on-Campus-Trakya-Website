@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { auth, db } from "../../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { logger } from "@/utils/logger";
 import {
   doc,
   getDoc,
@@ -36,7 +37,7 @@ export default function AdminQRVerificationPage() {
         const adminSnap = await getDoc(adminRef);
         setIsAdmin(adminSnap.exists());
       } catch (error) {
-        console.error("Error checking admin privileges:", error);
+        logger.error("Error checking admin privileges:", error);
         setIsAdmin(false);
       }
     };
@@ -66,7 +67,7 @@ export default function AdminQRVerificationPage() {
             await scanner.stop();
           }
         } catch (stopError) {
-          console.log("Scanner was already stopped");
+          logger.log("Scanner was already stopped");
         }
         setScanner(null);
       }
@@ -82,24 +83,24 @@ export default function AdminQRVerificationPage() {
         },
         async (decodedText) => {
           try {
-            console.log("Found QR code:", decodedText);
+            logger.log("Found QR code:", decodedText);
             setQRCodeData(decodedText);
             await html5QrCode.stop();
             setScanning(false);
             await verifyQRCode(decodedText);
           } catch (error) {
-            console.error("Error processing QR code:", error);
+            logger.error("Error processing QR code:", error);
             setError("Error processing QR code. Please try again.");
           }
         },
         (errorMessage) => {
           // if (!errorMessage.includes("NotFoundException")) {
-          //   console.log("QR code parse error, error =", errorMessage);
+          //   logger.log("QR code parse error, error =", errorMessage);
           // }
         }
       );
     } catch (error) {
-      console.error("Error starting scanner:", error);
+      logger.error("Error starting scanner:", error);
       setError(
         "Unable to access camera. Please ensure you've granted camera permissions."
       );
@@ -117,7 +118,7 @@ export default function AdminQRVerificationPage() {
 
   const verifyQRCode = async (data) => {
     try {
-      console.log("Verifying QR code:", data);
+      logger.log("Verifying QR code:", data);
       const match = data.match(/qrCode=([^,\s]+)/);
       const qrCodeId = match ? match[1] : null;
 
@@ -211,11 +212,11 @@ export default function AdminQRVerificationPage() {
         );
         toast.success("Katılım başarıyla kaydedildi!");
       } catch (firestoreError) {
-        console.error("Firestore error:", firestoreError);
+        logger.error("Firestore error:", firestoreError);
         setVerificationResult("Database error during verification");
       }
     } catch (error) {
-      console.error("Error verifying QR code:", error);
+      logger.error("Error verifying QR code:", error);
       setVerificationResult("Error verifying QR code");
       toast.error("QR kod işlenirken bir hata oluştu!");
     }

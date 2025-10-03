@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { auth } from "../firebase";
 import { checkUserRole, canAccessPage } from "../utils/roleUtils";
 import { logSecurityEvent, AUDIT_EVENTS } from "../utils/auditLog";
+import { logger } from "@/utils/logger";
 
 export default function AdminProtection({ children, requiredRole = null }) {
   const [user, loading] = useAuthState(auth);
@@ -75,7 +76,7 @@ export default function AdminProtection({ children, requiredRole = null }) {
         hasChecked.current = true;
         
       } catch (error) {
-        console.error("Access check failed:", error);
+        logger.error("Access check failed:", error);
         await logSecurityEvent(AUDIT_EVENTS.SYSTEM_ERROR, {
           action: 'access_check_failed',
           error: error.message,

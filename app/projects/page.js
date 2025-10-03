@@ -6,6 +6,7 @@ import { db } from "../../firebase";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { motion } from "framer-motion";
 import { ToastContainer } from "react-toastify";
+import { logger } from "@/utils/logger";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function ProjectsPage() {
@@ -27,7 +28,7 @@ export default function ProjectsPage() {
           }))
         );
       } catch (error) {
-        console.error("Error fetching projects:", error);
+        logger.error("Error fetching projects:", error);
       } finally {
         setLoading(false);
       }

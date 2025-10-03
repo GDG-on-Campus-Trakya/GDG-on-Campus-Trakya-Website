@@ -1,6 +1,7 @@
 import { ref, set, get, update, remove, onValue, off } from "firebase/database";
 import { collection, addDoc, Timestamp, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { realtimeDb, db } from "../firebase";
+import { logger } from "./logger";
 
 /**
  * Generate a unique 6-digit poll code
@@ -150,7 +151,7 @@ export const findPollByCode = async (pollCode) => {
 
     return null;
   } catch (error) {
-    console.error('Error finding poll by code:', error);
+    logger.error('Error finding poll by code:', error);
     return null;
   }
 };
@@ -453,10 +454,10 @@ export const savePollResults = async (pollId) => {
     const resultsRef = collection(db, "pollResults");
     const docRef = await addDoc(resultsRef, resultData);
 
-    console.log("Poll results saved to Firestore:", docRef.id);
+    // logger.log("Poll results saved to Firestore:", docRef.id);
     return docRef.id;
   } catch (error) {
-    console.error("Error saving poll results:", error);
+    logger.error("Error saving poll results:", error);
     throw error;
   }
 };
@@ -476,13 +477,13 @@ export const endPoll = async (pollId) => {
     setTimeout(async () => {
       try {
         await deletePoll(pollId);
-        console.log(`Poll ${pollId} cleaned up from Realtime DB`);
+        // logger.log(`Poll ${pollId} cleaned up from Realtime DB`);
       } catch (error) {
-        console.error("Failed to cleanup poll from Realtime DB:", error);
+        logger.error("Failed to cleanup poll from Realtime DB:", error);
       }
     }, 30000); // Wait 30 seconds before cleanup
   } catch (error) {
-    console.error("Failed to save poll results:", error);
+    logger.error("Failed to save poll results:", error);
   }
 };
 
@@ -562,7 +563,7 @@ export const getPollResults = async (limitCount = 20) => {
       ...doc.data()
     }));
   } catch (error) {
-    console.error("Error fetching poll results:", error);
+    logger.error("Error fetching poll results:", error);
     return [];
   }
 };

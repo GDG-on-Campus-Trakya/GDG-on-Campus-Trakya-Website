@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { auth, db } from "../../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { logger } from "@/utils/logger";
 import {
   collection,
   getDocs,
@@ -51,7 +52,7 @@ export default function AdminSponsorsPage() {
           router.push("/");
         }
       } catch (error) {
-        console.error("Error checking admin privileges:", error);
+        logger.error("Error checking admin privileges:", error);
         router.push("/");
       }
     };
@@ -72,7 +73,7 @@ export default function AdminSponsorsPage() {
         }))
       );
     } catch (error) {
-      console.error("Error fetching sponsors:", error);
+      logger.error("Error fetching sponsors:", error);
     }
   };
 
@@ -126,7 +127,7 @@ export default function AdminSponsorsPage() {
       resetSponsorForm();
       toast.success("Sponsor başarıyla eklendi!");
     } catch (error) {
-      console.error("Error adding sponsor:", error);
+      logger.error("Error adding sponsor:", error);
       toast.error("Sponsor eklenirken bir hata oluştu!");
     }
   };
@@ -160,7 +161,7 @@ export default function AdminSponsorsPage() {
       resetSponsorForm();
       toast.success("Sponsor başarıyla güncellendi!");
     } catch (error) {
-      console.error("Error updating sponsor:", error);
+      logger.error("Error updating sponsor:", error);
       toast.error("Sponsor güncellenirken bir hata oluştu!");
     }
   };
@@ -181,7 +182,7 @@ export default function AdminSponsorsPage() {
       );
       toast.success("Sponsor başarıyla silindi!");
     } catch (error) {
-      console.error("Error deleting sponsor:", error);
+      logger.error("Error deleting sponsor:", error);
       toast.error("Sponsor silinirken bir hata oluştu!");
     }
   };

@@ -5,6 +5,7 @@ import { auth } from "../../../../../firebase";
 import { useRouter, useParams } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { logger } from "@/utils/logger";
 import {
   findPollByCode,
   subscribeToPoll,
@@ -86,7 +87,7 @@ export default function PollHostPage() {
       await startCurrentMatch(pollId);
       toast.success("Poll başlatıldı!");
     } catch (error) {
-      console.error("Error starting poll:", error);
+      logger.error("Error starting poll:", error);
       toast.error("Poll başlatılırken hata oluştu!");
     }
   };
@@ -102,7 +103,7 @@ export default function PollHostPage() {
 
       toast.success("Sonuçlar gösteriliyor!");
     } catch (error) {
-      console.error("Error showing results:", error);
+      logger.error("Error showing results:", error);
       toast.error("Sonuçlar gösterilirken hata oluştu!");
     }
     setCheckingVotes(false);
@@ -123,7 +124,7 @@ export default function PollHostPage() {
         toast.success("Sonraki eşleşme!");
       }
     } catch (error) {
-      console.error("Error moving to next match:", error);
+      logger.error("Error moving to next match:", error);
       toast.error("Sonraki eşleşmeye geçilirken hata oluştu!");
     }
   };
@@ -135,7 +136,7 @@ export default function PollHostPage() {
       await endPoll(pollId);
       toast.success("Poll sonlandırıldı!");
     } catch (error) {
-      console.error("Error ending poll:", error);
+      logger.error("Error ending poll:", error);
       toast.error("Poll sonlandırılırken hata oluştu!");
     }
   };

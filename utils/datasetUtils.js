@@ -1,6 +1,7 @@
 import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc, Timestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { db, storage } from "../firebase";
+import { logger } from "./logger";
 
 /**
  * Create a new dataset
@@ -18,7 +19,7 @@ export const createDataset = async (datasetData) => {
 
     return docRef.id;
   } catch (error) {
-    console.error("Error creating dataset:", error);
+    logger.error("Error creating dataset:", error);
     throw error;
   }
 };
@@ -40,7 +41,7 @@ export const uploadDatasetImage = async (file, datasetId) => {
 
     return url;
   } catch (error) {
-    console.error("Error uploading image:", error);
+    logger.error("Error uploading image:", error);
     throw error;
   }
 };
@@ -59,7 +60,7 @@ export const getAllDatasets = async () => {
       ...doc.data()
     }));
   } catch (error) {
-    console.error("Error fetching datasets:", error);
+    logger.error("Error fetching datasets:", error);
     throw error;
   }
 };
@@ -77,7 +78,7 @@ export const updateDataset = async (datasetId, updates) => {
       updatedAt: Timestamp.now()
     });
   } catch (error) {
-    console.error("Error updating dataset:", error);
+    logger.error("Error updating dataset:", error);
     throw error;
   }
 };
@@ -94,7 +95,7 @@ export const deleteDataset = async (datasetId) => {
     // Note: Images in storage won't be auto-deleted
     // You may want to implement cleanup logic
   } catch (error) {
-    console.error("Error deleting dataset:", error);
+    logger.error("Error deleting dataset:", error);
     throw error;
   }
 };
@@ -115,7 +116,7 @@ export const addItemToDataset = async (datasetId, item) => {
       updatedAt: Timestamp.now()
     });
   } catch (error) {
-    console.error("Error adding item to dataset:", error);
+    logger.error("Error adding item to dataset:", error);
     throw error;
   }
 };
@@ -138,7 +139,7 @@ export const removeItemFromDataset = async (datasetId, itemId) => {
       updatedAt: Timestamp.now()
     });
   } catch (error) {
-    console.error("Error removing item from dataset:", error);
+    logger.error("Error removing item from dataset:", error);
     throw error;
   }
 };

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../../../firebase";
+import { logger } from "@/utils/logger";
 import {
   collection,
   getDocs,
@@ -63,7 +64,7 @@ export default function ManageQuizzesPage() {
 
       setQuizzes(quizzesData);
     } catch (error) {
-      console.error("Error fetching quizzes:", error);
+      logger.error("Error fetching quizzes:", error);
       toast.error("Quiz'ler yüklenirken hata oluştu!");
     } finally {
       setLoadingQuizzes(false);
@@ -93,7 +94,7 @@ export default function ManageQuizzesPage() {
       toast.success("Oyun başlatıldı!");
       router.push(`/admin/quiz/host/${gameId}`);
     } catch (error) {
-      console.error("Error starting game:", error);
+      logger.error("Error starting game:", error);
       toast.error("Oyun başlatılırken hata oluştu!");
     }
   };
@@ -115,7 +116,7 @@ export default function ManageQuizzesPage() {
         !currentStatus ? "Quiz aktif edildi!" : "Quiz pasif edildi!"
       );
     } catch (error) {
-      console.error("Error toggling quiz status:", error);
+      logger.error("Error toggling quiz status:", error);
       toast.error("Durum değiştirilirken hata oluştu!");
     }
   };
@@ -128,7 +129,7 @@ export default function ManageQuizzesPage() {
       setQuizzes(quizzes.filter((q) => q.id !== quizId));
       toast.success("Quiz silindi!");
     } catch (error) {
-      console.error("Error deleting quiz:", error);
+      logger.error("Error deleting quiz:", error);
       toast.error("Quiz silinirken hata oluştu!");
     }
   };

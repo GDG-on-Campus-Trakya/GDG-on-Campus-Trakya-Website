@@ -1,6 +1,7 @@
 import 'server-only';
 import admin from 'firebase-admin';
 import { checkUserRole, ROLES } from '../utils/roleUtils';
+import { logger } from '../utils/logger';
 
 // Initialize Firebase Admin with secure credentials
 const initializeFirebaseAdmin = () => {
@@ -31,7 +32,7 @@ const initializeFirebaseAdmin = () => {
         // Development with service account file
         credential = admin.credential.applicationDefault();
       } else {
-        console.warn('⚠️ Firebase Admin not initialized - missing credentials');
+        logger.warn('⚠️ Firebase Admin not initialized - missing credentials');
         return false;
       }
     }
@@ -43,7 +44,7 @@ const initializeFirebaseAdmin = () => {
     
     return true;
   } catch (error) {
-    console.error('Firebase Admin initialization failed:', error);
+    logger.error('Firebase Admin initialization failed:', error);
     return false;
   }
 };
@@ -95,7 +96,7 @@ export const requireAuth = async (req, res, next) => {
     return decodedToken;
     
   } catch (error) {
-    console.error('Auth verification failed:', error);
+    logger.error('Auth verification failed:', error);
     return res.status(401).json({ 
       error: 'Invalid authentication token',
       code: 'INVALID_TOKEN' 
@@ -122,7 +123,7 @@ export const requireAdmin = async (req, res, next) => {
       if (next) next();
     });
   } catch (error) {
-    console.error('Admin auth failed:', error);
+    logger.error('Admin auth failed:', error);
     return res.status(500).json({ 
       error: 'Authentication service error',
       code: 'AUTH_SERVICE_ERROR'
@@ -149,7 +150,7 @@ export const requireEventManager = async (req, res, next) => {
       if (next) next();
     });
   } catch (error) {
-    console.error('Event Manager auth failed:', error);
+    logger.error('Event Manager auth failed:', error);
     return res.status(500).json({ 
       error: 'Authentication service error',
       code: 'AUTH_SERVICE_ERROR'
@@ -176,7 +177,7 @@ export const requireAdminOrEventManager = async (req, res, next) => {
       if (next) next();
     });
   } catch (error) {
-    console.error('Role auth failed:', error);
+    logger.error('Role auth failed:', error);
     return res.status(500).json({ 
       error: 'Authentication service error',
       code: 'AUTH_SERVICE_ERROR'
@@ -209,7 +210,7 @@ export const withAuth = (handler, authType = 'auth') => {
       });
       
     } catch (error) {
-      console.error('Middleware error:', error);
+      logger.error('Middleware error:', error);
       return res.status(500).json({ 
         error: 'Server error',
         code: 'MIDDLEWARE_ERROR'

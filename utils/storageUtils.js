@@ -11,6 +11,7 @@ import {
   validateImageFile,
   generateFileName,
 } from "./imageUtils";
+import { logger } from "./logger";
 
 export const uploadImage = async (file, folder = "images", prefix = "") => {
   try {
@@ -44,7 +45,7 @@ export const uploadImage = async (file, folder = "images", prefix = "") => {
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         },
         (error) => {
-          console.error("Upload error:", error);
+          logger.error("Upload error:", error);
           reject(error);
         },
         async () => {
@@ -62,7 +63,7 @@ export const uploadImage = async (file, folder = "images", prefix = "") => {
       );
     });
   } catch (error) {
-    console.error("Resim yükleme hatası:", error);
+    logger.error("Resim yükleme hatası:", error);
     throw error;
   }
 };
@@ -73,7 +74,7 @@ export const deleteImage = async (imagePath) => {
     await deleteObject(imageRef);
     return true;
   } catch (error) {
-    console.error("Resim silme hatası:", error);
+    logger.error("Resim silme hatası:", error);
     throw error;
   }
 };

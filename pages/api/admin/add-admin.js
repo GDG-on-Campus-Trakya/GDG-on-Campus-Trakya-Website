@@ -4,6 +4,7 @@ import { logAdminAction, AUDIT_EVENTS } from '../../../utils/auditLog';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { ROLES } from '../../../utils/roleUtils';
+import { logger } from '../../../utils/logger';
 
 // Rate limiting middleware
 const rateLimitMiddleware = createRateLimitMiddleware({
@@ -88,7 +89,7 @@ const handler = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Add admin error:', error);
+    logger.error('Add admin error:', error);
     
     await logAdminAction(
       req.user.email,

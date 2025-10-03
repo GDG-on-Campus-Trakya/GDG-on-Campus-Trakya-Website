@@ -5,6 +5,7 @@ import { auth } from "../../../../firebase";
 import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { logger } from "@/utils/logger";
 import {
   createDataset,
   uploadDatasetImage,
@@ -48,7 +49,7 @@ export default function DatasetsPage() {
       const data = await getAllDatasets();
       setDatasets(data);
     } catch (error) {
-      console.error("Error loading datasets:", error);
+      logger.error("Error loading datasets:", error);
       toast.error("Veri setleri yüklenirken hata oluştu!");
     }
     setLoadingDatasets(false);
@@ -148,7 +149,7 @@ export default function DatasetsPage() {
       resetForm();
       loadDatasets();
     } catch (error) {
-      console.error("Error creating dataset:", error);
+      logger.error("Error creating dataset:", error);
       toast.error("Veri seti oluşturulurken hata oluştu!");
     }
 
@@ -163,7 +164,7 @@ export default function DatasetsPage() {
       toast.success("Veri seti silindi!");
       loadDatasets();
     } catch (error) {
-      console.error("Error deleting dataset:", error);
+      logger.error("Error deleting dataset:", error);
       toast.error("Veri seti silinirken hata oluştu!");
     }
   };

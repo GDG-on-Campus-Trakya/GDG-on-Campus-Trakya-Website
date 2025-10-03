@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { collection, getDocs, query, where, limit } from "firebase/firestore";
 import { db } from "../firebase";
 import { motion, AnimatePresence } from "framer-motion";
+import { logger } from "@/utils/logger";
 
 const UserMentionInput = ({ onUserSelect, selectedUsers = [], placeholder = "Kullanıcı emaili ile ara..." }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -60,7 +61,7 @@ const UserMentionInput = ({ onUserSelect, selectedUsers = [], placeholder = "Kul
         setSearchResults(filteredUsers);
         setShowDropdown(filteredUsers.length > 0);
       } catch (error) {
-        console.error("Error searching users:", error);
+        logger.error("Error searching users:", error);
         setSearchResults([]);
         setShowDropdown(false);
       }

@@ -5,6 +5,7 @@ import { auth, db } from "../../../firebase";
 import ImageUpload from "../../../components/ImageUpload";
 import { StoragePaths } from "../../../utils/storageUtils";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { logger } from "@/utils/logger";
 import {
   collection,
   getDocs,
@@ -68,7 +69,7 @@ export default function AdminEventsPage() {
           router.push("/");
         }
       } catch (error) {
-        console.error("Error checking admin privileges:", error);
+        logger.error("Error checking admin privileges:", error);
         router.push("/");
       }
     };
@@ -98,7 +99,7 @@ export default function AdminEventsPage() {
         }))
       );
     } catch (error) {
-      console.error("Error fetching data:", error);
+      logger.error("Error fetching data:", error);
     }
   };
 
@@ -162,7 +163,7 @@ export default function AdminEventsPage() {
       toast.success("Etkinlik başarıyla oluşturuldu!");
       resetForm();
     } catch (error) {
-      console.error("Error adding event:", error);
+      logger.error("Error adding event:", error);
       toast.error("Etkinlik oluşturulurken bir hata oluştu!");
     }
   };
@@ -187,7 +188,7 @@ export default function AdminEventsPage() {
       );
       resetForm();
     } catch (error) {
-      console.error("Error updating event:", error);
+      logger.error("Error updating event:", error);
       toast.error("Etkinlik güncellenirken bir hata oluştu!");
     }
   };
@@ -208,7 +209,7 @@ export default function AdminEventsPage() {
         prev.filter((event) => event.firestoreId !== firestoreId)
       );
     } catch (error) {
-      console.error("Error deleting event:", error);
+      logger.error("Error deleting event:", error);
       toast.error("Etkinlik silinirken bir hata oluştu!");
     }
   };
@@ -336,7 +337,7 @@ export default function AdminEventsPage() {
 
       toast.success("Email'ler başarıyla gönderildi!");
     } catch (error) {
-      console.error("Error sending emails:", error);
+      logger.error("Error sending emails:", error);
       alert(error.message || "Error sending emails. Please try again later.");
     }
   };
@@ -395,7 +396,7 @@ export default function AdminEventsPage() {
       setCurrentQRCodeId(qrCodeId);
       setQRCodeModalOpen(true);
     } catch (error) {
-      console.error("Error generating QR code:", error);
+      logger.error("Error generating QR code:", error);
       alert(
         error.message || "Error generating QR code. Please try again later."
       );

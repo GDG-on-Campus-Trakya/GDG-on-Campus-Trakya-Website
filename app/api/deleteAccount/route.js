@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
+import { logger } from "@/utils/logger";
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,7 +20,7 @@ if (!admin.apps.length) {
       storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
     });
   } catch (error) {
-    console.error("Firebase Admin init error:", error);
+    logger.error("Firebase Admin init error:", error);
   }
 }
 
@@ -28,11 +29,11 @@ const bucket = getStorage().bucket();
 
 export async function DELETE(request) {
   try {
-    console.log("Delete account API called");
+    logger.log("Delete account API called");
     
     // Check if Firebase Admin is initialized
     if (!admin.apps.length) {
-      console.error("Firebase Admin not initialized");
+      logger.error("Firebase Admin not initialized");
       return NextResponse.json(
         { error: 'Server configuration error' },
         { status: 500 }
@@ -43,8 +44,8 @@ export async function DELETE(request) {
     const userId = searchParams.get('userId');
     const authToken = request.headers.get('Authorization');
 
-    console.log("UserId:", userId);
-    console.log("AuthToken exists:", !!authToken);
+    logger.log("Delete account request for user:", userId ? "present" : "missing");
+    logger.log("AuthToken exists:", !!authToken);
 
     if (!userId || !authToken) {
       return NextResponse.json(
@@ -80,7 +81,7 @@ export async function DELETE(request) {
         try {
           await bucket.file(userData.imagePath).delete();
         } catch (error) {
-          console.warn('Failed to delete profile image:', error);
+          logger.warn('Failed to delete profile image:', error);
         }
       }
       
@@ -121,7 +122,7 @@ export async function DELETE(request) {
             postImagePaths.push(decodeURIComponent(pathMatch[1]));
           }
         } catch (error) {
-          console.warn('Failed to extract image path from URL:', error);
+          logger.warn('Failed to extract image path from URL:', error);
         }
       }
       batch.delete(doc.ref);
@@ -132,7 +133,7 @@ export async function DELETE(request) {
       try {
         await bucket.file(imagePath).delete();
       } catch (error) {
-        console.warn('Failed to delete post image:', error);
+        logger.warn('Failed to delete post image:', error);
       }
     }
 
@@ -169,7 +170,7 @@ export async function DELETE(request) {
                 ticketAttachmentPaths.push(decodeURIComponent(pathMatch[1]));
               }
             } catch (error) {
-              console.warn('Failed to extract attachment path from URL:', error);
+              logger.warn('Failed to extract attachment path from URL:', error);
             }
           }
         });
@@ -182,7 +183,7 @@ export async function DELETE(request) {
       try {
         await bucket.file(attachmentPath).delete();
       } catch (error) {
-        console.warn('Failed to delete ticket attachment:', error);
+        logger.warn('Failed to delete ticket attachment:', error);
       }
     }
 
@@ -198,7 +199,7 @@ export async function DELETE(request) {
     });
 
   } catch (error) {
-    console.error('Error deleting account:', error);
+    logger.error('Error deleting account:', error);
     return NextResponse.json(
       { error: 'Failed to delete account', details: error.message },
       { status: 500 }

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../firebase";
+import { logger } from "@/utils/logger";
 import {
   collection,
   getDocs,
@@ -108,7 +109,7 @@ const Profile = () => {
         setEvents(eventsData);
         setLoadingData(false);
       } catch (error) {
-        console.error("Error fetching profile data:", error);
+        logger.error("Error fetching profile data:", error);
         setErrorData("Failed to load profile data. Please try again later.");
         setLoadingData(false);
       }
@@ -151,7 +152,7 @@ const Profile = () => {
                 qrCodesData[registration.qrCodeId] = qrCodeDataURL;
               }
             } catch (error) {
-              console.error("Error fetching QR code:", error);
+              logger.error("Error fetching QR code:", error);
             }
           }
         }
@@ -174,7 +175,7 @@ const Profile = () => {
             setUserWantsEmails(userSnap.data().wantsToGetEmails || false);
           }
         } catch (error) {
-          console.error("Error fetching user email preference:", error);
+          logger.error("Error fetching user email preference:", error);
         }
       }
     };
@@ -204,7 +205,7 @@ const Profile = () => {
             setShowConsentModal(true);
           }
         } catch (error) {
-          console.error("Error checking consent status:", error);
+          logger.error("Error checking consent status:", error);
         }
       }
     };
@@ -257,7 +258,7 @@ const Profile = () => {
 
       // Toast will be shown from handleConfirmDelete
     } catch (error) {
-      console.error("Error removing registration:", error);
+      logger.error("Error removing registration:", error);
       toast.error("Kayıt silinirken bir hata oluştu. Lütfen tekrar deneyin.");
     }
   };
@@ -284,7 +285,7 @@ const Profile = () => {
       setUserWantsEmails(newPreference);
       toast.success("E-posta tercihi başarıyla güncellendi.");
     } catch (error) {
-      console.error("E-posta tercihi güncellenirken hata:", error);
+      logger.error("E-posta tercihi güncellenirken hata:", error);
       toast.error("E-posta tercihi güncellenemedi.");
     } finally {
       setIsEmailUpdateLoading(false);
@@ -324,7 +325,7 @@ const Profile = () => {
       setShowConsentModal(false);
       toast.success("Şartlar kabul edildi. Hoş geldiniz!");
     } catch (error) {
-      console.error("Error accepting terms:", error);
+      logger.error("Error accepting terms:", error);
       toast.error("Bir hata oluştu. Lütfen tekrar deneyin.");
     }
   };
@@ -335,7 +336,7 @@ const Profile = () => {
       toast.info("Çıkış yapıldı.");
       router.push("/");
     } catch (error) {
-      console.error("Error signing out:", error);
+      logger.error("Error signing out:", error);
       toast.error("Çıkış yapılırken bir hata oluştu.");
     }
   };

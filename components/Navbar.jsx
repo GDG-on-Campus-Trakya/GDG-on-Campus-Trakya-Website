@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { logger } from "@/utils/logger";
 import { checkUserRole } from "../utils/roleUtils";
 
 function NavbarContent() {
@@ -46,17 +47,17 @@ function NavbarContent() {
         }
       }
     } catch (error) {
-      console.error("Error during sign-in:", error);
+      logger.error("Error during sign-in:", error);
 
       // Kullanıcı dostu hata mesajları
       if (error.code === 'auth/popup-blocked') {
         alert('Popup engellendi! Lütfen tarayıcınızda popup engellemesini kapatın ve tekrar deneyin.');
       } else if (error.code === 'auth/popup-closed-by-user') {
         // Kullanıcı pencereyi kapattı, sessizce işle
-        console.log('Kullanıcı popup\'ı kapattı');
+        logger.log('Kullanıcı popup\'ı kapattı');
       } else if (error.code === 'auth/cancelled-popup-request') {
         // Başka bir popup zaten açık
-        console.log('Başka bir giriş işlemi devam ediyor');
+        logger.log('Başka bir giriş işlemi devam ediyor');
       } else {
         alert('Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.');
       }
@@ -69,7 +70,7 @@ function NavbarContent() {
       // Refresh page and redirect to home
       window.location.href = '/';
     } catch (error) {
-      console.error("Error during sign-out:", error);
+      logger.error("Error during sign-out:", error);
     }
   };
 
@@ -114,7 +115,7 @@ function NavbarContent() {
           const role = await checkUserRole(user.email);
           setUserRole(role);
         } catch (error) {
-          console.error("Error fetching user data:", error);
+          logger.error("Error fetching user data:", error);
           setUserProfilePhoto(user.photoURL || "/default-profile.png");
           setUserRole(null);
         }

@@ -3,6 +3,7 @@ import { createRateLimitMiddleware } from '../../../utils/rateLimiter';
 import { logAdminAction, AUDIT_EVENTS } from '../../../utils/auditLog';
 import { doc, deleteDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
+import { logger } from '../../../utils/logger';
 
 const rateLimitMiddleware = createRateLimitMiddleware({
   type: 'admin',
@@ -82,7 +83,7 @@ const handler = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Remove admin error:', error);
+    logger.error('Remove admin error:', error);
     
     await logAdminAction(
       req.user.email,

@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Head from "next/head";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { logger } from "@/utils/logger";
 import {
   doc,
   getDoc,
@@ -58,7 +59,7 @@ export default function ProjectDetailPage() {
           setNotFound(true);
         }
       } catch (error) {
-        console.error("Error fetching project:", error);
+        logger.error("Error fetching project:", error);
         setNotFound(true);
       } finally {
         setLoading(false);
@@ -77,7 +78,7 @@ export default function ProjectDetailPage() {
             views: increment(1),
           });
         } catch (error) {
-          console.error("Error incrementing views:", error);
+          logger.error("Error incrementing views:", error);
         }
       }
     };
@@ -100,7 +101,7 @@ export default function ProjectDetailPage() {
             setUserProfilePhoto(user.photoURL || "/default-profile.png");
           }
         } catch (error) {
-          console.error("Error fetching user profile photo:", error);
+          logger.error("Error fetching user profile photo:", error);
           setUserProfilePhoto(user.photoURL || "/default-profile.png");
         }
       } else {
@@ -143,7 +144,7 @@ export default function ProjectDetailPage() {
         }));
       }
     } catch (error) {
-      console.error("Error updating like:", error);
+      logger.error("Error updating like:", error);
       toast.error("Beğeni güncellenirken bir hata oluştu!");
     }
   };
@@ -179,7 +180,7 @@ export default function ProjectDetailPage() {
       setNewComment("");
       toast.success("Yorum eklendi!");
     } catch (error) {
-      console.error("Error adding comment:", error);
+      logger.error("Error adding comment:", error);
       toast.error("Yorum eklenirken bir hata oluştu!");
     }
   };

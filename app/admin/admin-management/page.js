@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ROLES } from "../../../utils/roleUtils";
+import { logger } from "@/utils/logger";
 import AdminProtection from "../../../components/AdminProtection";
 
 export default function AdminManagementPage() {
@@ -33,11 +34,11 @@ export default function AdminManagementPage() {
         const data = await response.json();
         setAdmins(data.admins);
       } else {
-        console.error('Failed to fetch admins');
+        logger.error('Failed to fetch admins');
         toast.error('Yöneticiler yüklenemedi!');
       }
     } catch (error) {
-      console.error("Error fetching admins:", error);
+      logger.error("Error fetching admins:", error);
       toast.error('Yöneticiler yüklenirken hata oluştu!');
     }
   };
@@ -55,11 +56,11 @@ export default function AdminManagementPage() {
         const data = await response.json();
         setUsers(data.users);
       } else {
-        console.error('Failed to fetch users');
+        logger.error('Failed to fetch users');
         toast.error('Kullanıcılar yüklenemedi!');
       }
     } catch (error) {
-      console.error("Error fetching users:", error);
+      logger.error("Error fetching users:", error);
       toast.error('Kullanıcılar yüklenirken hata oluştu!');
     }
   };
@@ -111,7 +112,7 @@ export default function AdminManagementPage() {
         toast.error(error.error || "Yönetici eklenirken bir hata oluştu!");
       }
     } catch (error) {
-      console.error("Error adding admin:", error);
+      logger.error("Error adding admin:", error);
       toast.error("Yönetici eklenirken bir hata oluştu!");
     }
   };
@@ -139,7 +140,7 @@ export default function AdminManagementPage() {
         toast.error(error.error || "Yönetici silinirken bir hata oluştu!");
       }
     } catch (error) {
-      console.error("Error removing admin:", error);
+      logger.error("Error removing admin:", error);
       toast.error("Yönetici silinirken bir hata oluştu!");
     }
   };
@@ -176,7 +177,7 @@ export default function AdminManagementPage() {
         toast.error(error.error || "Rol güncellenirken bir hata oluştu!");
       }
     } catch (error) {
-      console.error("Error updating role:", error);
+      logger.error("Error updating role:", error);
       toast.error("Rol güncellenirken bir hata oluştu!");
     }
   };

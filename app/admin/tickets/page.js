@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { logger } from "@/utils/logger";
 
 export default function AdminTicketsPage() {
   const [user, loading] = useAuthState(auth);
@@ -45,7 +46,7 @@ export default function AdminTicketsPage() {
           router.push("/");
         }
       } catch (error) {
-        console.error("Error checking admin privileges:", error);
+        logger.error("Error checking admin privileges:", error);
         router.push("/");
       }
     };
@@ -87,7 +88,7 @@ export default function AdminTicketsPage() {
           setIsLoading(false);
         });
       } catch (err) {
-        console.error("Error subscribing to tickets:", err);
+        logger.error("Error subscribing to tickets:", err);
         setIsLoading(false);
       }
     })();
@@ -121,7 +122,7 @@ export default function AdminTicketsPage() {
           }));
         });
       } catch (err) {
-        console.error("Error subscribing to ticket:", err);
+        logger.error("Error subscribing to ticket:", err);
       }
     })();
     return () => {
@@ -180,7 +181,7 @@ export default function AdminTicketsPage() {
 
       setTickets(ticketsData);
     } catch (error) {
-      console.error("Error fetching tickets:", error);
+      logger.error("Error fetching tickets:", error);
       toast.error("Biletler yüklenirken bir hata oluştu");
     } finally {
       setIsLoading(false);
@@ -199,7 +200,7 @@ export default function AdminTicketsPage() {
       }));
       setAvailableAdmins(adminsList);
     } catch (error) {
-      console.error("Error fetching admins:", error);
+      logger.error("Error fetching admins:", error);
     }
   };
 
@@ -237,7 +238,7 @@ export default function AdminTicketsPage() {
         }
       }, 100);
     } catch (error) {
-      console.error("Error sending response:", error);
+      logger.error("Error sending response:", error);
       toast.error("Yanıt gönderilirken bir hata oluştu");
     } finally {
       setIsSubmitting(false);
@@ -271,7 +272,7 @@ export default function AdminTicketsPage() {
       // fetchTickets kaldırıldı - live güncellenecek
       // Modal açık kalacak, ticket otomatik güncellenecek
     } catch (error) {
-      console.error("Error updating status:", error);
+      logger.error("Error updating status:", error);
       toast.error("Durum güncellenirken bir hata oluştu");
     }
   };
@@ -298,7 +299,7 @@ export default function AdminTicketsPage() {
         setSelectedTicket(null);
       }
     } catch (error) {
-      console.error("Error deleting ticket:", error);
+      logger.error("Error deleting ticket:", error);
       toast.error("Bilet silinirken bir hata oluştu");
     }
   };
@@ -323,7 +324,7 @@ export default function AdminTicketsPage() {
       );
       // fetchTickets kaldırıldı - assignment live güncellenecek
     } catch (error) {
-      console.error("Error assigning admin:", error);
+      logger.error("Error assigning admin:", error);
       toast.error("Admin ataması güncellenirken bir hata oluştu");
     }
   };

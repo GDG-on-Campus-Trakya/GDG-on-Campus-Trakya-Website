@@ -1,6 +1,7 @@
 import { ref, set, get, update, remove, onValue, off } from "firebase/database";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { realtimeDb, db } from "../firebase";
+import { logger } from "./logger";
 
 /**
  * Generate a unique 6-digit game code
@@ -80,7 +81,7 @@ export const findGameByCode = async (gameCode) => {
 
     return null;
   } catch (error) {
-    console.error('Error finding game by code:', error);
+    logger.error('Error finding game by code:', error);
     return null;
   }
 };
@@ -322,10 +323,10 @@ export const saveGameResults = async (gameId) => {
     const resultsRef = collection(db, "gameResults");
     const docRef = await addDoc(resultsRef, resultData);
 
-    console.log("Game results saved to Firestore:", docRef.id);
+    // logger.log("Game results saved to Firestore:", docRef.id);
     return docRef.id;
   } catch (error) {
-    console.error("Error saving game results:", error);
+    logger.error("Error saving game results:", error);
     throw error;
   }
 };
@@ -347,13 +348,13 @@ export const endGame = async (gameId) => {
     setTimeout(async () => {
       try {
         await deleteGame(gameId);
-        console.log(`Game ${gameId} cleaned up from Realtime DB`);
+        // logger.log(`Game ${gameId} cleaned up from Realtime DB`);
       } catch (error) {
-        console.error("Failed to cleanup game from Realtime DB:", error);
+        logger.error("Failed to cleanup game from Realtime DB:", error);
       }
     }, 30000); // Wait 30 seconds before cleanup
   } catch (error) {
-    console.error("Failed to save game results:", error);
+    logger.error("Failed to save game results:", error);
     // Don't throw error, game still ends successfully
   }
 };

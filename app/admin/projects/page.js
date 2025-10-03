@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { auth, db } from "../../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { logger } from "@/utils/logger";
 import {
   collection,
   getDocs,
@@ -58,7 +59,7 @@ export default function AdminProjectsPage() {
           router.push("/");
         }
       } catch (error) {
-        console.error("Error checking admin privileges:", error);
+        logger.error("Error checking admin privileges:", error);
         router.push("/");
       }
     };
@@ -85,7 +86,7 @@ export default function AdminProjectsPage() {
           }))
         );
       } catch (error) {
-        console.error("Error fetching projects:", error);
+        logger.error("Error fetching projects:", error);
         toast.error("Projeler yüklenirken bir hata oluştu!");
       } finally {
         setLoadingProjects(false);
@@ -227,7 +228,7 @@ export default function AdminProjectsPage() {
         }))
       );
     } catch (error) {
-      console.error("Error saving project:", error);
+      logger.error("Error saving project:", error);
       toast.error(editingProject ? "Proje güncellenirken bir hata oluştu!" : "Proje eklenirken bir hata oluştu!");
     } finally {
       setUploading(false);
@@ -269,7 +270,7 @@ export default function AdminProjectsPage() {
         setProjects(prev => prev.filter(project => project.id !== projectId));
         toast.success("Proje başarıyla silindi!");
       } catch (error) {
-        console.error("Error deleting project:", error);
+        logger.error("Error deleting project:", error);
         toast.error("Proje silinirken bir hata oluştu!");
       }
     }
@@ -292,7 +293,7 @@ export default function AdminProjectsPage() {
         setSelectedProject(prev => ({ ...prev, views: 0 }));
         toast.success("Görüntülenme sayısı sıfırlandı!");
       } catch (error) {
-        console.error("Error resetting views:", error);
+        logger.error("Error resetting views:", error);
         toast.error("Görüntülenme sayısı sıfırlanırken bir hata oluştu!");
       }
     }
@@ -310,7 +311,7 @@ export default function AdminProjectsPage() {
         setSelectedProject(prev => ({ ...prev, likes: [] }));
         toast.success("Tüm beğeniler silindi!");
       } catch (error) {
-        console.error("Error resetting likes:", error);
+        logger.error("Error resetting likes:", error);
         toast.error("Beğeniler silinirken bir hata oluştu!");
       }
     }
@@ -332,7 +333,7 @@ export default function AdminProjectsPage() {
         setSelectedProject(prev => ({ ...prev, comments: updatedComments }));
         toast.success("Yorum silindi!");
       } catch (error) {
-        console.error("Error deleting comment:", error);
+        logger.error("Error deleting comment:", error);
         toast.error("Yorum silinirken bir hata oluştu!");
       }
     }

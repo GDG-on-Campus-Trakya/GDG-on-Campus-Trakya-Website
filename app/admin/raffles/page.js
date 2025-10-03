@@ -6,6 +6,7 @@ import { doc, getDoc, collection, getDocs, query, orderBy, where } from "firebas
 import { useRouter } from "next/navigation";
 import { raffleUtils } from "../../../utils/raffleUtils";
 import { socialUtils } from "../../../utils/socialUtils";
+import { logger } from "@/utils/logger";
 import { 
   Trophy, 
   Users, 
@@ -54,7 +55,7 @@ export default function AdminRafflesPage() {
           router.push("/");
         }
       } catch (error) {
-        console.error("Error checking admin privileges:", error);
+        logger.error("Error checking admin privileges:", error);
         router.push("/");
       }
     };
@@ -107,7 +108,7 @@ export default function AdminRafflesPage() {
       const activeEventsResult = await socialUtils.getActiveEventsForPosting();
       
       if (!activeEventsResult.success) {
-        console.error("Error loading active events:", activeEventsResult.error);
+        logger.error("Error loading active events:", activeEventsResult.error);
         return;
       }
 
@@ -135,14 +136,14 @@ export default function AdminRafflesPage() {
             });
           }
         } catch (error) {
-          console.error(`Error counting posts for event ${event.name}:`, error);
+          logger.error(`Error counting posts for event ${event.name}:`, error);
         }
       }
 
       setEvents(eventsWithPosts);
                   
     } catch (error) {
-      console.error("Error loading events:", error);
+      logger.error("Error loading events:", error);
     }
   };
 

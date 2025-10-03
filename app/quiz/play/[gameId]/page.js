@@ -5,6 +5,7 @@ import { auth } from "../../../../firebase";
 import { useRouter, useParams } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { logger } from "@/utils/logger";
 import {
   subscribeToGame,
   subscribeToLeaderboard,
@@ -147,7 +148,7 @@ export default function PlayGamePage() {
         toast.error("Yanlış cevap!");
       }
     } catch (error) {
-      console.error("Error submitting answer:", error);
+      logger.error("Error submitting answer:", error);
       toast.error("Cevap gönderilirken hata oluştu!");
       setHasAnswered(false);
       setSelectedAnswer(null);

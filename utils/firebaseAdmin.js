@@ -1,5 +1,6 @@
 import 'server-only';
 import admin from 'firebase-admin';
+import { logger } from './logger';
 
 // Firebase Admin singleton
 let firebaseAdmin = null;
@@ -31,26 +32,26 @@ const initializeFirebaseAdmin = () => {
         // Development
         if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
           // Emulator mode
-          console.log('🔧 Using Firebase Emulator');
+          logger.log('🔧 Using Firebase Emulator');
           credential = admin.credential.applicationDefault();
         } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
           // Service account file
-          console.log('🔧 Using service account file');
+          logger.log('🔧 Using service account file');
           credential = admin.credential.applicationDefault();
         } else if (process.env.FIREBASE_ADMIN_PRIVATE_KEY) {
           // Individual env vars (also support in development)
-          console.log('🔧 Using individual environment variables');
+          logger.log('🔧 Using individual environment variables');
           credential = admin.credential.cert({
             projectId: process.env.FIREBASE_ADMIN_PROJECT_ID,
             clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
             privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY.replace(/\\n/g, '\n'),
           });
         } else {
-          console.warn('⚠️ No Firebase Admin credentials found');
-          console.warn('💡 For development, either:');
-          console.warn('   1. Set GOOGLE_APPLICATION_CREDENTIALS to service account file path');
-          console.warn('   2. Run Firebase emulators with FIREBASE_AUTH_EMULATOR_HOST');
-          console.warn('   3. Set FIREBASE_ADMIN_PRIVATE_KEY environment variables');
+          logger.warn('⚠️ No Firebase Admin credentials found');
+          logger.warn('💡 For development, either:');
+          logger.warn('   1. Set GOOGLE_APPLICATION_CREDENTIALS to service account file path');
+          logger.warn('   2. Run Firebase emulators with FIREBASE_AUTH_EMULATOR_HOST');
+          logger.warn('   3. Set FIREBASE_ADMIN_PRIVATE_KEY environment variables');
           return null;
         }
       }
@@ -60,7 +61,7 @@ const initializeFirebaseAdmin = () => {
         projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
       });
       
-      console.log('✅ Firebase Admin initialized');
+      logger.log('✅ Firebase Admin initialized');
     } else {
       firebaseAdmin = admin.apps[0];
     }
@@ -68,12 +69,12 @@ const initializeFirebaseAdmin = () => {
     return firebaseAdmin;
     
   } catch (error) {
-    console.error('❌ Firebase Admin initialization failed:', error.message);
+    logger.error('❌ Firebase Admin initialization failed:', error.message);
     
     // Provide helpful error messages
     if (error.message.includes('private_key')) {
-      console.error('💡 Make sure FIREBASE_ADMIN_PRIVATE_KEY is properly escaped');
-      console.error('   Example: "-----BEGIN PRIVATE KEY-----\\nYOUR_KEY\\n-----END PRIVATE KEY-----\\n"');
+      logger.error('💡 Make sure FIREBASE_ADMIN_PRIVATE_KEY is properly escaped');
+      logger.error('   Example: "-----BEGIN PRIVATE KEY-----\\nYOUR_KEY\\n-----END PRIVATE KEY-----\\n"');
     }
     
     return null;

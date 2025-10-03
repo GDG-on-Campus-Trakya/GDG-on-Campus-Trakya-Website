@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { faculties, facultyDepartments } from "@/constants";
+import { logger } from "@/utils/logger";
 import ProfileImageUpload from "./ProfileImageUpload";
 import { StoragePaths } from "../utils/storageUtils";
 import {
@@ -56,7 +57,7 @@ const UserInfo = ({ user }) => {
         const { deleteImage } = await import("../utils/storageUtils");
         await deleteImage(profileData.imagePath);
       } catch (error) {
-        console.warn("Failed to delete old profile image:", error);
+        logger.warn("Failed to delete old profile image:", error);
       }
     } else if (
       profileData.photoURL &&
@@ -72,7 +73,7 @@ const UserInfo = ({ user }) => {
           await deleteImage(imagePath);
         }
       } catch (error) {
-        console.warn("Failed to delete old profile image from URL:", error);
+        logger.warn("Failed to delete old profile image from URL:", error);
       }
     }
 
@@ -90,7 +91,7 @@ const UserInfo = ({ user }) => {
         });
       }
     } catch (error) {
-      console.warn("Failed to update Firebase Auth profile photo:", error);
+      logger.warn("Failed to update Firebase Auth profile photo:", error);
     }
   };
 
@@ -118,7 +119,7 @@ const UserInfo = ({ user }) => {
       toast.success("Profil bilgileri başarıyla güncellendi");
       setIsEditing(false);
     } catch (error) {
-      console.error("Error updating profile:", error);
+      logger.error("Error updating profile:", error);
       toast.error("Profil güncellenirken bir hata oluştu");
     }
     setIsLoading(false);

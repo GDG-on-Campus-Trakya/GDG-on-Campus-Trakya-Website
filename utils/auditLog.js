@@ -1,5 +1,6 @@
 import { addDoc, collection, Timestamp } from "firebase/firestore";
 import { db } from "../firebase";
+import { logger } from "./logger";
 
 // Audit log event types
 export const AUDIT_EVENTS = {
@@ -177,7 +178,7 @@ class AuditLogger {
           return sessionId;
         }
       } catch (error) {
-        console.error('Error checking cookie consent:', error);
+        logger.error('Error checking cookie consent:', error);
       }
 
       // If functional cookies not allowed, generate temporary session ID
@@ -211,7 +212,7 @@ class AuditLogger {
       await Promise.all(promises);
       
     } catch (error) {
-      console.error('Failed to write audit logs:', error);
+      logger.error('Failed to write audit logs:', error);
       // Put logs back in queue for retry
       this.logQueue.unshift(...logsToProcess);
     } finally {

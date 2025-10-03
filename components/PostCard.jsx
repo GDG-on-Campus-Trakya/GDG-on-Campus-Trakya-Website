@@ -7,6 +7,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
+import { logger } from "@/utils/logger";
 
 export default function PostCard({
   post,
@@ -41,7 +42,7 @@ export default function PostCard({
             setPostUserProfile(userDoc.data());
           }
         } catch (error) {
-          console.error("Error loading post user profile:", error);
+          logger.error("Error loading post user profile:", error);
         }
       }
     };

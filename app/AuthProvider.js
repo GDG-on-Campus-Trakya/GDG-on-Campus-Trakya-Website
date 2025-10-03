@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { auth, db } from '../firebase'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { logger } from "@/utils/logger";
 
 export default function AuthProvider({ children }) {
   const [user, loading] = useAuthState(auth)
@@ -24,7 +25,7 @@ export default function AuthProvider({ children }) {
             })
           }
         } catch (error) {
-          console.warn("Failed to create user document:", error)
+          logger.warn("Failed to create user document:", error)
         }
       }
     }

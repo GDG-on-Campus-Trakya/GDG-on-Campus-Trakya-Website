@@ -6,6 +6,7 @@ import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { logger } from "@/utils/logger";
 import { checkUserRole, ROLES } from "../../../../utils/roleUtils";
 import {
   compressImage,
@@ -121,7 +122,7 @@ export default function CreateQuizPage() {
       newQuestions[qIndex].imageUrl = previewUrl;
       setQuestions(newQuestions);
     } catch (error) {
-      console.error("Image compression error:", error);
+      logger.error("Image compression error:", error);
       toast.error("Resim sıkıştırma hatası!");
     } finally {
       setCurrentImageUpload(null);
@@ -190,7 +191,7 @@ export default function CreateQuizPage() {
 
         toast.success(`${json.questions.length} soru başarıyla yüklendi!`);
       } catch (error) {
-        console.error("JSON parse error:", error);
+        logger.error("JSON parse error:", error);
         toast.error("Geçersiz JSON formatı!");
       }
     };
@@ -305,7 +306,7 @@ export default function CreateQuizPage() {
         router.push("/admin/quiz/manage");
       }, 1500);
     } catch (error) {
-      console.error("Error creating quiz:", error);
+      logger.error("Error creating quiz:", error);
       toast.error("Quiz oluşturulurken hata oluştu!");
     } finally {
       setUploading(false);

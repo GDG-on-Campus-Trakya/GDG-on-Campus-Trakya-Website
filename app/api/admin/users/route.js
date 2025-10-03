@@ -2,6 +2,7 @@ import 'server-only';
 import { NextResponse } from "next/server";
 import { getFirestore } from "../../../../utils/firebaseAdmin";
 import { withAuth } from "../../../../middleware/adminAuthApp";
+import { logger } from "@/utils/logger";
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -26,7 +27,7 @@ export async function GET(request) {
 
       return NextResponse.json({ users });
     } catch (error) {
-      console.error('Error fetching users:', error);
+      logger.error('Error fetching users:', error);
       return NextResponse.json(
         { error: 'Failed to fetch users' },
         { status: 500 }

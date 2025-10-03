@@ -12,6 +12,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../firebase";
+import { logger } from "./logger";
 
 export const raffleUtils = {
   // Create a new raffle
@@ -67,7 +68,7 @@ export const raffleUtils = {
         participantCount: participants.length,
       };
     } catch (error) {
-      console.error("Error creating raffle:", error);
+      logger.error("Error creating raffle:", error);
       return { success: false, error: error.message };
     }
   },
@@ -107,7 +108,7 @@ export const raffleUtils = {
 
       return { success: true, raffles };
     } catch (error) {
-      console.error("Error fetching raffles:", error);
+      logger.error("Error fetching raffles:", error);
       return { success: false, error: error.message };
     }
   },
@@ -127,7 +128,7 @@ export const raffleUtils = {
         raffle: { id: raffleSnap.id, ...raffleSnap.data() },
       };
     } catch (error) {
-      console.error("Error fetching raffle:", error);
+      logger.error("Error fetching raffle:", error);
       return { success: false, error: error.message };
     }
   },
@@ -190,7 +191,7 @@ export const raffleUtils = {
 
       return { success: true, participants: participantsWithUserData };
     } catch (error) {
-      console.error("Error fetching raffle participants:", error);
+      logger.error("Error fetching raffle participants:", error);
       return { success: false, error: error.message };
     }
   },
@@ -248,7 +249,7 @@ export const raffleUtils = {
         },
       };
     } catch (error) {
-      console.error("Error drawing winner:", error);
+      logger.error("Error drawing winner:", error);
       return { success: false, error: error.message };
     }
   },
@@ -260,7 +261,7 @@ export const raffleUtils = {
       await updateDoc(raffleRef, updateData);
       return { success: true };
     } catch (error) {
-      console.error("Error updating raffle:", error);
+      logger.error("Error updating raffle:", error);
       return { success: false, error: error.message };
     }
   },
@@ -303,7 +304,7 @@ export const raffleUtils = {
 
       return { success: true };
     } catch (error) {
-      console.error("Error deleting raffle:", error);
+      logger.error("Error deleting raffle:", error);
       return { success: false, error: error.message };
     }
   },
@@ -360,7 +361,7 @@ export const raffleUtils = {
 
       return { success: true, stats };
     } catch (error) {
-      console.error("Error getting raffle stats:", error);
+      logger.error("Error getting raffle stats:", error);
       return { success: false, error: error.message };
     }
   },
@@ -381,7 +382,7 @@ export const raffleUtils = {
         participationCount: querySnapshot.size,
       };
     } catch (error) {
-      console.error("Error checking user participation:", error);
+      logger.error("Error checking user participation:", error);
       return { success: false, error: error.message };
     }
   },
@@ -408,7 +409,7 @@ export const raffleUtils = {
 
       return { success: true, raffle };
     } catch (error) {
-      console.error("Error getting active raffle for event:", error);
+      logger.error("Error getting active raffle for event:", error);
       return { success: false, error: error.message };
     }
   },
@@ -423,7 +424,7 @@ export const raffleUtils = {
       });
       return { success: true };
     } catch (error) {
-      console.error("Error ending raffle:", error);
+      logger.error("Error ending raffle:", error);
       return { success: false, error: error.message };
     }
   },
@@ -475,7 +476,7 @@ export const raffleUtils = {
         },
       };
     } catch (error) {
-      console.error("Error changing winner:", error);
+      logger.error("Error changing winner:", error);
       return { success: false, error: error.message };
     }
   },
@@ -533,7 +534,7 @@ export const raffleUtils = {
 
       return { success: true, announcementId: docRef.id };
     } catch (error) {
-      console.error("Error announcing raffle result:", error);
+      logger.error("Error announcing raffle result:", error);
       return { success: false, error: error.message };
     }
   },

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { logger } from "@/utils/logger";
 import {
   X,
   Heart,
@@ -75,7 +76,7 @@ export default function PostModal({
           setUserProfileData(userDoc.data());
         }
       } catch (error) {
-        console.error("Error loading user profile:", error);
+        logger.error("Error loading user profile:", error);
       }
     }
   };
@@ -90,7 +91,7 @@ export default function PostModal({
           setPostAuthorProfile(null);
         }
       } catch (error) {
-        console.error("Error loading post author profile:", error);
+        logger.error("Error loading post author profile:", error);
       }
     }
   };

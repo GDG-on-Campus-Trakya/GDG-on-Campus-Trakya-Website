@@ -6,6 +6,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { socialUtils } from "../../../utils/socialUtils";
 import PostCard from "../../../components/PostCard";
+import { logger } from "@/utils/logger";
 import PostModal from "../../../components/PostModal";
 import { Search, Filter, BarChart3, Eye, EyeOff, Trash2, ArrowLeft } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
@@ -37,7 +38,7 @@ export default function AdminSocialPage() {
           router.push("/");
         }
       } catch (error) {
-        console.error("Error checking admin privileges:", error);
+        logger.error("Error checking admin privileges:", error);
         router.push("/");
       }
     };
