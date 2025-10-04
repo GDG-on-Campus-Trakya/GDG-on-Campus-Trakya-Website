@@ -61,9 +61,9 @@ export default function AboutPage() {
       image: "/organizer.jpg",
       gradient: "from-[#4285F4] to-[#DB4437]",
     },
-    koordinatorler: {
-      title: "Koordinatörler",
-      image: "/koordinatorler.jpg",
+    yonetimKurulu: {
+      title: "Yönetim Kurulu",
+      image: "/yonetim kurulu.jpg",
       gradient: "from-[#DB4437] to-[#F4B400]",
     },
     teams: [
@@ -104,7 +104,7 @@ export default function AboutPage() {
   // Tüm resimleri tek bir array'de topla
   const allImages = [
     { src: teamData.organizer.image, title: teamData.organizer.title },
-    { src: teamData.koordinatorler.image, title: teamData.koordinatorler.title },
+    { src: teamData.yonetimKurulu.image, title: teamData.yonetimKurulu.title },
     ...teamData.teams.flatMap(team =>
       team.members.map(member => ({
         src: member.image,
@@ -197,17 +197,17 @@ export default function AboutPage() {
           </div>
         </motion.div>
 
-        {/* Koordinatörler - İkinci Seviye */}
+        {/* Yönetim Kurulu - İkinci Seviye */}
         <motion.div variants={itemVariants} className="mb-16">
           <div className="max-w-3xl mx-auto">
             <motion.div
               whileHover={{ scale: 1.02 }}
               className="relative group rounded-2xl overflow-hidden shadow-2xl cursor-zoom-in"
-              onClick={() => handleImageClick(teamData.koordinatorler.image)}
+              onClick={() => handleImageClick(teamData.yonetimKurulu.image)}
             >
               <Image
-                src={teamData.koordinatorler.image}
-                alt={teamData.koordinatorler.title}
+                src={teamData.yonetimKurulu.image}
+                alt={teamData.yonetimKurulu.title}
                 width={1000}
                 height={1000}
                 className="w-full h-auto pointer-events-none"
@@ -215,7 +215,7 @@ export default function AboutPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent group-hover:via-black/40 transition-all pointer-events-none" />
               <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 bg-black/60 backdrop-blur-sm pointer-events-none">
                 <h2 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">
-                  {teamData.koordinatorler.title}
+                  {teamData.yonetimKurulu.title}
                 </h2>
               </div>
               {/* Zoom Icon - Always visible on mobile, hover on desktop */}
