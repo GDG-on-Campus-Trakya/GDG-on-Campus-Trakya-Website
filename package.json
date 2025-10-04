@@ -6,7 +6,9 @@
     "dev": "next dev --experimental-https",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "analyze": "ANALYZE=true next build",
+    "postbuild": "next-sitemap"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.6",

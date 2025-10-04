@@ -1,5 +1,28 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Output standalone for Docker/Vercel optimization
+  output: 'standalone',
+  
+  // Enable SWC minification
+  swcMinify: true,
+  
+  // Compiler optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn']
+    } : false,
+  },
+  
+  // Performance optimizations
+  poweredByHeader: false,
+  compress: true,
+  
+  // Experimental features for better performance
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns', 'framer-motion'],
+    serverMinification: true,
+  },
+  
   env: {
     NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
     NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN:
@@ -14,6 +37,10 @@ const nextConfig = {
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
   },
   images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
     remotePatterns: [
       {
         protocol: "https",
