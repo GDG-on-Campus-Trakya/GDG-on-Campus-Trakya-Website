@@ -10,7 +10,7 @@ export default function LandingPage() {
         {/* Content Wrapper */}
         <div className="flex flex-col lg:flex-row items-center max-w-7xl w-full mx-auto gap-3 xs:gap-4 sm:gap-6 lg:gap-12 px-2 xs:px-3 sm:px-4 pb-24 sm:pb-32 md:pb-20">
           
-          {/* Mobile Video Section - Visible only on small screens, positioned above text */}
+          {/* Mobile Image Section - Visible only on small screens, positioned above text */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -18,22 +18,17 @@ export default function LandingPage() {
             className="lg:hidden flex justify-center w-full mb-1 xs:mb-2 sm:mb-4"
           >
             <div className="relative w-24 xs:w-28 sm:w-32 md:w-40">
-              <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="rounded-full p-0.5 bg-gradient-to-r animate-gradient-border"
-              >
-                <video
-                  className="w-full h-auto rounded-full shadow-lg border-2 border-transparent"
-                  src="/video2.mp4"
-                  aria-label="Promotional Video"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  style={{ objectFit: "cover" }}
-                />
-              </motion.div>
+              <div className="rounded-full p-1 bg-gradient-to-r from-blue-500 via-purple-500 to-green-500">
+                <div className="rounded-full p-2 bg-black">
+                  <img
+                    className="w-full h-auto rounded-full shadow-lg"
+                    src="/landing-Photoroom.png"
+                    aria-label="GDG on Campus Trakya"
+                    alt="GDG on Campus Trakya"
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+              </div>
               
               {/* Enhanced Floating Elements - Adjusted for small screens */}
               <motion.div
@@ -121,22 +116,17 @@ export default function LandingPage() {
             className="hidden lg:flex justify-center w-full lg:w-2/3"
           >
             <div className="relative w-80 xl:w-full max-w-2xl">
-              <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="rounded-full p-0.5 bg-gradient-to-r animate-gradient-border"
-              >
-                <video
-                  className="w-full h-auto rounded-full shadow-lg border-2 border-transparent"
-                  src="/video2.mp4"
-                  aria-label="Promotional Video"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  style={{ objectFit: "cover" }}
-                />
-              </motion.div>
+              <div className="rounded-full p-1 bg-gradient-to-r from-blue-500 via-purple-500 to-green-500">
+                <div className="rounded-full p-4 bg-black">
+                  <img
+                    className="w-full h-auto rounded-full shadow-lg"
+                    src="/landing-Photoroom.png"
+                    aria-label="GDG on Campus Trakya"
+                    alt="GDG on Campus Trakya"
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+              </div>
               
               {/* Enhanced Floating Elements - Adjusted for large screens */}
               <motion.div
