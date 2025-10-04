@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Upload, X, Calendar, ImageIcon } from "lucide-react";
 import { socialUtils } from "../utils/socialUtils";
+import { uploadImage } from "../utils/storageUtils";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
@@ -45,47 +46,6 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
     }
   };
 
-  const compressImage = (file, maxWidth = 1200, maxHeight = 1200, quality = 0.8) => {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new window.Image();
-      
-      img.onload = () => {
-        // Calculate new dimensions while maintaining aspect ratio
-        let { width, height } = img;
-        
-        if (width > height) {
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = (width * maxHeight) / height;
-            height = maxHeight;
-          }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        // Draw and compress
-        ctx.drawImage(img, 0, 0, width, height);
-        
-        canvas.toBlob(
-          (blob) => {
-            resolve(blob);
-          },
-          'image/jpeg',
-          quality
-        );
-      };
-      
-      img.src = URL.createObjectURL(file);
-    });
-  };
-
   const handleImageSelect = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -96,38 +56,30 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
       return;
     }
 
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Resim boyutu 5MB'dan küçük olmalıdır!");
+    // Validate file size (10MB limit - will be compressed)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Resim boyutu 10MB'dan küçük olmalıdır!");
       return;
     }
 
     try {
-      // Compress the image
-      const compressedBlob = await compressImage(file);
+      // Store the original file - compression will happen during upload
+      setSelectedImage(file);
       
-      // Convert blob to file with original name
-      const compressedFile = new File([compressedBlob], file.name, {
-        type: 'image/jpeg',
-        lastModified: Date.now()
-      });
-
-      setSelectedImage(compressedFile);
-      
-      // Create preview with error handling
+      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target.result);
-        toast.success("Resim yüklendi!");
+        toast.success("Resim seçildi!");
       };
       reader.onerror = () => {
-        toast.error("Resim yüklenirken hata oluştu!");
+        toast.error("Resim önizlenirken hata oluştu!");
         setSelectedImage(null);
       };
-      reader.readAsDataURL(compressedFile);
+      reader.readAsDataURL(file);
     } catch (error) {
-      toast.error("Resim sıkıştırılırken hata oluştu!");
-      logger.error("Compression error:", error);
+      toast.error("Resim yüklenirken hata oluştu!");
+      logger.error("Image select error:", error);
     }
   };
 
@@ -174,7 +126,7 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
     setIsUploading(true);
 
     try {
-      // Upload image first
+      // Upload image with automatic compression via storageUtils
       const uploadResult = await socialUtils.uploadPostImage(selectedImage, user.uid);
       
       if (!uploadResult.success) {
@@ -253,7 +205,7 @@ export default function PostUpload({ onUploadComplete, onCancel }) {
             >
               <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-[#d1d1e0] text-lg mb-2">Resim seç veya sürükle</p>
-              <p className="text-gray-400 text-sm">JPG, PNG, HEIC (Max 5MB)</p>
+              <p className="text-gray-400 text-sm">JPG, PNG, HEIC (Max 10MB - Otomatik sıkıştırılır)</p>
               <input
                 ref={fileInputRef}
                 type="file"

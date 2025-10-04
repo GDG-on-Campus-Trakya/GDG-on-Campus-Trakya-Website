@@ -16,7 +16,7 @@ import {
   increment,
   serverTimestamp,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { ref, deleteObject } from "firebase/storage";
 import { db, storage } from "../firebase";
 import { logger } from "./logger";
 import { sortByTimestamp } from "./dateHelpers";
@@ -158,18 +158,21 @@ export const socialUtils = {
     }
   },
 
-  // Image Upload
+  // Image Upload - Standardized to use storageUtils
   async uploadPostImage(file, userId) {
     try {
-      const timestamp = Date.now();
-      const fileName = `posts/${userId}/${timestamp}_${file.name}`;
-      const imageRef = ref(storage, fileName);
-
-      // Upload file
-      const snapshot = await uploadBytes(imageRef, file);
-      const downloadURL = await getDownloadURL(snapshot.ref);
-
-      return { success: true, url: downloadURL };
+      // Import uploadImage from storageUtils for consistent compression
+      const { uploadImage } = await import("./storageUtils");
+      
+      // Use standardized upload with compression
+      const result = await uploadImage(file, 'posts', `post_${userId}_`);
+      
+      return { 
+        success: true, 
+        url: result.url,
+        path: result.path,
+        fileName: result.fileName 
+      };
     } catch (error) {
       logger.error("Error uploading image:", error);
       return { success: false, error: error.message };
