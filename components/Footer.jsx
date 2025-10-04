@@ -125,7 +125,7 @@ export default function Footer() {
                   whileHover={{ x: 5, color: "#60A5FA" }}
                   className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
                 >
-                  Destek & Şikayetler
+                  Destek
                 </motion.span>
               </Link>
             </div>

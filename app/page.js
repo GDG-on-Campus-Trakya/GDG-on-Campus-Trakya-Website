@@ -86,7 +86,7 @@ export default function LandingPage() {
               transition={{ delay: 0.5, duration: 0.8 }}
               className="text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-300 px-0 xs:px-1 leading-tight xs:leading-normal"
             >
-              Google Developer Groups (GDG) Trakya Üniversitesi - Teknoloji ve inovasyonun buluşma noktası. Geleceği birlikte şekillendiriyoruz!
+              GDG On Campus Trakya Üniversitesi - Teknoloji ve inovasyonun buluşma noktası. Geleceği birlikte şekillendiriyoruz!
             </motion.p>
             <motion.div 
               initial={{ y: 20, opacity: 0 }}

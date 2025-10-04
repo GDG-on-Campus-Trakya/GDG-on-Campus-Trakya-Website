@@ -124,7 +124,7 @@ export default function FAQ() {
         {
           question: "Destek biletlerim nasıl takip edilir?",
           answer:
-            "Tüm biletlerinizi 'Şikayetler & Öneriler' sayfasında görebilir, yanıtları takip edebilir ve kapalı biletleri yeniden açabilirsiniz.",
+            "Tüm biletlerinizi 'Destek' sayfasında görebilir, yanıtları takip edebilir ve kapalı biletleri yeniden açabilirsiniz.",
         },
         {
           question: "Ne kadar sürede yanıt alırım?",

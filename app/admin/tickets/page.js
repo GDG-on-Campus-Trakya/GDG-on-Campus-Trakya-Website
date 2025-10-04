@@ -404,7 +404,7 @@ export default function AdminTicketsPage() {
           </h1>
         </div>
         <p className="text-gray-300 mt-4 text-lg">
-          Kullanıcı şikayetleri ve önerilerini yönetin
+          Kullanıcı destek taleplerini yönetin
         </p>
       </div>
 
@@ -434,7 +434,7 @@ export default function AdminTicketsPage() {
         </div>
         <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg p-6">
           <div className="text-center">
-            <p className="text-sm font-medium text-gray-300">Şikayetler</p>
+            <p className="text-sm font-medium text-gray-300">Destek Talepleri</p>
             <p className="text-3xl font-bold text-red-400">
               {tickets.filter((t) => t.category === "complaint").length}
             </p>

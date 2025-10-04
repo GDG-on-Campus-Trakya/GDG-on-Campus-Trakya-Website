@@ -261,7 +261,7 @@ function NavbarContent() {
               whileHover={{ scale: 1.1, color: "#EF4444" }}
               className="hover:text-red-400 transition cursor-pointer"
             >
-              Şikayetler/Öneriler
+              Destek
             </motion.span>
           </Link>
         )}
@@ -469,7 +469,7 @@ function NavbarContent() {
                     router.push('/tickets');
                   }}
                 >
-                  Şikayetler/Öneriler
+                  Destek
                 </motion.div>
               )}
               {userRole && (

@@ -274,7 +274,7 @@ export default function TermsOfService() {
 
             <section>
               <h2 className="text-2xl font-bold text-blue-400 mb-4">
-                11. İletişim ve Şikayetler
+                11. İletişim ve Destek
               </h2>
               <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600/50">
                 <p className="text-gray-300 leading-relaxed mb-4">
