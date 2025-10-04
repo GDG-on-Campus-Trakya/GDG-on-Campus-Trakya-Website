@@ -19,6 +19,7 @@ import {
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { db, storage } from "../firebase";
 import { logger } from "./logger";
+import { sortByTimestamp } from "./dateHelpers";
 
 export const socialUtils = {
   // Post Operations
@@ -360,11 +361,7 @@ export const socialUtils = {
       );
 
       // Sort in memory instead of using orderBy
-      const sortedComments = enhancedComments.sort((a, b) => {
-        const aTime = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
-        const bTime = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp);
-        return aTime - bTime;
-      });
+      const sortedComments = sortByTimestamp(enhancedComments, 'timestamp', 'asc');
 
       return { success: true, comments: sortedComments };
     } catch (error) {
@@ -444,21 +441,20 @@ export const socialUtils = {
         ...announcementsResult.announcements.map(announcement => ({ ...announcement, type: 'announcement' }))
       ];
 
-      // Sort by timestamp (posts) or createdAt (announcements)
-      combinedFeed.sort((a, b) => {
-        const aTime = a.type === 'post' 
-          ? (a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp))
-          : (a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt));
-        const bTime = b.type === 'post' 
-          ? (b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp))
-          : (b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt));
-        
-        return bTime - aTime; // Newest first
-      });
+      // Normalize field names and sort by timestamp
+      const normalizedFeed = combinedFeed.map(item => ({
+        ...item,
+        _sortField: item.type === 'post' ? item.timestamp : item.createdAt
+      }));
 
-      return { 
-        success: true, 
-        feed: combinedFeed,
+      const sortedFeed = sortByTimestamp(normalizedFeed, '_sortField', 'desc');
+
+      // Remove temporary sort field
+      sortedFeed.forEach(item => delete item._sortField);
+
+      return {
+        success: true,
+        feed: sortedFeed,
         lastDoc: postsResult.lastDoc // Use posts lastDoc for pagination
       };
     } catch (error) {

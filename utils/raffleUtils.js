@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { logger } from "./logger";
+import { sortByTimestamp } from "./dateHelpers";
 
 export const raffleUtils = {
   // Create a new raffle
@@ -96,15 +97,7 @@ export const raffleUtils = {
       }));
 
       // Sort in memory by createdAt desc
-      raffles = raffles.sort((a, b) => {
-        const aTime = a.createdAt?.toDate
-          ? a.createdAt.toDate()
-          : new Date(a.createdAt);
-        const bTime = b.createdAt?.toDate
-          ? b.createdAt.toDate()
-          : new Date(b.createdAt);
-        return bTime - aTime; // desc order
-      });
+      raffles = sortByTimestamp(raffles, 'createdAt', 'desc');
 
       return { success: true, raffles };
     } catch (error) {
@@ -179,17 +172,9 @@ export const raffleUtils = {
       );
 
       // Sort in memory instead of using orderBy
-      participantsWithUserData.sort((a, b) => {
-        const aTime = a.participatedAt?.toDate
-          ? a.participatedAt.toDate()
-          : new Date(a.participatedAt);
-        const bTime = b.participatedAt?.toDate
-          ? b.participatedAt.toDate()
-          : new Date(b.participatedAt);
-        return bTime - aTime; // desc order
-      });
+      const sortedParticipants = sortByTimestamp(participantsWithUserData, 'participatedAt', 'desc');
 
-      return { success: true, participants: participantsWithUserData };
+      return { success: true, participants: sortedParticipants };
     } catch (error) {
       logger.error("Error fetching raffle participants:", error);
       return { success: false, error: error.message };

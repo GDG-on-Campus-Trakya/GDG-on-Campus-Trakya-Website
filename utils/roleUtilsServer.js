@@ -1,12 +1,17 @@
 import 'server-only';
 import { getFirestore } from './firebaseAdmin';
 import { logger } from './logger';
+import {
+  ROLES,
+  EVENT_MANAGER_PAGES,
+  hasPermission,
+  canAccessPage
+} from './roleConstants';
 
-export const ROLES = {
-  ADMIN: "admin",
-  EVENT_MANAGER: "event_manager"
-};
+// Re-export shared constants and utilities
+export { ROLES, EVENT_MANAGER_PAGES, hasPermission, canAccessPage };
 
+// Server-side specific function
 export const checkUserRoleServer = async (userEmail) => {
   if (!userEmail) return null;
 
@@ -30,27 +35,4 @@ export const checkUserRoleServer = async (userEmail) => {
     logger.error("Error checking user role (server):", error);
     return null;
   }
-};
-
-export const hasPermission = (userRole, requiredRole) => {
-  if (userRole === ROLES.ADMIN) return true;
-  if (userRole === ROLES.EVENT_MANAGER && requiredRole === ROLES.EVENT_MANAGER) return true;
-  return false;
-};
-
-export const EVENT_MANAGER_PAGES = [
-  "/admin/users",
-  "/admin/registrations",
-  "/admin/qr-verification",
-  "/admin/raffles",
-  "/admin/social",
-  "/admin/event-stats"
-];
-
-export const canAccessPage = (userRole, pagePath) => {
-  if (userRole === ROLES.ADMIN) return true;
-  if (userRole === ROLES.EVENT_MANAGER) {
-    return EVENT_MANAGER_PAGES.includes(pagePath);
-  }
-  return false;
 };

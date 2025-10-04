@@ -79,19 +79,29 @@ export const compressImage = (file, maxSizeKB = 300, quality = 0.7) => {
   });
 };
 
-export const validateImageFile = (file) => {
-  const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+export const validateImageFile = (file, returnObject = false) => {
+  const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
   const maxSizeMB = 10;
-  
+
+  // Check file type
   if (!validTypes.includes(file.type)) {
-    throw new Error('Sadece JPEG, PNG ve WebP formatları desteklenir.');
+    const error = 'Sadece JPEG, PNG ve WebP formatları desteklenir.';
+    if (returnObject) {
+      return { valid: false, error };
+    }
+    throw new Error(error);
   }
-  
+
+  // Check file size
   if (file.size > maxSizeMB * 1024 * 1024) {
-    throw new Error(`Dosya boyutu ${maxSizeMB}MB'dan küçük olmalıdır.`);
+    const error = `Dosya boyutu ${maxSizeMB}MB'dan küçük olmalıdır.`;
+    if (returnObject) {
+      return { valid: false, error };
+    }
+    throw new Error(error);
   }
-  
-  return true;
+
+  return returnObject ? { valid: true } : true;
 };
 
 export const generateFileName = (originalName, prefix = '') => {
@@ -99,4 +109,16 @@ export const generateFileName = (originalName, prefix = '') => {
   const randomId = Math.random().toString(36).substring(2, 8);
   const extension = originalName.split('.').pop();
   return `${prefix}${timestamp}_${randomId}.${extension}`;
+};
+
+// Alias for imageCompression.js compatibility
+export const uploadCompressedImage = async (blob, path) => {
+  const { ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
+  const { storage } = await import('../firebase');
+
+  const storageRef = ref(storage, path);
+  const snapshot = await uploadBytes(storageRef, blob);
+  const downloadURL = await getDownloadURL(snapshot.ref);
+
+  return downloadURL;
 };

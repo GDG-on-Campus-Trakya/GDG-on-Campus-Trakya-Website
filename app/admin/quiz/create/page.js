@@ -12,7 +12,7 @@ import {
   compressImage,
   uploadCompressedImage,
   validateImageFile
-} from "../../../../utils/imageCompression";
+} from "../../../../utils/imageUtils";
 
 export default function CreateQuizPage() {
   const [user, loading] = useAuthState(auth);
@@ -98,7 +98,7 @@ export default function CreateQuizPage() {
     if (!file) return;
 
     // Validate file
-    const validation = validateImageFile(file);
+    const validation = validateImageFile(file, true);
     if (!validation.valid) {
       toast.error(validation.error);
       return;
