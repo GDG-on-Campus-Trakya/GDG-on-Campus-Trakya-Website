@@ -315,7 +315,7 @@ export default function AdminEventsPage() {
                 <p><strong>Location:</strong> ${event.location}</p>
               </div>
               <p>Thank you for your registration!</p>
-              <p>Best regards,<br>GDG Trakya Team</p>
+              <p>Best regards,<br>GDG On Campus Trakya Team</p>
             </div>
           `,
           adminEmail: user.email, // Pass admin's email for verification

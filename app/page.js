@@ -72,21 +72,21 @@ export default function LandingPage() {
             transition={{ duration: 0.8 }}
             className="w-full max-w-3xl space-y-3 xs:space-y-4 sm:space-y-5 lg:space-y-8 text-center lg:text-left lg:mr-12 px-2 xs:px-3 sm:px-4"
           >
-            <motion.h1 
+            <motion.h1
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 1 }}
               className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-bold text-transparent bg-clip-text animate-gradient-text pb-1 xs:pb-2"
             >
-              GDG On Campus Trakya
+              GDG on Campus Trakya Üniversitesi
             </motion.h1>
-            <motion.p 
+            <motion.p
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.8 }}
               className="text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-300 px-0 xs:px-1 leading-tight xs:leading-normal"
             >
-              Teknoloji ve inovasyonun buluşma noktası. Geleceği birlikte şekillendiriyoruz!
+              Google Developer Groups (GDG) Trakya Üniversitesi - Teknoloji ve inovasyonun buluşma noktası. Geleceği birlikte şekillendiriyoruz!
             </motion.p>
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
@@ -204,6 +204,23 @@ export default function LandingPage() {
           </div>
         </motion.section>
       </header>
+
+      {/* SEO-friendly content section */}
+      <section className="sr-only">
+        <h2>GDG on Campus Trakya Üniversitesi Hakkında</h2>
+        <p>
+          GDG on Campus Trakya Üniversitesi (gdgoncampustu), Trakya Üniversitesi&apos;nde (TÜ)
+          faaliyet gösteren Google Developer Groups topluluğudur. GDG, teknoloji meraklıları,
+          yazılım geliştiriciler ve öğrenciler için etkinlikler, hackathonlar, workshop&apos;lar
+          ve eğitim programları düzenlemektedir.
+        </p>
+        <p>
+          Google Developer Groups on Campus olarak, modern teknolojiler, yazılım geliştirme,
+          yapay zeka, bulut bilişim ve diğer Google teknolojileri üzerine düzenli etkinlikler
+          gerçekleştiriyoruz. Trakya Üniversitesi kampüsünde teknolojiyi seven herkes için
+          bir topluluk oluşturuyoruz.
+        </p>
+      </section>
 
       <style jsx global>{`
         @keyframes gradient-text {

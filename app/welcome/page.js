@@ -92,7 +92,7 @@ export default function WelcomePage() {
 
         {/* Footer */}
         <div className={`text-center mt-8 text-gray-500 text-sm transition-all duration-700 ${mounted ? 'opacity-100' : 'opacity-0'}`} style={{ transitionDelay: '400ms' }}>
-          <p>©2025 GDG on Campus Trakya</p>
+          <p>©2025 GDG on Campus Trakya Üniversitesi</p>
         </div>
       </div>
     </div>

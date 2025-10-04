@@ -307,14 +307,13 @@ export default function AboutPage() {
             <motion.span
               className="bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#DB4437] via-[#F4B400] to-[#0F9D58] animate-gradient-x"
             >
-              GDG Trakya On Campus
+              GDG On Campus Trakya Üniversitesi
             </motion.span>
           </motion.h2>
 
           <div className="max-w-3xl mx-auto space-y-6">
             <p className="text-center sm:text-lg lg:text-xl leading-relaxed text-[#d1d1e0] backdrop-blur-sm bg-gray-800/30 p-6 rounded-lg">
-              GDG Trakya On Campus, öğrenmek, paylaşmak ve gelişmek için bir araya
-              gelen tutkulu geliştiriciler ve öğrencilerden oluşan bir
+              GDG On Campus Trakya Üniversiteli geliştiriciler ve öğrencilerden oluşan bir
               topluluktur. Misyonumuz, öğrencilere Google teknolojilerini öğrenme
               fırsatları sunmak, sektör profesyonelleriyle iletişim kurmalarını
               sağlamak ve becerilerini geliştirmelerine yardımcı olmaktır.

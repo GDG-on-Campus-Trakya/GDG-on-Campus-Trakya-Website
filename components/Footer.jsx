@@ -169,7 +169,7 @@ export default function Footer() {
           transition={{ delay: 0.5 }}
           className="border-t border-gray-800 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-xs sm:text-sm"
         >
-          © 2025 GDG On Campus Trakya. Her hakkı saklıdır.
+          © 2025 GDG On Campus Trakya Üniversitesi. Her hakkı saklıdır.
         </motion.div>
       </div>
     </footer>
