@@ -156,7 +156,7 @@ const UserInfo = ({ user }) => {
       <div className="flex items-center gap-5 justify-center">
         <div className="relative">
           <img
-            src={profileData.photoURL || user.photoURL || "/landing.jpg"}
+            src={profileData.photoURL || user.photoURL || "/logo.svg"}
             alt="Profile"
             className="w-32 h-32 rounded-full object-cover border-4 border-blue-400"
           />

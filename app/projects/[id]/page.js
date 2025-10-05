@@ -95,14 +95,14 @@ export default function ProjectDetailPage() {
           if (userDoc.exists()) {
             const userData = userDoc.data();
             setUserProfilePhoto(
-              userData.photoURL || user.photoURL || "/default-profile.png"
+              userData.photoURL || user.photoURL || "/logo.svg"
             );
           } else {
-            setUserProfilePhoto(user.photoURL || "/default-profile.png");
+            setUserProfilePhoto(user.photoURL || "/logo.svg");
           }
         } catch (error) {
           logger.error("Error fetching user profile photo:", error);
-          setUserProfilePhoto(user.photoURL || "/default-profile.png");
+          setUserProfilePhoto(user.photoURL || "/logo.svg");
         }
       } else {
         setUserProfilePhoto(null);
@@ -472,7 +472,7 @@ export default function ProjectDetailPage() {
                         className="flex items-center gap-4 bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50"
                       >
                         <img
-                          src={collab.photoURL || "/default-profile.png"}
+                          src={collab.photoURL || "/logo.svg"}
                           alt={collab.name}
                           className="w-12 h-12 rounded-full object-cover"
                         />
@@ -504,7 +504,7 @@ export default function ProjectDetailPage() {
                   >
                     <div className="flex gap-4">
                       <img
-                        src={userProfilePhoto || "/default-profile.png"}
+                        src={userProfilePhoto || "/logo.svg"}
                         alt="Your profile"
                         className="w-10 h-10 rounded-full object-cover"
                       />
@@ -552,7 +552,7 @@ export default function ProjectDetailPage() {
                         >
                           <div className="flex gap-3">
                             <img
-                              src={comment.userPhoto || "/default-profile.png"}
+                              src={comment.userPhoto || "/logo.svg"}
                               alt={comment.userName}
                               className="w-8 h-8 rounded-full object-cover"
                             />

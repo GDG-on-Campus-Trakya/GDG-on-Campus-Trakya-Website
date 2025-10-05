@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { auth, db, googleProvider } from "../../firebase";
 import { 
   signInWithEmailAndPassword, 
@@ -198,14 +199,20 @@ export default function LoginPage() {
           {/* Logo */}
           <div className="mb-10">
             <Link href="/">
-              <motion.img
+              <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.5 }}
-                src="/landing-Photoroom.png"
-                alt="GDG Logo"
-                className="h-14 w-auto cursor-pointer"
-              />
+              >
+                <Image
+                  src="/logo.svg"
+                  alt="GDG Logo"
+                  width={56}
+                  height={56}
+                  className="h-14 w-auto cursor-pointer"
+                  priority
+                />
+              </motion.div>
             </Link>
           </div>
 
@@ -491,10 +498,13 @@ export default function LoginPage() {
                   ease: "easeInOut"
                 }}
               >
-                <img
-                  src="/landing-Photoroom.png"
+                <Image
+                  src="/logo.svg"
                   alt="GDG Illustration"
+                  width={192}
+                  height={192}
                   className="w-48 h-48 object-contain drop-shadow-2xl"
+                  priority
                 />
               </motion.div>
             </div>

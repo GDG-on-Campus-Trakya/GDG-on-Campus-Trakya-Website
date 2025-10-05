@@ -20,10 +20,10 @@ export default function LandingPage() {
           >
             <div className="relative w-24 xs:w-28 sm:w-32 md:w-40">
               <div className="rounded-full p-1 bg-gradient-to-r from-blue-500 via-purple-500 to-green-500">
-                <div className="rounded-full p-2 bg-black">
+                <div className="rounded-full p-5 bg-black">
                   <Image
                     className="w-full h-auto rounded-full shadow-lg"
-                    src="/landing-Photoroom.png"
+                    src="/logo.svg"
                     aria-label="GDG on Campus Trakya"
                     alt="GDG on Campus Trakya"
                     width={160}
@@ -121,10 +121,10 @@ export default function LandingPage() {
           >
             <div className="relative w-80 xl:w-full max-w-2xl">
               <div className="rounded-full p-1 bg-gradient-to-r from-blue-500 via-purple-500 to-green-500">
-                <div className="rounded-full p-4 bg-black">
+                <div className="rounded-full p-12 bg-black">
                   <Image
                     className="w-full h-auto rounded-full shadow-lg"
-                    src="/landing-Photoroom.png"
+                    src="/logo.svg"
                     aria-label="GDG on Campus Trakya"
                     alt="GDG on Campus Trakya"
                     width={600}

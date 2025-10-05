@@ -520,7 +520,7 @@ export default function AdminProjectsPage() {
                             className="flex items-center gap-2 bg-blue-900/30 text-blue-200 px-3 py-1 rounded-full text-sm border border-blue-700/50"
                           >
                             <img
-                              src={collab.photoURL || "/default-profile.png"}
+                              src={collab.photoURL || "/logo.svg"}
                               alt={collab.name}
                               className="w-5 h-5 rounded-full object-cover"
                             />
@@ -683,7 +683,7 @@ export default function AdminProjectsPage() {
                                 className="flex items-center gap-1 bg-blue-900/30 px-2 py-1 rounded-full text-xs border border-blue-700/50"
                               >
                                 <img
-                                  src={collab.photoURL || "/default-profile.png"}
+                                  src={collab.photoURL || "/logo.svg"}
                                   alt={collab.name}
                                   className="w-4 h-4 rounded-full object-cover"
                                 />
@@ -887,7 +887,7 @@ export default function AdminProjectsPage() {
                           <div key={comment.id} className="bg-gray-700/60 p-4 rounded-lg border border-gray-600/50">
                             <div className="flex items-start gap-3">
                               <img
-                                src={comment.userPhoto || "/default-profile.png"}
+                                src={comment.userPhoto || "/logo.svg"}
                                 alt={comment.userName}
                                 className="w-8 h-8 rounded-full object-cover"
                               />

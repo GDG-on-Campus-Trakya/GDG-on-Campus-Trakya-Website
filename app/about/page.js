@@ -58,43 +58,43 @@ export default function AboutPage() {
   const teamData = {
     organizer: {
       title: "Organizer",
-      image: "/organizer.jpg",
+      image: "/organizer.webp",
       gradient: "from-[#4285F4] to-[#DB4437]",
     },
     yonetimKurulu: {
       title: "Yönetim Kurulu",
-      image: "/yonetim kurulu.jpg",
+      image: "/yonetim-kurulu.webp",
       gradient: "from-[#DB4437] to-[#F4B400]",
     },
     teams: [
       {
         department: "Dış İşleri",
         members: [
-          { title: "Dış İlişkiler", image: "/dis isleri - dis iliskiler.jpg" },
-          { title: "Sponsorluk", image: "/dis isleri - sponsorluk.jpg" },
+          { title: "Dış İlişkiler", image: "/dis-isleri-dis-iliskiler.webp" },
+          { title: "Sponsorluk", image: "/dis-isleri-sponsorluk.webp" },
         ],
         gradient: "from-[#F4B400] to-[#0F9D58]",
       },
       {
         department: "İç İşleri",
         members: [
-          { title: "Organizasyon", image: "/ic isleri - organizasyon.jpg" },
-          { title: "PR", image: "/ic isleri - pr.jpg" },
+          { title: "Organizasyon", image: "/ic-isleri-organizasyon.webp" },
+          { title: "PR", image: "/ic-isleri-pr.webp" },
         ],
         gradient: "from-[#0F9D58] to-[#4285F4]",
       },
       {
         department: "Medya ve İletişim",
         members: [
-          { title: "Sosyal Medya", image: "/medya ve iletisim - sosyal medya.jpg" },
-          { title: "Tasarım", image: "/medya ve iletisim - tasarim.jpg" },
+          { title: "Sosyal Medya", image: "/medya-ve-iletisim-sosyal-medya.webp" },
+          { title: "Tasarım", image: "/medya-ve-iletisim-tasarim.webp" },
         ],
         gradient: "from-[#DB4437] to-[#F4B400]",
       },
       {
         department: "Yazılım",
         members: [
-          { title: "Mentor", image: "/yazilim - mentor.jpg" },
+          { title: "Mentor", image: "/yazilim-mentor.webp" },
         ],
         gradient: "from-[#4285F4] to-[#0F9D58]",
       },

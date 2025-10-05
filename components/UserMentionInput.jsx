@@ -119,7 +119,7 @@ const UserMentionInput = ({ onUserSelect, selectedUsers = [], placeholder = "Kul
                   className="p-3 cursor-pointer hover:bg-gray-100 flex items-center gap-3"
                 >
                   <img
-                    src={user.photoURL || "/default-profile.png"}
+                    src={user.photoURL || "/logo.svg"}
                     alt={user.name || "User"}
                     className="w-8 h-8 rounded-full object-cover"
                   />

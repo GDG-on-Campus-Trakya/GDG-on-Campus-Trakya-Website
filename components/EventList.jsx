@@ -94,7 +94,7 @@ const EventList = ({
           >
             {/* Event Image */}
             <img
-              src={event.imageUrl || "/default-event.png"}
+              src={event.imageUrl || "/logo.svg"}
               alt={event.name}
               className="w-32 h-32 object-cover rounded"
             />

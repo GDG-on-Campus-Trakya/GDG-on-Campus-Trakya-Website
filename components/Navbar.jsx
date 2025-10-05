@@ -5,6 +5,7 @@ import { auth, googleProvider, db } from "../firebase";
 import { signInWithPopup, signOut } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -97,8 +98,6 @@ function NavbarContent() {
     }
   };
 
-  // Not needed anymore - using popup only!
-
   useEffect(() => {
     const fetchUserData = async () => {
       if (user?.uid) {
@@ -106,9 +105,9 @@ function NavbarContent() {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            setUserProfilePhoto(userData.photoURL || user.photoURL || "/default-profile.png");
+            setUserProfilePhoto(userData.photoURL || user.photoURL || "/logo.svg");
           } else {
-            setUserProfilePhoto(user.photoURL || "/default-profile.png");
+            setUserProfilePhoto(user.photoURL || "/logo.svg");
           }
 
           // Check user role
@@ -116,7 +115,7 @@ function NavbarContent() {
           setUserRole(role);
         } catch (error) {
           logger.error("Error fetching user data:", error);
-          setUserProfilePhoto(user.photoURL || "/default-profile.png");
+          setUserProfilePhoto(user.photoURL || "/logo.svg");
           setUserRole(null);
         }
       } else {
@@ -200,10 +199,13 @@ function NavbarContent() {
           className="hidden md:flex items-center"
         >
           <Link href="/">
-            <img
-              src="/landing-Photoroom.png"
+            <Image
+              src="/logo.svg"
               alt="Home"
+              width={80}
+              height={80}
               className="w-16 h-16 lg:w-20 lg:h-20 cursor-pointer"
+              priority
             />
           </Link>
         </motion.div>
@@ -283,7 +285,7 @@ function NavbarContent() {
           <div className="relative">
             <motion.img
               whileHover={{ scale: 1.1 }}
-              src={userProfilePhoto || "/default-profile.png"}
+              src={userProfilePhoto || "/logo.svg"}
               alt="Profile"
               className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow cursor-pointer border-2 border-blue-500 touch-manipulation select-none"
               onClick={toggleProfileMenu}

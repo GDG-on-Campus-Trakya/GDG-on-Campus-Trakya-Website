@@ -258,7 +258,7 @@ export default function ProjectsPage() {
                                     <img
                                       src={
                                         collab.photoURL ||
-                                        "/default-profile.png"
+                                        "/logo.svg"
                                       }
                                       alt={collab.name}
                                       className="w-4 h-4 rounded-full object-cover"
