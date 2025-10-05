@@ -1,36 +1,59 @@
 /**
- * Performance utilities for production optimization
- * Note: Web Vitals are already handled by components/WebVitals.jsx using Next.js built-in hooks
- * Note: debounce and throttle moved to utils/debounce.js
+ * Performance monitoring utilities for Vercel deployment
  */
-
-import dynamic from 'next/dynamic';
 
 /**
- * Lazy load component with Next.js dynamic import
- * @param {Function} importFn - Dynamic import function
- * @param {Object} options - Loading options
- * @example
- * const HeavyComponent = lazyLoadComponent(() => import('./HeavyComponent'));
+ * Report Web Vitals to analytics
+ * @param {Object} metric - Web Vitals metric object
  */
-export function lazyLoadComponent(importFn, options = {}) {
-  const {
-    loading = () => null,
-    ssr = true,
-  } = options;
+export function reportWebVitals(metric) {
+  if (process.env.NODE_ENV === 'production') {
+    // Vercel Analytics otomatik olarak toplar
+    // İsterseniz custom analytics'e de gönderebilirsiniz
+    const { name, value, id, label } = metric;
+    
+    // Console'da görmek için (development)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Web Vitals] ${name}:`, {
+        value: Math.round(name === 'CLS' ? value * 1000 : value),
+        label,
+        id,
+      });
+    }
 
-  return dynamic(importFn, {
-    loading,
-    ssr,
-  });
+    // Custom analytics endpoint'e gönder (optional)
+    // fetch('/api/analytics', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(metric),
+    // });
+  }
 }
 
 /**
- * Preload critical resources (fonts, scripts, etc.)
+ * Lazy load component with intersection observer
+ * @param {Function} importFn - Dynamic import function
+ * @param {Object} options - Loading options
+ */
+export function lazyLoadComponent(importFn, options = {}) {
+  const {
+    fallback = null,
+    ssr = true,
+    loading = () => fallback,
+  } = options;
+
+  const LazyComponent = dynamic(importFn, {
+    loading,
+    ssr,
+  });
+
+  return LazyComponent;
+}
+
+/**
+ * Preload critical resources
  * @param {string} href - Resource URL
- * @param {string} as - Resource type (script, font, style, etc.)
- * @example
- * preloadResource('/fonts/custom-font.woff2', 'font');
+ * @param {string} as - Resource type
  */
 export function preloadResource(href, as = 'script') {
   if (typeof window !== 'undefined') {
@@ -47,16 +70,11 @@ export function preloadResource(href, as = 'script') {
 }
 
 /**
- * Measure component render time (development only)
+ * Measure component render time
  * @param {string} componentName - Name of the component
- * @returns {Function} Cleanup function
- * @example
- * const stopMeasure = measureComponentRender('MyComponent');
- * // ... component renders
- * stopMeasure();
  */
 export function measureComponentRender(componentName) {
-  if (typeof window !== 'undefined' && window.performance && process.env.NODE_ENV === 'development') {
+  if (typeof window !== 'undefined' && window.performance) {
     const startMark = `${componentName}-render-start`;
     const endMark = `${componentName}-render-end`;
     const measureName = `${componentName}-render`;
@@ -68,7 +86,9 @@ export function measureComponentRender(componentName) {
       performance.measure(measureName, startMark, endMark);
       
       const measure = performance.getEntriesByName(measureName)[0];
-      console.log(`[Performance] ${componentName} rendered in ${Math.round(measure.duration)}ms`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[Performance] ${componentName} rendered in ${Math.round(measure.duration)}ms`);
+      }
       
       // Cleanup
       performance.clearMarks(startMark);
@@ -81,8 +101,50 @@ export function measureComponentRender(componentName) {
 }
 
 /**
- * Check if browser supports WebP format
- * Useful for conditional image loading
+ * Optimize Firebase query for better performance
+ * @param {Object} query - Firebase query object
+ * @param {number} limit - Max items to fetch
+ */
+export function optimizeFirebaseQuery(query, limit = 50) {
+  // Limit sonuçları to reduce data transfer
+  return query.limit(limit);
+}
+
+/**
+ * Debounce function for performance
+ * @param {Function} func - Function to debounce
+ * @param {number} wait - Wait time in ms
+ */
+export function debounce(func, wait = 300) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+/**
+ * Throttle function for performance
+ * @param {Function} func - Function to throttle
+ * @param {number} limit - Time limit in ms
+ */
+export function throttle(func, limit = 300) {
+  let inThrottle;
+  return function executedFunction(...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+}
+
+/**
+ * Check if browser supports WebP
  */
 export function supportsWebP() {
   if (typeof window === 'undefined') return false;
@@ -95,8 +157,7 @@ export function supportsWebP() {
 }
 
 /**
- * Check if browser supports AVIF format
- * Useful for conditional image loading
+ * Check if browser supports AVIF
  */
 export async function supportsAVIF() {
   if (typeof window === 'undefined') return false;
@@ -115,7 +176,6 @@ export async function supportsAVIF() {
 
 /**
  * Get optimal image format based on browser support
- * @returns {Promise<'avif'|'webp'|'jpeg'>}
  */
 export async function getOptimalImageFormat() {
   if (await supportsAVIF()) return 'avif';
@@ -124,23 +184,23 @@ export async function getOptimalImageFormat() {
 }
 
 /**
- * Monitor long tasks for performance debugging (development only)
- * Logs tasks that take longer than 50ms
+ * Monitor long tasks (for performance debugging)
  */
 export function monitorLongTasks() {
   if (typeof window === 'undefined' || !('PerformanceObserver' in window)) {
     return;
   }
 
-  if (process.env.NODE_ENV !== 'development') return;
-
   try {
     const observer = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        console.warn('[Long Task]', {
-          duration: Math.round(entry.duration),
-          startTime: Math.round(entry.startTime),
-        });
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('[Long Task]', {
+            duration: Math.round(entry.duration),
+            startTime: Math.round(entry.startTime),
+          });
+        }
+        // Optionally send to analytics
       }
     });
 
@@ -150,3 +210,5 @@ export function monitorLongTasks() {
   }
 }
 
+// Import dynamic from next for lazy loading
+import dynamic from 'next/dynamic';

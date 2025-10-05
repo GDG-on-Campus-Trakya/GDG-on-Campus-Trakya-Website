@@ -1,20 +1,77 @@
 import 'server-only';
+import admin from 'firebase-admin';
 import { checkUserRole, ROLES } from '../utils/roleUtils';
 import { logger } from '../utils/logger';
-import { adminRateLimit, isUserBlocked } from '../utils/rateLimiter';
-import { getAuth, isFirebaseAdminAvailable } from '../utils/firebaseAdmin';
+
+// Initialize Firebase Admin with secure credentials
+const initializeFirebaseAdmin = () => {
+  if (admin.apps.length > 0) return true;
+
+  try {
+    let credential;
+    
+    if (process.env.NODE_ENV === 'production') {
+      // Production: Use service account JSON
+      if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+        credential = admin.credential.cert(serviceAccount);
+      } else {
+        // Vercel/Netlify: Use individual env vars
+        credential = admin.credential.cert({
+          projectId: process.env.FIREBASE_ADMIN_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
+          privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        });
+      }
+    } else {
+      // Development: Use default credentials or emulator
+      if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
+        // Emulator mode - no credentials needed
+        credential = admin.credential.applicationDefault();
+      } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+        // Development with service account file
+        credential = admin.credential.applicationDefault();
+      } else {
+        logger.warn('⚠️ Firebase Admin not initialized - missing credentials');
+        return false;
+      }
+    }
+    
+    admin.initializeApp({
+      credential,
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    });
+    
+    return true;
+  } catch (error) {
+    logger.error('Firebase Admin initialization failed:', error);
+    return false;
+  }
+};
+
+// Initialize on module load
+initializeFirebaseAdmin();
+
+// Rate limiting için basit in-memory store
+const attempts = new Map();
+
+const rateLimit = (email, maxAttempts = 10, windowMs = 15 * 60 * 1000) => {
+  const now = Date.now();
+  const userAttempts = attempts.get(email) || { count: 0, resetTime: now + windowMs };
+  
+  if (now > userAttempts.resetTime) {
+    userAttempts.count = 0;
+    userAttempts.resetTime = now + windowMs;
+  }
+  
+  userAttempts.count++;
+  attempts.set(email, userAttempts);
+  
+  return userAttempts.count <= maxAttempts;
+};
 
 export const requireAuth = async (req, res, next) => {
   try {
-    // Check if Firebase Admin is available
-    if (!isFirebaseAdminAvailable()) {
-      logger.error('Firebase Admin not initialized');
-      return res.status(500).json({
-        error: 'Authentication service unavailable',
-        code: 'AUTH_SERVICE_ERROR'
-      });
-    }
-
     const token = req.headers.authorization?.replace('Bearer ', '');
     
     if (!token) {
@@ -24,24 +81,12 @@ export const requireAuth = async (req, res, next) => {
       });
     }
 
-    const auth = getAuth();
-    const decodedToken = await auth.verifyIdToken(token);
+    const decodedToken = await admin.auth().verifyIdToken(token);
     
-    // Check if user is blocked
-    if (isUserBlocked(decodedToken.email)) {
-      return res.status(429).json({ 
-        error: 'You have been temporarily blocked',
-        code: 'TEMPORARILY_BLOCKED'
-      });
-    }
-
-    // Check rate limit
-    const rateCheck = adminRateLimit(decodedToken.email);
-    if (!rateCheck.allowed) {
+    if (!rateLimit(decodedToken.email)) {
       return res.status(429).json({ 
         error: 'Too many requests. Please try again later.',
-        code: 'RATE_LIMIT_EXCEEDED',
-        retryAfter: rateCheck.retryAfter
+        code: 'RATE_LIMIT_EXCEEDED'
       });
     }
 

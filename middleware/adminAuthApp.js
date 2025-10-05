@@ -3,7 +3,24 @@ import { NextResponse } from 'next/server';
 import { verifyIdToken } from '../utils/firebaseAdmin';
 import { checkUserRoleServer, ROLES } from '../utils/roleUtilsServer';
 import { logger } from '../utils/logger';
-import { adminRateLimit, isUserBlocked } from '../utils/rateLimiter';
+
+// Rate limiting için basit in-memory store
+const attempts = new Map();
+
+const rateLimit = (email, maxAttempts = 10, windowMs = 15 * 60 * 1000) => {
+  const now = Date.now();
+  const userAttempts = attempts.get(email) || { count: 0, resetTime: now + windowMs };
+
+  if (now > userAttempts.resetTime) {
+    userAttempts.count = 0;
+    userAttempts.resetTime = now + windowMs;
+  }
+
+  userAttempts.count++;
+  attempts.set(email, userAttempts);
+
+  return userAttempts.count <= maxAttempts;
+};
 
 export const requireAuth = async (request) => {
   try {
@@ -18,29 +35,10 @@ export const requireAuth = async (request) => {
 
     const decodedToken = await verifyIdToken(token);
 
-    // Check if user is blocked
-    if (isUserBlocked(decodedToken.email)) {
+    if (!rateLimit(decodedToken.email)) {
       return NextResponse.json(
-        { error: 'You have been temporarily blocked', code: 'TEMPORARILY_BLOCKED' },
+        { error: 'Too many requests. Please try again later.', code: 'RATE_LIMIT_EXCEEDED' },
         { status: 429 }
-      );
-    }
-
-    // Check rate limit
-    const rateCheck = adminRateLimit(decodedToken.email);
-    if (!rateCheck.allowed) {
-      return NextResponse.json(
-        { 
-          error: 'Too many requests. Please try again later.', 
-          code: 'RATE_LIMIT_EXCEEDED',
-          retryAfter: rateCheck.retryAfter
-        },
-        { 
-          status: 429,
-          headers: {
-            'Retry-After': rateCheck.retryAfter.toString()
-          }
-        }
       );
     }
 

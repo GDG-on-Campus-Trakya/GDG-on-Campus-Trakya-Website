@@ -26,7 +26,7 @@ export const throttle = (func, wait = 300) => {
   let inThrottle;
   return function executedFunction(...args) {
     if (!inThrottle) {
-      func.apply(this, args);
+      func(...args);
       inThrottle = true;
       setTimeout(() => (inThrottle = false), wait);
     }
