@@ -108,6 +108,17 @@
   ],
   "redirects": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "(?<deploymentUrl>.*\\.vercel\\.app)"
+        }
+      ],
+      "destination": "https://www.gdgoncampustu.com/:path*",
+      "permanent": true
+    },
+    {
       "source": "/wp-admin",
       "destination": "/",
       "permanent": false
