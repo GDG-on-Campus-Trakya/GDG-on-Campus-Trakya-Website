@@ -63,7 +63,7 @@ logs/
 # Temporary files
 *.tmp
 *.temp
-
+scripts
 certificates
 docs
 quizzes

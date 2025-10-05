@@ -4,7 +4,6 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { useRouter, usePathname } from "next/navigation";
 import { auth } from "../firebase";
 import { checkUserRole, canAccessPage } from "../utils/roleUtils";
-import { logSecurityEvent, AUDIT_EVENTS } from "../utils/auditLog";
 import { logger } from "@/utils/logger";
 
 export default function AdminProtection({ children, requiredRole = null }) {
@@ -27,22 +26,14 @@ export default function AdminProtection({ children, requiredRole = null }) {
       
       try {
         if (!user) {
-          await logSecurityEvent(AUDIT_EVENTS.SECURITY_VIOLATION, {
-            action: 'unauthorized_access_attempt',
-            resource: pathname,
-            actorIP: typeof window !== 'undefined' ? window.location.hostname : 'unknown'
-          });
+          logger.warn('Unauthorized access attempt:', { resource: pathname });
           router.push("/");
           return;
         }
 
         const role = await checkUserRole(user.email);
         if (!role) {
-          await logSecurityEvent(AUDIT_EVENTS.SECURITY_VIOLATION, {
-            action: 'invalid_role_access_attempt',
-            actorEmail: user.email,
-            resource: pathname
-          });
+          logger.warn('Invalid role access attempt:', { email: user.email, resource: pathname });
           router.push("/");
           return;
         }
@@ -50,10 +41,9 @@ export default function AdminProtection({ children, requiredRole = null }) {
         setUserRole(role);
 
         if (requiredRole && role !== requiredRole) {
-          await logSecurityEvent(AUDIT_EVENTS.SECURITY_VIOLATION, {
-            action: 'insufficient_role_access_attempt',
-            actorEmail: user.email,
-            actorRole: role,
+          logger.warn('Insufficient role access attempt:', {
+            email: user.email,
+            role,
             requiredRole,
             resource: pathname
           });
@@ -62,10 +52,9 @@ export default function AdminProtection({ children, requiredRole = null }) {
         }
 
         if (!canAccessPage(role, pathname)) {
-          await logSecurityEvent(AUDIT_EVENTS.SECURITY_VIOLATION, {
-            action: 'page_access_denied',
-            actorEmail: user.email,
-            actorRole: role,
+          logger.warn('Page access denied:', {
+            email: user.email,
+            role,
             resource: pathname
           });
           router.push("/admin");
@@ -74,15 +63,9 @@ export default function AdminProtection({ children, requiredRole = null }) {
 
         setIsAuthorized(true);
         hasChecked.current = true;
-        
+
       } catch (error) {
         logger.error("Access check failed:", error);
-        await logSecurityEvent(AUDIT_EVENTS.SYSTEM_ERROR, {
-          action: 'access_check_failed',
-          error: error.message,
-          actorEmail: user?.email,
-          resource: pathname
-        });
         router.push("/");
       } finally {
         checkInProgress.current = false;
