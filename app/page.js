@@ -1,6 +1,7 @@
 "use client";
 // page.js
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 export default function LandingPage() {
@@ -20,11 +21,14 @@ export default function LandingPage() {
             <div className="relative w-24 xs:w-28 sm:w-32 md:w-40">
               <div className="rounded-full p-1 bg-gradient-to-r from-blue-500 via-purple-500 to-green-500">
                 <div className="rounded-full p-2 bg-black">
-                  <img
+                  <Image
                     className="w-full h-auto rounded-full shadow-lg"
                     src="/landing-Photoroom.png"
                     aria-label="GDG on Campus Trakya"
                     alt="GDG on Campus Trakya"
+                    width={160}
+                    height={160}
+                    priority
                     style={{ objectFit: "cover" }}
                   />
                 </div>
@@ -118,11 +122,14 @@ export default function LandingPage() {
             <div className="relative w-80 xl:w-full max-w-2xl">
               <div className="rounded-full p-1 bg-gradient-to-r from-blue-500 via-purple-500 to-green-500">
                 <div className="rounded-full p-4 bg-black">
-                  <img
+                  <Image
                     className="w-full h-auto rounded-full shadow-lg"
                     src="/landing-Photoroom.png"
                     aria-label="GDG on Campus Trakya"
                     alt="GDG on Campus Trakya"
+                    width={600}
+                    height={600}
+                    priority
                     style={{ objectFit: "cover" }}
                   />
                 </div>

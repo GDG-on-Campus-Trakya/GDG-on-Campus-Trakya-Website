@@ -4,47 +4,98 @@
   "regions": ["fra1"],
   "headers": [
     {
+      "source": "/_next/static/media/:path*.{woff,woff2,eot,ttf,otf}",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, s-maxage=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/_next/static/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, s-maxage=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/_next/image",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, s-maxage=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/static/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, s-maxage=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/:all*.{png,jpg,jpeg,gif,webp,avif,svg,ico}",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, s-maxage=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "accept",
+          "value": "text/html.*"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "index, follow, max-image-preview:large"
+        }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
+          "value": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
         }
       ]
     },
     {
-      "source": "/static/(.*)",
+      "source": "/api/:path*",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
         }
       ]
     },
     {
-      "source": "/_next/static/(.*)",
+      "source": "/(admin|profile|login|welcome)/:path*",
       "headers": [
         {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/_next/image(.*)",
-      "headers": [
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
         {
           "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, no-cache, must-revalidate"
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
         }
       ]
     }
@@ -53,6 +104,23 @@
     {
       "source": "/healthz",
       "destination": "/api/health"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/wp-admin",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/wp-login.php",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/.env",
+      "destination": "/",
+      "permanent": false
     }
   ],
   "trailingSlash": false,

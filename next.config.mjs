@@ -41,6 +41,10 @@ const nextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    unoptimized: false, // Vercel'de image optimization aktif
     remotePatterns: [
       {
         protocol: "https",
@@ -72,6 +76,73 @@ const nextConfig = {
   },
   async headers() {
     return [
+      // Font dosyaları - 1 yıl cache
+      {
+        source: "/_next/static/media/:path*.woff2",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, s-maxage=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/_next/static/media/:path*.woff",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, s-maxage=31536000, immutable",
+          },
+        ],
+      },
+      // Tüm statik medya - 1 yıl cache
+      {
+        source: "/_next/static/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, s-maxage=31536000, immutable",
+          },
+        ],
+      },
+      // Public klasöründeki görseller - 1 yıl cache
+      {
+        source: "/:all*.{png,jpg,jpeg,gif,webp,avif,svg,ico}",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, s-maxage=31536000, immutable",
+          },
+        ],
+      },
+      // Next.js optimized images - 1 yıl cache
+      {
+        source: "/_next/image",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, s-maxage=31536000, immutable",
+          },
+        ],
+      },
+      // HTML sayfalar - kısa cache ama stale-while-revalidate ile hızlı
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "header",
+            key: "accept",
+            value: "text/html.*",
+          },
+        ],
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
+      // Genel güvenlik ve CSP
       {
         source: "/(.*)",
         headers: [
