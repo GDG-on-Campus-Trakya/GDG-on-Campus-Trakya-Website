@@ -211,7 +211,7 @@ function NavbarContent() {
 
       {/* Middle Links - Hidden on small screens */}
       <div className="hidden md:flex gap-8 text-base font-medium flex-1 justify-center">
-        <Link href="/about">
+        <Link href="/about" prefetch={false}>
           <motion.span
             whileHover={{ scale: 1.1, color: "#60A5FA" }}
             className="hover:text-blue-400 transition cursor-pointer"
@@ -219,7 +219,7 @@ function NavbarContent() {
             Hakkımızda
           </motion.span>
         </Link>
-        <Link href="/events">
+        <Link href="/events" prefetch={false}>
           <motion.span
             whileHover={{ scale: 1.1, color: "#60A5FA" }}
             className="hover:text-blue-400 transition cursor-pointer"
@@ -227,7 +227,7 @@ function NavbarContent() {
             Etkinlikler
           </motion.span>
         </Link>
-        <Link href="/projects">
+        <Link href="/projects" prefetch={false}>
           <motion.span
             whileHover={{ scale: 1.1, color: "#60A5FA" }}
             className="hover:text-blue-400 transition cursor-pointer"
@@ -236,7 +236,7 @@ function NavbarContent() {
           </motion.span>
         </Link>
         {user && (
-          <Link href="/game">
+          <Link href="/game" prefetch={false}>
             <motion.span
               whileHover={{ scale: 1.1, color: "#A78BFA" }}
               className="hover:text-purple-400 transition cursor-pointer"
@@ -246,7 +246,7 @@ function NavbarContent() {
           </Link>
         )}
         {user && (
-          <Link href="/social">
+          <Link href="/social" prefetch={false}>
             <motion.span
               whileHover={{ scale: 1.1, color: "#F59E0B" }}
               className="hover:text-yellow-400 transition cursor-pointer"
@@ -256,7 +256,7 @@ function NavbarContent() {
           </Link>
         )}
         {user && (
-          <Link href="/tickets">
+          <Link href="/tickets" prefetch={false}>
             <motion.span
               whileHover={{ scale: 1.1, color: "#EF4444" }}
               className="hover:text-red-400 transition cursor-pointer"
@@ -266,7 +266,7 @@ function NavbarContent() {
           </Link>
         )}
         {userRole && (
-          <Link href="/admin">
+          <Link href="/admin" prefetch={false}>
             <motion.span
               whileHover={{ scale: 1.1, color: "#10B981" }}
               className="hover:text-green-400 transition cursor-pointer font-semibold"

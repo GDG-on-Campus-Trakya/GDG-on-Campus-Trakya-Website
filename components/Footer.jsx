@@ -49,7 +49,7 @@ export default function Footer() {
           <div className="space-y-4 text-center sm:text-left">
             <h3 className="text-base sm:text-lg font-semibold text-white">Sayfalar</h3>
             <div className="flex flex-col space-y-2">
-              <Link href="/about">
+              <Link href="/about" prefetch={false}>
                 <motion.span
                   whileHover={{ x: 5, color: "#60A5FA" }}
                   className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
@@ -57,7 +57,7 @@ export default function Footer() {
                   Hakkımızda
                 </motion.span>
               </Link>
-              <Link href="/events">
+              <Link href="/events" prefetch={false}>
                 <motion.span
                   whileHover={{ x: 5, color: "#60A5FA" }}
                   className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
@@ -65,7 +65,7 @@ export default function Footer() {
                   Etkinlikler
                 </motion.span>
               </Link>
-              <Link href="/projects">
+              <Link href="/projects" prefetch={false}>
                 <motion.span
                   whileHover={{ x: 5, color: "#60A5FA" }}
                   className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
@@ -73,7 +73,7 @@ export default function Footer() {
                   Projeler
                 </motion.span>
               </Link>
-              <Link href="/social">
+              <Link href="/social" prefetch={false}>
                 <motion.span
                   whileHover={{ x: 5, color: "#60A5FA" }}
                   className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
@@ -81,7 +81,7 @@ export default function Footer() {
                   Sosyal Medya
                 </motion.span>
               </Link>
-              <Link href="/faq">
+              <Link href="/faq" prefetch={false}>
                 <motion.span
                   whileHover={{ x: 5, color: "#60A5FA" }}
                   className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
@@ -96,7 +96,7 @@ export default function Footer() {
           <div className="space-y-4 text-center sm:text-left">
             <h3 className="text-base sm:text-lg font-semibold text-white">Yasal</h3>
             <div className="flex flex-col space-y-2">
-              <Link href="/privacy">
+              <Link href="/privacy" prefetch={false}>
                 <motion.span
                   whileHover={{ x: 5, color: "#60A5FA" }}
                   className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
@@ -104,7 +104,7 @@ export default function Footer() {
                   Gizlilik Politikası
                 </motion.span>
               </Link>
-              <Link href="/terms">
+              <Link href="/terms" prefetch={false}>
                 <motion.span
                   whileHover={{ x: 5, color: "#60A5FA" }}
                   className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
@@ -112,7 +112,7 @@ export default function Footer() {
                   Kullanım Şartları
                 </motion.span>
               </Link>
-              <Link href="/cookie-policy">
+              <Link href="/cookie-policy" prefetch={false}>
                 <motion.span
                   whileHover={{ x: 5, color: "#60A5FA" }}
                   className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
@@ -120,7 +120,7 @@ export default function Footer() {
                   Çerez Politikası
                 </motion.span>
               </Link>
-              <Link href="/tickets">
+              <Link href="/tickets" prefetch={false}>
                 <motion.span
                   whileHover={{ x: 5, color: "#60A5FA" }}
                   className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"

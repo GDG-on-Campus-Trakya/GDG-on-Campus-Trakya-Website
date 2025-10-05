@@ -6,7 +6,14 @@ const BLOCKED_BOTS = [
   'serpstat', 'petalbot', 'yandex', 'baidu', 'sogou', 'exabot',
   'bytespider', 'dataforseo', 'blexbot', 'seekport', 'gigabot',
   'zoominfobot', 'zgrab', 'masscan', 'nmap', 'nikto', 'sqlmap',
-  'python-requests', 'go-http-client', 'curl', 'wget'
+  'python-requests', 'go-http-client', 'curl', 'wget',
+  'headlesschrome', 'headless', 'puppeteer', 'playwright', 'selenium', // Automation bots
+  'phantomjs', 'chrome-lighthouse', // Testing tools
+  'squarespace', // SquareSpace crawler - site builder analytics
+  'claudebot', // AI bot
+  'java/', // Java-based bots/scripts
+  'apache-httpclient', // Generic HTTP clients
+  'scrapy', 'beautifulsoup', 'mechanize' // Web scrapers
 ];
 
 // İzin verilen botlar (SEO için gerekli)

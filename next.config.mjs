@@ -21,6 +21,15 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', 'date-fns', 'framer-motion'],
     serverMinification: true,
+    optimisticClientCache: true, // Reduce edge requests
+    scrollRestoration: true,
+  },
+  
+  // Logging - Disable in production to reduce noise
+  logging: {
+    fetches: {
+      fullUrl: false,
+    },
   },
   
   env: {
