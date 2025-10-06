@@ -3,16 +3,6 @@ export default function robots() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://gdgoncampustu.com';
   const host = process.env.VERCEL_URL;
 
-  // Vercel deployment URL'lerinde robots'u engelle
-  if (host && host.includes('vercel.app')) {
-    return {
-      rules: {
-        userAgent: '*',
-        disallow: '/',
-      },
-    };
-  }
-
   return {
     rules: [
       // İyi botlar (SEO için gerekli)
