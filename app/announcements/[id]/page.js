@@ -73,9 +73,9 @@ export default function AnnouncementDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col min-h-screen font-sans bg-gradient-to-b from-[#1a1a2e] to-[#000000] text-white items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mb-4"></div>
-        <p className="text-gray-400 text-sm">Duyuru yükleniyor...</p>
+      <div className="flex flex-col min-h-screen font-sans bg-gradient-to-b from-[#1a1a2e] to-[#000000] text-white items-center justify-center px-4">
+        <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-2 border-blue-500 border-t-transparent mb-4"></div>
+        <p className="text-gray-400 text-xs sm:text-sm text-center">Duyuru yükleniyor...</p>
       </div>
     );
   }
@@ -86,26 +86,25 @@ export default function AnnouncementDetailPage() {
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-gradient-to-b from-[#1a1a2e] to-[#000000] text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 pt-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 pt-20 sm:pt-24">
         {/* Breadcrumbs */}
-        {/* Breadcrumbs */}
-<nav aria-label="Breadcrumb" className="mb-6">
-  <ol className="flex items-center gap-1 text-sm text-gray-400 min-w-0">
+<nav aria-label="Breadcrumb" className="mb-4 sm:mb-6">
+  <ol className="flex items-center gap-1 text-xs sm:text-sm text-gray-400 min-w-0">
     <li className="shrink-0">
       <Link href="/" className="hover:text-white transition-colors whitespace-nowrap">
         Ana Sayfa
       </Link>
     </li>
-    <li className="shrink-0"><ChevronRight className="w-4 h-4" /></li>
+    <li className="shrink-0"><ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" /></li>
     <li className="shrink-0">
       <Link href="/announcements" className="hover:text-white transition-colors whitespace-nowrap">
         Duyurular
       </Link>
     </li>
-    <li className="shrink-0"><ChevronRight className="w-4 h-4" /></li>
+    <li className="shrink-0"><ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" /></li>
     {/* Uzun başlık: shrink kaldırıldı, ellipsis aktif */}
     <li className="min-w-0">
-      <span className="text-white block truncate max-w-[60vw] sm:max-w-[40ch]">
+      <span className="text-white block truncate max-w-[40vw] sm:max-w-[60vw] lg:max-w-[40ch]">
         {announcement.title}
       </span>
     </li>
@@ -113,15 +112,15 @@ export default function AnnouncementDetailPage() {
 </nav>
 
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12">
           {/* Main Content */}
           <motion.article
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-2 bg-gray-800/30 backdrop-blur-md rounded-2xl overflow-hidden border border-gray-700 shadow-2xl"
+            className="lg:col-span-2 bg-gray-800/30 backdrop-blur-md rounded-xl sm:rounded-2xl overflow-hidden border border-gray-700 shadow-2xl"
           >
             {announcement.imageUrl && !imageError && (
-              <div className="relative w-full h-64 sm:h-96 bg-gray-900">
+              <div className="relative w-full h-48 sm:h-64 md:h-80 lg:h-96 bg-gray-900">
                 <Image
                   src={announcement.imageUrl}
                   alt={announcement.title}
@@ -132,47 +131,47 @@ export default function AnnouncementDetailPage() {
                 />
               </div>
             )}
-            <div className="p-6 sm:p-8">
-              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4 leading-tight">
+            <div className="p-4 sm:p-6 lg:p-8">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 sm:mb-4 leading-tight break-words">
                 {announcement.title}
               </h1>
-              <div className="prose prose-invert prose-lg max-w-none text-gray-300 leading-relaxed whitespace-pre-wrap">
+              <div className="prose prose-sm sm:prose-base lg:prose-lg prose-invert max-w-none text-gray-300 leading-relaxed whitespace-pre-wrap break-words overflow-wrap-anywhere">
                 {announcement.content || announcement.description}
               </div>
               {!announcement.content && !announcement.description && (
-                <p className="text-gray-400 italic">Bu duyuru için içerik bulunmuyor.</p>
+                <p className="text-gray-400 italic text-sm sm:text-base">Bu duyuru için içerik bulunmuyor.</p>
               )}
             </div>
           </motion.article>
 
           {/* Sidebar */}
-          <motion.aside initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
+          <motion.aside initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4 sm:space-y-6 lg:space-y-8">
             {/* Author & Date */}
-            <div className="bg-gray-800/30 backdrop-blur-md rounded-2xl p-6 border border-gray-700">
-              <h3 className="text-lg font-semibold text-white mb-4">Duyuru Bilgileri</h3>
-              <div className="space-y-4 text-sm">
+            <div className="bg-gray-800/30 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-700">
+              <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Duyuru Bilgileri</h3>
+              <div className="space-y-3 sm:space-y-4 text-sm">
                 {announcement.authorName && (
-                  <div className="flex items-center gap-3">
-                    <User className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <span className="text-gray-400">Yazar</span>
-                      <p className="text-white font-medium">{announcement.authorName}</p>
+                  <div className="flex items-start gap-3">
+                    <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 shrink-0 mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <span className="text-gray-400 text-xs sm:text-sm">Yazar</span>
+                      <p className="text-white font-medium text-sm sm:text-base break-words">{announcement.authorName}</p>
                     </div>
                   </div>
                 )}
-                <div className="flex items-center gap-3">
-                  <Calendar className="w-5 h-5 text-gray-400" />
-                  <div>
-                    <span className="text-gray-400">Yayınlanma</span>
-                    <p className="text-white font-medium">{formatDate(announcement.createdAt)}</p>
+                <div className="flex items-start gap-3">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 shrink-0 mt-0.5" />
+                  <div className="min-w-0 flex-1">
+                    <span className="text-gray-400 text-xs sm:text-sm">Yayınlanma</span>
+                    <p className="text-white font-medium text-sm sm:text-base break-words">{formatDate(announcement.createdAt)}</p>
                   </div>
                 </div>
                 {announcement.updatedAt && announcement.updatedAt !== announcement.createdAt && (
-                  <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <span className="text-gray-400">Güncellenme</span>
-                      <p className="text-white font-medium">{formatDate(announcement.updatedAt)}</p>
+                  <div className="flex items-start gap-3">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 shrink-0 mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <span className="text-gray-400 text-xs sm:text-sm">Güncellenme</span>
+                      <p className="text-white font-medium text-sm sm:text-base break-words">{formatDate(announcement.updatedAt)}</p>
                     </div>
                   </div>
                 )}
@@ -199,13 +198,13 @@ export default function AnnouncementDetailPage() {
 
             {/* Recent Announcements */}
             {recentAnnouncements.length > 0 && (
-              <div className="bg-gray-800/30 backdrop-blur-md rounded-2xl p-6 border border-gray-700">
-                <h3 className="text-lg font-semibold text-white mb-4">Son Duyurular</h3>
-                <div className="space-y-4">
+              <div className="bg-gray-800/30 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-700">
+                <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Son Duyurular</h3>
+                <div className="space-y-3 sm:space-y-4">
                   {recentAnnouncements.map(item => (
                     <Link key={item.id} href={`/announcements/${item.id}`}>
-                      <div className="block p-4 bg-gray-700/50 hover:bg-gray-700 rounded-lg transition-colors">
-                        <p className="font-medium text-white text-sm truncate mb-1">{item.title}</p>
+                      <div className="block p-3 sm:p-4 bg-gray-700/50 hover:bg-gray-700 rounded-lg transition-colors">
+                        <p className="font-medium text-white text-sm sm:text-base line-clamp-2 mb-1">{item.title}</p>
                         <p className="text-xs text-gray-400">{formatDate(item.createdAt)}</p>
                       </div>
                     </Link>
