@@ -69,6 +69,14 @@ export default function Footer() {
                   Etkinlikler
                 </motion.span>
               </Link>
+              <Link href="/announcements" prefetch={false}>
+                <motion.span
+                  whileHover={{ x: 5, color: "#60A5FA" }}
+                  className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
+                >
+                  Duyurular
+                </motion.span>
+              </Link>
               <Link href="/projects" prefetch={false}>
                 <motion.span
                   whileHover={{ x: 5, color: "#60A5FA" }}
