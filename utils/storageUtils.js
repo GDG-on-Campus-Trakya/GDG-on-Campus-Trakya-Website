@@ -84,4 +84,6 @@ export const StoragePaths = {
   PROFILES: "profiles",
   SPONSORS: "sponsors",
   PROJECTS: "projects",
+  RAFFLE_ANNOUNCEMENTS: "announcements", // For raffle results (socialUtils)
+  CLUB_ANNOUNCEMENTS: "club-announcements", // For general club announcements
 };

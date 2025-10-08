@@ -229,6 +229,14 @@ function NavbarContent() {
             Etkinlikler
           </motion.span>
         </Link>
+        <Link href="/announcements" prefetch={false}>
+          <motion.span
+            whileHover={{ scale: 1.1, color: "#60A5FA" }}
+            className="hover:text-blue-400 transition cursor-pointer"
+          >
+            Duyurular
+          </motion.span>
+        </Link>
         <Link href="/projects" prefetch={false}>
           <motion.span
             whileHover={{ scale: 1.1, color: "#60A5FA" }}
@@ -407,6 +415,21 @@ function NavbarContent() {
                 }}
               >
                 Etkinlikler
+              </motion.div>
+              <motion.div
+                whileHover={{ backgroundColor: "#374151" }}
+                className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation"
+                onClick={() => {
+                  setMenuOpen(false);
+                  router.push('/announcements');
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  setMenuOpen(false);
+                  router.push('/announcements');
+                }}
+              >
+                Duyurular
               </motion.div>
               <motion.div
                 whileHover={{ backgroundColor: "#374151" }}
