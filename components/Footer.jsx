@@ -33,7 +33,7 @@ export default function Footer() {
       }}
     >
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8">
           {/* Left Section */}
           <div className="space-y-4 text-center sm:text-left">
             <Image
@@ -99,6 +99,37 @@ export default function Footer() {
                   className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
                 >
                   S.S.S.
+                </motion.span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Oyun Section */}
+          <div className="space-y-4 text-center sm:text-left">
+            <h3 className="text-base sm:text-lg font-semibold text-white">İnteraktif</h3>
+            <div className="flex flex-col space-y-2">
+              <Link href="/game" prefetch={false}>
+                <motion.span
+                  whileHover={{ x: 5, color: "#60A5FA" }}
+                  className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
+                >
+                  Oyun
+                </motion.span>
+              </Link>
+              <Link href="/typing-test" prefetch={false}>
+                <motion.span
+                  whileHover={{ x: 5, color: "#60A5FA" }}
+                  className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
+                >
+                  Yazma Hızı Testi
+                </motion.span>
+              </Link>
+              <Link href="/personality-test" prefetch={false}>
+                <motion.span
+                  whileHover={{ x: 5, color: "#60A5FA" }}
+                  className="hover:text-blue-400 transition cursor-pointer text-sm sm:text-base"
+                >
+                  Kişilik Testi
                 </motion.span>
               </Link>
             </div>
