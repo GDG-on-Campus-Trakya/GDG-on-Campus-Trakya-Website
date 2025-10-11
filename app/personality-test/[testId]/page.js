@@ -302,7 +302,6 @@ export default function PersonalityTestPage() {
       { strip: "bg-emerald-400", dot: "bg-emerald-400" },
     ];
 
-    // mavi artık yuvarlak
     const shapes = ["🔴", "🔵", "🟡", "🟢"];
 
     return (

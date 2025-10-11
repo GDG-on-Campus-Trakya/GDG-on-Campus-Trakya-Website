@@ -46,6 +46,8 @@ export default function AdminPersonalityTestsPage() {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [showJsonImport, setShowJsonImport] = useState(false);
   const [jsonInput, setJsonInput] = useState("");
+  const [isDraggingCover, setIsDraggingCover] = useState(false);
+  const [draggingResultKey, setDraggingResultKey] = useState(null);
 
   // Check admin privileges
   useEffect(() => {
@@ -133,9 +135,14 @@ export default function AdminPersonalityTestsPage() {
     }
   };
 
-  const handleCoverImageUpload = async (e) => {
-    const file = e.target.files[0];
+  const uploadCoverImage = async (file) => {
     if (!file) return;
+
+    // Check if file is an image
+    if (!file.type.startsWith('image/')) {
+      toast.error("Lütfen bir resim dosyası seçin!");
+      return;
+    }
 
     setUploadingCover(true);
     try {
@@ -155,9 +162,37 @@ export default function AdminPersonalityTestsPage() {
     setUploadingCover(false);
   };
 
-  const handleResultImageUpload = async (e, resultKey) => {
+  const handleCoverImageUpload = async (e) => {
     const file = e.target.files[0];
+    await uploadCoverImage(file);
+  };
+
+  const handleCoverDrop = async (e) => {
+    e.preventDefault();
+    setIsDraggingCover(false);
+
+    const file = e.dataTransfer.files[0];
+    await uploadCoverImage(file);
+  };
+
+  const handleCoverDragOver = (e) => {
+    e.preventDefault();
+    setIsDraggingCover(true);
+  };
+
+  const handleCoverDragLeave = (e) => {
+    e.preventDefault();
+    setIsDraggingCover(false);
+  };
+
+  const uploadResultImage = async (file, resultKey) => {
     if (!file) return;
+
+    // Check if file is an image
+    if (!file.type.startsWith('image/')) {
+      toast.error("Lütfen bir resim dosyası seçin!");
+      return;
+    }
 
     try {
       const timestamp = Date.now();
@@ -183,6 +218,29 @@ export default function AdminPersonalityTestsPage() {
       logger.error("Error uploading result image:", error);
       toast.error("Resim yüklenirken hata oluştu!");
     }
+  };
+
+  const handleResultImageUpload = async (e, resultKey) => {
+    const file = e.target.files[0];
+    await uploadResultImage(file, resultKey);
+  };
+
+  const handleResultDrop = async (e, resultKey) => {
+    e.preventDefault();
+    setDraggingResultKey(null);
+
+    const file = e.dataTransfer.files[0];
+    await uploadResultImage(file, resultKey);
+  };
+
+  const handleResultDragOver = (e, resultKey) => {
+    e.preventDefault();
+    setDraggingResultKey(resultKey);
+  };
+
+  const handleResultDragLeave = (e) => {
+    e.preventDefault();
+    setDraggingResultKey(null);
   };
 
   const handleSubmit = async (e) => {
@@ -654,20 +712,58 @@ export default function AdminPersonalityTestsPage() {
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                       Kapak Resmi
                     </label>
-                    {formData.imageUrl && (
-                      <img
-                        src={formData.imageUrl}
-                        alt="Cover"
-                        className="w-full h-48 object-cover rounded-lg mb-2"
+
+                    {/* Drag and Drop Area */}
+                    <div
+                      onDrop={handleCoverDrop}
+                      onDragOver={handleCoverDragOver}
+                      onDragLeave={handleCoverDragLeave}
+                      className={`
+                        relative border-2 border-dashed rounded-lg p-6 text-center transition-all
+                        ${isDraggingCover
+                          ? 'border-blue-500 bg-blue-500/10'
+                          : 'border-gray-600 bg-gray-700/30'
+                        }
+                        ${uploadingCover ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-blue-400'}
+                      `}
+                    >
+                      {formData.imageUrl ? (
+                        <div className="space-y-3">
+                          <img
+                            src={formData.imageUrl}
+                            alt="Cover"
+                            className="w-full h-48 object-cover rounded-lg"
+                          />
+                          <p className="text-sm text-gray-400">
+                            Yeni resim yüklemek için sürükle-bırak veya tıkla
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Upload className="w-12 h-12 mx-auto text-gray-400" />
+                          <p className="text-gray-300 font-medium">
+                            {isDraggingCover ? 'Bırakın...' : 'Resmi sürükle-bırak veya tıkla'}
+                          </p>
+                          <p className="text-sm text-gray-400">
+                            PNG, JPG, GIF (Max 5MB)
+                          </p>
+                        </div>
+                      )}
+
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCoverImageUpload}
+                        disabled={uploadingCover}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       />
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleCoverImageUpload}
-                      disabled={uploadingCover}
-                      className="w-full px-4 py-2 bg-gray-700 text-gray-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+
+                      {uploadingCover && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-900/50 rounded-lg">
+                          <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent"></div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -816,8 +912,8 @@ export default function AdminPersonalityTestsPage() {
                         className="w-full px-4 py-2 bg-gray-600 text-gray-100 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
 
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-1">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
                           <label className="block text-sm text-gray-300 mb-1">
                             Renk
                           </label>
@@ -830,27 +926,57 @@ export default function AdminPersonalityTestsPage() {
                             className="w-full h-10 bg-gray-600 border border-gray-500 rounded-lg"
                           />
                         </div>
+                      </div>
 
-                        <div className="flex-1">
-                          <label className="block text-sm text-gray-300 mb-1">
-                            Sonuç Resmi
-                          </label>
+                      {/* Result Image Drag and Drop */}
+                      <div>
+                        <label className="block text-sm text-gray-300 mb-2">
+                          Sonuç Resmi
+                        </label>
+                        <div
+                          onDrop={(e) => handleResultDrop(e, key)}
+                          onDragOver={(e) => handleResultDragOver(e, key)}
+                          onDragLeave={handleResultDragLeave}
+                          className={`
+                            relative border-2 border-dashed rounded-lg p-4 text-center transition-all
+                            ${draggingResultKey === key
+                              ? 'border-green-500 bg-green-500/10'
+                              : 'border-gray-600 bg-gray-700/30'
+                            }
+                            cursor-pointer hover:border-green-400
+                          `}
+                        >
+                          {result.imageUrl ? (
+                            <div className="space-y-2">
+                              <img
+                                src={result.imageUrl}
+                                alt={result.title}
+                                className="w-full h-32 object-cover rounded"
+                              />
+                              <p className="text-xs text-gray-400">
+                                Yeni resim için sürükle-bırak veya tıkla
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="space-y-2 py-4">
+                              <Upload className="w-8 h-8 mx-auto text-gray-400" />
+                              <p className="text-sm text-gray-300">
+                                {draggingResultKey === key ? 'Bırakın...' : 'Resmi sürükle-bırak veya tıkla'}
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                PNG, JPG, GIF
+                              </p>
+                            </div>
+                          )}
+
                           <input
                             type="file"
                             accept="image/*"
                             onChange={(e) => handleResultImageUpload(e, key)}
-                            className="w-full px-3 py-1 bg-gray-600 text-gray-100 border border-gray-500 rounded text-sm"
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                           />
                         </div>
                       </div>
-
-                      {result.imageUrl && (
-                        <img
-                          src={result.imageUrl}
-                          alt={result.title}
-                          className="w-32 h-32 object-cover rounded"
-                        />
-                      )}
                     </div>
                   ))}
                 </div>
