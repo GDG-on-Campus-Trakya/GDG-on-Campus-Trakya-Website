@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 
+// Force dynamic rendering to avoid pre-render issues
+export const dynamic = 'force-dynamic';
+
 const NORMAL_WORDS = [
   'bir', 've', 'bu', 'ne', 'için', 'ile', 'olan', 'de', 'da', 'mi', 'ben', 'sen', 'o', 'biz', 'siz', 'onlar', 'şu', 'gibi', 'var', 'yok',
   'çok', 'daha', 'en', 'her', 'hiç', 'nasıl', 'neden', 'nerede', 'kim', 'hangi', 'şey', 'zaman', 'yer', 'kişi', 'gün', 'yıl', 'ay', 'hafta', 'saat', 'dakika',
@@ -104,8 +107,8 @@ export default function TypingTest() {
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const containerRef = useRef(null);
 
-  // Generate random text based on mode (memoized)
-  const generateText = useCallback(() => {
+  // Generate random text based on mode (inline function to avoid dependency issues)
+  const generateText = () => {
     if (mode === 'normal') {
       const wordCount = 100;
       const randomWords = [];
@@ -117,31 +120,90 @@ export default function TypingTest() {
       const randomSnippet = CODE_SNIPPETS[Math.floor(Math.random() * CODE_SNIPPETS.length)];
       return randomSnippet.code;
     }
-  }, [mode]);
+  };
 
   // Reset test
   const resetTest = useCallback(() => {
-    setText(generateText());
+    const newText = generateText();
+    setText(newText);
     setInput('');
     setCurrentCharIndex(0);
     setStartTime(null);
     setIsActive(false);
     setStats(null);
     setTimeout(() => containerRef.current?.focus(), 100);
-  }, [generateText]);
+  }, [mode]);
 
   // Initialize text on mount and when mode changes
   useEffect(() => {
     resetTest();
-  }, [mode]);
+  }, [mode, resetTest]);
 
   // Focus container on mount
   useEffect(() => {
     containerRef.current?.focus();
   }, []);
 
-  // Handle keyboard input (memoized)
-  const handleKeyDown = useCallback((e) => {
+  // Calculate stats
+  const finishTest = (finalInput, currentText, currentStartTime) => {
+    const endT = Date.now();
+    setIsActive(false);
+
+    const timeElapsed = (endT - currentStartTime) / 1000 / 60; // minutes
+    const wordsTyped = finalInput.trim().split(/\s+/).length;
+    const charsTyped = finalInput.length;
+
+    // Calculate accuracy
+    let correctChars = 0;
+    for (let i = 0; i < Math.min(finalInput.length, currentText.length); i++) {
+      if (finalInput[i] === currentText[i]) correctChars++;
+    }
+    const accuracy = Math.round((correctChars / currentText.length) * 100);
+
+    // WPM calculation
+    const wpm = Math.round(wordsTyped / timeElapsed);
+
+    // Raw WPM (all characters / 5 / minutes)
+    const rawWpm = Math.round((charsTyped / 5) / timeElapsed);
+
+    setStats({
+      wpm,
+      rawWpm,
+      accuracy,
+      correctChars,
+      totalChars: currentText.length,
+      timeElapsed: Math.round(timeElapsed * 60)
+    });
+  };
+
+  // Handle input
+  const handleInput = (char) => {
+    setInput(prev => {
+      const newInput = prev + char;
+      setCurrentCharIndex(newInput.length);
+
+      // Check if completed
+      if (newInput.length >= text.length) {
+        if (isEndless) {
+          // In endless mode, replace with new text and reset
+          const newText = generateText();
+          setText(newText);
+          setTimeout(() => {
+            setInput('');
+            setCurrentCharIndex(0);
+          }, 0);
+          return newInput;
+        } else {
+          // In normal mode, finish the test
+          finishTest(newInput, text, startTime);
+        }
+      }
+      return newInput;
+    });
+  };
+
+  // Handle keyboard input
+  const handleKeyDown = (e) => {
     if (stats) return; // Don't accept input after test is finished
 
     // Start timer on first keydown (even before character is processed)
@@ -160,16 +222,23 @@ export default function TypingTest() {
         handleInput(spaces);
       } else {
         // In normal mode, skip to next word/non-space
-        let skipTo = currentCharIndex;
-        while (skipTo < text.length && (text[skipTo] === ' ' || text[skipTo] === '\t')) {
-          skipTo++;
-        }
-        if (skipTo > currentCharIndex) {
-          const skippedText = text.substring(currentCharIndex, skipTo);
-          const newInput = input + skippedText;
-          setInput(newInput);
-          setCurrentCharIndex(newInput.length);
-        }
+        setInput(prev => {
+          setCurrentCharIndex(curr => {
+            let skipTo = curr;
+            while (skipTo < text.length && (text[skipTo] === ' ' || text[skipTo] === '\t')) {
+              skipTo++;
+            }
+            if (skipTo > curr) {
+              const skippedText = text.substring(curr, skipTo);
+              const newInput = prev + skippedText;
+              setInput(newInput);
+              setCurrentCharIndex(newInput.length);
+              return newInput.length;
+            }
+            return curr;
+          });
+          return prev;
+        });
       }
       return;
     }
@@ -177,31 +246,40 @@ export default function TypingTest() {
     // Handle Enter key - skip to next line
     if (e.key === 'Enter') {
       e.preventDefault();
-      // Find the next newline and skip to after it
-      let skipTo = currentCharIndex;
-      while (skipTo < text.length && text[skipTo] !== '\n') {
-        skipTo++;
-      }
-      if (skipTo < text.length && text[skipTo] === '\n') {
-        skipTo++; // Skip past the newline
-      }
-      if (skipTo > currentCharIndex) {
-        const skippedText = text.substring(currentCharIndex, skipTo);
-        const newInput = input + skippedText;
-        setInput(newInput);
-        setCurrentCharIndex(newInput.length);
-      }
+      setInput(prev => {
+        setCurrentCharIndex(curr => {
+          let skipTo = curr;
+          while (skipTo < text.length && text[skipTo] !== '\n') {
+            skipTo++;
+          }
+          if (skipTo < text.length && text[skipTo] === '\n') {
+            skipTo++; // Skip past the newline
+          }
+          if (skipTo > curr) {
+            const skippedText = text.substring(curr, skipTo);
+            const newInput = prev + skippedText;
+            setInput(newInput);
+            setCurrentCharIndex(newInput.length);
+            return newInput.length;
+          }
+          return curr;
+        });
+        return prev;
+      });
       return;
     }
 
     // Handle Backspace
     if (e.key === 'Backspace') {
       e.preventDefault();
-      if (input.length > 0) {
-        const newInput = input.slice(0, -1);
-        setInput(newInput);
-        setCurrentCharIndex(newInput.length);
-      }
+      setInput(prev => {
+        if (prev.length > 0) {
+          const newInput = prev.slice(0, -1);
+          setCurrentCharIndex(newInput.length);
+          return newInput;
+        }
+        return prev;
+      });
       return;
     }
 
@@ -210,62 +288,10 @@ export default function TypingTest() {
       e.preventDefault();
       handleInput(e.key);
     }
-  }, [stats, startTime, isActive, input, currentCharIndex, text, mode]);
+  };
 
-  const handleInput = useCallback((char) => {
-    const newInput = input + char;
-    setInput(newInput);
-    setCurrentCharIndex(newInput.length);
-
-    // Check if completed
-    if (newInput.length >= text.length) {
-      if (isEndless) {
-        // In endless mode, replace with new text and reset
-        const newText = generateText();
-        setText(newText);
-        setInput('');
-        setCurrentCharIndex(0);
-      } else {
-        // In normal mode, finish the test
-        finishTest(newInput);
-      }
-    }
-  }, [input, text, isEndless, generateText]);
-
-  // Calculate stats (memoized)
-  const finishTest = useCallback((finalInput = input) => {
-    const endT = Date.now();
-    setIsActive(false);
-
-    const timeElapsed = (endT - startTime) / 1000 / 60; // minutes
-    const wordsTyped = finalInput.trim().split(/\s+/).length;
-    const charsTyped = finalInput.length;
-
-    // Calculate accuracy
-    let correctChars = 0;
-    for (let i = 0; i < Math.min(finalInput.length, text.length); i++) {
-      if (finalInput[i] === text[i]) correctChars++;
-    }
-    const accuracy = Math.round((correctChars / text.length) * 100);
-
-    // WPM calculation
-    const wpm = Math.round(wordsTyped / timeElapsed);
-
-    // Raw WPM (all characters / 5 / minutes)
-    const rawWpm = Math.round((charsTyped / 5) / timeElapsed);
-
-    setStats({
-      wpm,
-      rawWpm,
-      accuracy,
-      correctChars,
-      totalChars: text.length,
-      timeElapsed: Math.round(timeElapsed * 60)
-    });
-  }, [input, startTime, text]);
-
-  // Render character with color coding and opacity (memoized)
-  const renderText = useMemo(() => {
+  // Render character with color coding and opacity
+  const renderText = () => {
     return text.split('').map((char, index) => {
       let className = 'transition-all duration-100 ';
 
@@ -291,7 +317,7 @@ export default function TypingTest() {
         </span>
       );
     });
-  }, [text, input]);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 py-12 px-4">

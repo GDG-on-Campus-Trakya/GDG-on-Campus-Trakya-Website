@@ -15,7 +15,8 @@ export const EVENT_MANAGER_PAGES = [
   "/admin/raffles",
   "/admin/social",
   "/admin/event-stats",
-  "/admin/quiz/host"
+  "/admin/quiz/host",
+  "/admin/table-assignment"
 ];
 
 /**
