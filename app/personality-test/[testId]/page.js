@@ -1,6 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { useParams } from "next/navigation";
@@ -35,23 +34,25 @@ export default function PersonalityTestPage() {
     fetchTest();
   }, [testId]);
 
-  const handleOptionSelect = (questionIndex, option) => {
-    setAnswers({
-      ...answers,
+  const handleOptionSelect = useCallback((questionIndex, option) => {
+    setAnswers(prev => ({
+      ...prev,
       [questionIndex]: option
-    });
-  };
+    }));
+  }, []);
 
-  const handleSubmit = () => {
-    if (Object.keys(answers).length < testData.questions.length) {
+  const handleSubmit = useCallback(() => {
+    if (!testData || Object.keys(answers).length < testData.questions.length) {
       alert("Lütfen tüm soruları cevaplayın!");
       return;
     }
     setShowResult(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, [testData, answers]);
 
-  const getResult = () => {
+  const getResult = useMemo(() => {
+    if (!testData) return null;
+
     const scores = {};
 
     // Calculate scores from all answers
@@ -73,7 +74,7 @@ export default function PersonalityTestPage() {
     });
 
     return testData.results[resultKey];
-  };
+  }, [testData, answers]);
 
   const resetTest = () => {
     setAnswers({});
@@ -81,30 +82,30 @@ export default function PersonalityTestPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const shareOnTwitter = () => {
-    const result = getResult();
-    const text = `Ben ${result.title}'im! ${testData.title} testini dene! GDG on Campus Trakya Üniversitesi`;
+  const shareOnTwitter = useCallback(() => {
+    if (!getResult) return;
+    const text = `Ben ${getResult.title}'im! ${testData.title} testini dene! GDG on Campus Trakya Üniversitesi`;
     const url = window.location.href;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
-  };
+  }, [getResult, testData]);
 
-  const shareOnWhatsApp = () => {
-    const result = getResult();
-    const text = `Ben ${result.title}'im! ${testData.title} testini dene: ${window.location.href}`;
+  const shareOnWhatsApp = useCallback(() => {
+    if (!getResult) return;
+    const text = `Ben ${getResult.title}'im! ${testData.title} testini dene: ${window.location.href}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-  };
+  }, [getResult, testData]);
 
-  const shareOnLinkedIn = () => {
+  const shareOnLinkedIn = useCallback(() => {
     const url = window.location.href;
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
-  };
+  }, []);
 
-  const shareOnInstagram = () => {
-    const result = getResult();
-    const text = `Ben ${result.title}'im! ${testData.title} testini dene: ${window.location.href}`;
+  const shareOnInstagram = useCallback(() => {
+    if (!getResult) return;
+    const text = `Ben ${getResult.title}'im! ${testData.title} testini dene: ${window.location.href}`;
     navigator.clipboard.writeText(text);
     alert("Link kopyalandı! Instagram'da paylaşabilirsin 📋");
-  };
+  }, [getResult, testData]);
 
   if (loading) {
     return (
@@ -131,15 +132,11 @@ export default function PersonalityTestPage() {
   }
 
   if (showResult) {
-    const result = getResult();
+    const result = getResult;
 
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-2xl w-full"
-        >
+        <div className="max-w-2xl w-full animate-slideUp">
           <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl">
             {/* Header */}
             <div className="text-center mb-8">
@@ -251,12 +248,15 @@ export default function PersonalityTestPage() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     );
   }
 
-  const progress = (Object.keys(answers).length / testData.questions.length) * 100;
+  const progress = useMemo(() =>
+    (Object.keys(answers).length / testData.questions.length) * 100,
+    [answers, testData]
+  );
   const answeredCount = Object.keys(answers).length;
 
   return (
@@ -279,11 +279,9 @@ export default function PersonalityTestPage() {
 
           {/* Progress Bar */}
           <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden mb-2">
-            <motion.div
-              className="h-full bg-gradient-to-r from-green-400 to-blue-500"
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.3 }}
+            <div
+              className="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-300 ease-out"
+              style={{ width: `${progress}%` }}
             />
           </div>
 

@@ -4,6 +4,24 @@
   "regions": ["fra1"],
   "headers": [
     {
+      "source": "/personality-test/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, s-maxage=600, stale-while-revalidate=3600"
+        }
+      ]
+    },
+    {
+      "source": "/typing-test",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, s-maxage=600, stale-while-revalidate=3600"
+        }
+      ]
+    },
+    {
       "source": "/_next/static/media/:path*.{woff,woff2,eot,ttf,otf}",
       "headers": [
         {

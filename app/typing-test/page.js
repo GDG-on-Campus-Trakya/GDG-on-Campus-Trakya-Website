@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 
 const NORMAL_WORDS = [
   'bir', 've', 'bu', 'ne', 'için', 'ile', 'olan', 'de', 'da', 'mi', 'ben', 'sen', 'o', 'biz', 'siz', 'onlar', 'şu', 'gibi', 'var', 'yok',
@@ -105,8 +104,8 @@ export default function TypingTest() {
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const containerRef = useRef(null);
 
-  // Generate random text based on mode
-  const generateText = () => {
+  // Generate random text based on mode (memoized)
+  const generateText = useCallback(() => {
     if (mode === 'normal') {
       const wordCount = 100;
       const randomWords = [];
@@ -118,10 +117,10 @@ export default function TypingTest() {
       const randomSnippet = CODE_SNIPPETS[Math.floor(Math.random() * CODE_SNIPPETS.length)];
       return randomSnippet.code;
     }
-  };
+  }, [mode]);
 
   // Reset test
-  const resetTest = () => {
+  const resetTest = useCallback(() => {
     setText(generateText());
     setInput('');
     setCurrentCharIndex(0);
@@ -129,7 +128,7 @@ export default function TypingTest() {
     setIsActive(false);
     setStats(null);
     setTimeout(() => containerRef.current?.focus(), 100);
-  };
+  }, [generateText]);
 
   // Initialize text on mount and when mode changes
   useEffect(() => {
@@ -141,8 +140,8 @@ export default function TypingTest() {
     containerRef.current?.focus();
   }, []);
 
-  // Handle keyboard input
-  const handleKeyDown = (e) => {
+  // Handle keyboard input (memoized)
+  const handleKeyDown = useCallback((e) => {
     if (stats) return; // Don't accept input after test is finished
 
     // Start timer on first keydown (even before character is processed)
@@ -211,9 +210,9 @@ export default function TypingTest() {
       e.preventDefault();
       handleInput(e.key);
     }
-  };
+  }, [stats, startTime, isActive, input, currentCharIndex, text, mode]);
 
-  const handleInput = (char) => {
+  const handleInput = useCallback((char) => {
     const newInput = input + char;
     setInput(newInput);
     setCurrentCharIndex(newInput.length);
@@ -231,10 +230,10 @@ export default function TypingTest() {
         finishTest(newInput);
       }
     }
-  };
+  }, [input, text, isEndless, generateText]);
 
-  // Calculate stats
-  const finishTest = (finalInput = input) => {
+  // Calculate stats (memoized)
+  const finishTest = useCallback((finalInput = input) => {
     const endT = Date.now();
     setIsActive(false);
 
@@ -263,10 +262,10 @@ export default function TypingTest() {
       totalChars: text.length,
       timeElapsed: Math.round(timeElapsed * 60)
     });
-  };
+  }, [input, startTime, text]);
 
-  // Render character with color coding and opacity
-  const renderText = () => {
+  // Render character with color coding and opacity (memoized)
+  const renderText = useMemo(() => {
     return text.split('').map((char, index) => {
       let className = 'transition-all duration-100 ';
 
@@ -292,34 +291,23 @@ export default function TypingTest() {
         </span>
       );
     });
-  };
+  }, [text, input]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 py-12 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
-        >
+        <div className="text-center mb-8 animate-fadeIn">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
             Yazma Hızı Testi
           </h1>
           <p className="text-gray-400">
             Yazma hızını ve doğruluğunu ölç
           </p>
-        </motion.div>
+        </div>
 
-        <AnimatePresence mode="wait">
-          {!stats ? (
-            <motion.div
-              key="test"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="space-y-6"
-            >
+        {!stats ? (
+          <div className="space-y-6 animate-fadeIn">
               {/* Controls */}
               <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl shadow-xl p-6">
                 <div className="flex flex-col gap-4">
@@ -428,15 +416,9 @@ export default function TypingTest() {
               <div className="text-center text-sm text-gray-500">
                 Yazmaya başlamak için yukarıdaki metin kutusuna tıklayın
               </div>
-            </motion.div>
+            </div>
           ) : (
-            <motion.div
-              key="results"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl shadow-xl p-8"
-            >
+            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl shadow-xl p-8 animate-slideUp">
               <h2 className="text-3xl font-bold text-center mb-8 text-white">
                 Test Sonuçları
               </h2>
@@ -476,9 +458,8 @@ export default function TypingTest() {
               >
                 Tekrar Dene
               </button>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
       </div>
     </div>
   );
