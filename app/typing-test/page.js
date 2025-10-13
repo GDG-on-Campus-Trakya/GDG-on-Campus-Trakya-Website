@@ -2,9 +2,6 @@
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 
-// Force dynamic rendering to avoid pre-render issues
-export const dynamic = 'force-dynamic';
-
 const NORMAL_WORDS = [
   'bir', 've', 'bu', 'ne', 'için', 'ile', 'olan', 'de', 'da', 'mi', 'ben', 'sen', 'o', 'biz', 'siz', 'onlar', 'şu', 'gibi', 'var', 'yok',
   'çok', 'daha', 'en', 'her', 'hiç', 'nasıl', 'neden', 'nerede', 'kim', 'hangi', 'şey', 'zaman', 'yer', 'kişi', 'gün', 'yıl', 'ay', 'hafta', 'saat', 'dakika',
@@ -291,7 +288,7 @@ export default function TypingTest() {
   };
 
   // Render character with color coding and opacity
-  const renderText = () => {
+  const renderedText = useMemo(() => {
     return text.split('').map((char, index) => {
       let className = 'transition-all duration-100 ';
 
@@ -317,7 +314,7 @@ export default function TypingTest() {
         </span>
       );
     });
-  };
+  }, [text, input]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 py-12 px-4">
@@ -435,7 +432,7 @@ export default function TypingTest() {
                   } ${mode === 'code' ? 'whitespace-pre-wrap overflow-x-auto' : 'break-words'}`}
                   style={{ userSelect: 'none', wordBreak: 'break-word' }}
                 >
-                  {renderText()}
+                  {renderedText}
                 </div>
               </div>
 

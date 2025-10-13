@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { useParams } from "next/navigation";
@@ -135,10 +134,8 @@ export default function PersonalityTestPage() {
 
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-2xl w-full"
+        <div
+          className="max-w-2xl w-full animate-fadeInScaleUp"
         >
           <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl">
             {/* Header */}
@@ -251,7 +248,7 @@ export default function PersonalityTestPage() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -279,11 +276,9 @@ export default function PersonalityTestPage() {
 
           {/* Progress Bar */}
           <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden mb-2">
-            <motion.div
-              className="h-full bg-gradient-to-r from-green-400 to-blue-500"
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.3 }}
+            <div
+              className="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-300 ease-in-out"
+              style={{ width: `${progress}%` }}
             />
           </div>
 
