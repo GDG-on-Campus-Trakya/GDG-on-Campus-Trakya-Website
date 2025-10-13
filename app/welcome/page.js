@@ -3,6 +3,14 @@
 import { useState, useEffect } from 'react';
 import { Instagram, Linkedin, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
+
+// TikTok Icon Component
+const TikTokIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+  </svg>
+);
 
 export default function WelcomePage() {
   const [mounted, setMounted] = useState(false);
@@ -18,6 +26,13 @@ export default function WelcomePage() {
       url: 'https://www.instagram.com/gdgoncampustu/',
       color: 'from-purple-600 to-pink-600',
       hoverColor: 'hover:shadow-purple-500/50'
+    },
+    {
+      name: 'TikTok',
+      icon: TikTokIcon,
+      url: 'https://www.tiktok.com/@gdg.on.campus.trakya?_t=ZS-90WYQTJFhiS&_r=1',
+      color: 'from-black to-gray-900',
+      hoverColor: 'hover:shadow-gray-500/50'
     },
     {
       name: 'LinkedIn',
@@ -42,12 +57,12 @@ export default function WelcomePage() {
         {/* Profile Section */}
         <div className={`text-center mb-8 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
           <div className="mb-4 inline-block">
-            <div className="w-24 h-24 mx-auto bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-2xl">
-              <span className="text-4xl font-bold text-white">GDG</span>
+            <div className="w-24 h-24 mx-auto flex items-center justify-center">
+              <Image src="/logo.svg" alt="GDG on Campus Trakya Logo" width={96} height={96} />
             </div>
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
-            GDG on Campus Trakya
+            GDG on Campus Trakya Üniversitesi
           </h1>
           <p className="text-gray-400">
             Hoş geldiniz! Bizi takip edin ve keşfedin.
