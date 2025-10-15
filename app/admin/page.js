@@ -174,19 +174,35 @@ export default function AdminPage() {
           )}
           
           {canAccessPage(userRole, "/admin/raffles") && (
-            <Link
-              href="/admin/raffles"
-              className="group bg-gradient-to-r from-amber-500 to-yellow-500 text-white p-6 rounded-2xl text-center hover:from-amber-600 hover:to-yellow-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-            >
-              <div className="flex flex-col items-center space-y-3">
-                <div className="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-300">
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-                  </svg>
+            <>
+              <Link
+                href="/admin/raffles"
+                className="group bg-gradient-to-r from-amber-500 to-yellow-500 text-white p-6 rounded-2xl text-center hover:from-amber-600 hover:to-yellow-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-300">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                    </svg>
+                  </div>
+                  <span className="font-semibold text-lg">Çekilişler</span>
                 </div>
-                <span className="font-semibold text-lg">Çekilişler</span>
-              </div>
-            </Link>
+              </Link>
+
+              <Link
+                href="/admin/raffle-wheel"
+                className="group bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 rounded-2xl text-center hover:from-orange-600 hover:to-red-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-300">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <span className="font-semibold text-lg">Çekiliş Çarkı</span>
+                </div>
+              </Link>
+            </>
           )}
           
           {canAccessPage(userRole, "/admin/social") && (
