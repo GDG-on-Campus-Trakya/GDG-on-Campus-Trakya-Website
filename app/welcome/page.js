@@ -44,7 +44,7 @@ export default function WelcomePage() {
     {
       name: 'WhatsApp',
       icon: WhatsAppIcon,
-      url: 'https://chat.whatsapp.com/IGYHDWfIaf76cMCNpAU40j?mode=wwc',
+      url: 'https://chat.whatsapp.com/Eqz1kKViz3dBhVRkZs3P5D?mode=wwc',
       color: 'from-green-500 to-green-600',
       hoverColor: 'hover:shadow-green-500/50'
     },
