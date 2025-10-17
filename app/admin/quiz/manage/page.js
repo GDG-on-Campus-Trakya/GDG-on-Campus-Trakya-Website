@@ -79,7 +79,8 @@ export default function ManageQuizzesPage() {
         hostId: user.email,
         hostName: user.displayName || user.email,
         totalQuestions: quiz.questionCount,
-        questions: quiz.questions
+        questions: quiz.questions,
+        gameMode: quiz.gameMode || "classic" // Include game mode from quiz
       };
 
       const gameId = await createGame(gameData);
@@ -227,6 +228,13 @@ export default function ManageQuizzesPage() {
                       </span>
                       <span className="px-2 sm:px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-xs font-semibold">
                         {quiz.category}
+                      </span>
+                      <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
+                        quiz.gameMode === "kahoot"
+                          ? "bg-orange-500/20 text-orange-400"
+                          : "bg-blue-500/20 text-blue-400"
+                      }`}>
+                        {quiz.gameMode === "kahoot" ? "🏆 Kahoot" : "📊 Klasik"}
                       </span>
                     </div>
 

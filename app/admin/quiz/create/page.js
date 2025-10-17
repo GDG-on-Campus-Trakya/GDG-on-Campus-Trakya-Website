@@ -23,6 +23,7 @@ export default function CreateQuizPage() {
   const [quizTitle, setQuizTitle] = useState("");
   const [quizDescription, setQuizDescription] = useState("");
   const [quizCategory, setQuizCategory] = useState("Genel");
+  const [gameMode, setGameMode] = useState("classic");
   const [questions, setQuestions] = useState([
     {
       question: "",
@@ -176,6 +177,7 @@ export default function CreateQuizPage() {
         setQuizTitle(json.title);
         setQuizDescription(json.description || "");
         setQuizCategory(json.category || "Genel");
+        setGameMode(json.gameMode || "classic");
 
         setQuestions(
           json.questions.map((q) => ({
@@ -205,6 +207,7 @@ export default function CreateQuizPage() {
       title: quizTitle,
       description: quizDescription,
       category: quizCategory,
+      gameMode: gameMode,
       questions: questions.map((q) => ({
         question: q.question,
         options: q.options,
@@ -289,6 +292,7 @@ export default function CreateQuizPage() {
         title: quizTitle.trim(),
         description: quizDescription.trim(),
         category: quizCategory,
+        gameMode: gameMode,
         createdBy: user.email,
         createdByName: user.displayName || user.email,
         createdAt: Timestamp.now(),
@@ -407,6 +411,23 @@ export default function CreateQuizPage() {
                   <option value="Tarih">Tarih</option>
                   <option value="Eğlence">Eğlence</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-white mb-2 text-sm sm:text-base">Oyun Modu</label>
+                <select
+                  value={gameMode}
+                  onChange={(e) => setGameMode(e.target.value)}
+                  className="w-full px-3 sm:px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500 text-sm sm:text-base"
+                >
+                  <option value="classic">Klasik (Final Sıralaması ile)</option>
+                  <option value="kahoot">Kahoot Modu (Her soruda kazanan gösterilir)</option>
+                </select>
+                <p className="text-xs text-gray-400 mt-2">
+                  {gameMode === "kahoot"
+                    ? "Her soru sonunda en hızlı doğru cevap veren kazanan olarak gösterilir. Final sıralaması yoktur."
+                    : "Oyun sonunda tüm oyuncuların sıralaması gösterilir."}
+                </p>
               </div>
             </div>
           </div>

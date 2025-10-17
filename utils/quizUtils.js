@@ -195,6 +195,53 @@ export const updateLeaderboard = async (gameId) => {
 };
 
 /**
+ * Calculate and update question winner (for Kahoot mode)
+ * @param {string} gameId - Game ID
+ * @param {number} questionIndex - Question index
+ * @returns {Promise<Object|null>} Winner information
+ */
+export const updateQuestionWinner = async (gameId, questionIndex) => {
+  const playersRef = ref(realtimeDb, `games/${gameId}/players`);
+  const snapshot = await get(playersRef);
+
+  if (!snapshot.exists()) return null;
+
+  const players = snapshot.val();
+
+  // Find all players who answered this question correctly
+  const correctAnswers = [];
+
+  Object.entries(players).forEach(([id, player]) => {
+    if (player.answers && player.answers[questionIndex]) {
+      const answer = player.answers[questionIndex];
+      if (answer.isCorrect) {
+        correctAnswers.push({
+          userId: player.userId,
+          name: player.name,
+          avatar: player.avatar,
+          timeSpent: answer.timeSpent,
+          pointsEarned: answer.pointsEarned,
+          answeredAt: answer.answeredAt
+        });
+      }
+    }
+  });
+
+  // Find the fastest correct answer (minimum time spent)
+  if (correctAnswers.length === 0) return null;
+
+  const winner = correctAnswers.reduce((fastest, current) => {
+    return current.timeSpent < fastest.timeSpent ? current : fastest;
+  });
+
+  // Store winner for this question
+  const winnerRef = ref(realtimeDb, `games/${gameId}/questionWinners/${questionIndex}`);
+  await set(winnerRef, winner);
+
+  return winner;
+};
+
+/**
  * Check if all players have answered current question
  * @param {string} gameId - Game ID
  * @param {number} questionIndex - Current question index
@@ -336,7 +383,16 @@ export const saveGameResults = async (gameId) => {
  * @param {string} gameId - Game ID
  */
 export const endGame = async (gameId) => {
-  await updateLeaderboard(gameId);
+  // Get game data to check mode
+  const gameRef = ref(realtimeDb, `games/${gameId}`);
+  const snapshot = await get(gameRef);
+  const game = snapshot.val();
+
+  // Only update leaderboard in classic mode
+  if (game && game.gameMode !== "kahoot") {
+    await updateLeaderboard(gameId);
+  }
+
   await updateGameStatus(gameId, "finished");
 
   // Save results to Firestore
@@ -426,6 +482,26 @@ export const subscribeToLeaderboard = (gameId, callback) => {
   });
 
   return () => off(leaderboardRef);
+};
+
+/**
+ * Subscribe to question winners updates (for Kahoot mode)
+ * @param {string} gameId - Game ID
+ * @param {Function} callback - Callback function
+ * @returns {Function} Unsubscribe function
+ */
+export const subscribeToQuestionWinners = (gameId, callback) => {
+  const winnersRef = ref(realtimeDb, `games/${gameId}/questionWinners`);
+
+  onValue(winnersRef, (snapshot) => {
+    if (snapshot.exists()) {
+      callback(snapshot.val());
+    } else {
+      callback({});
+    }
+  });
+
+  return () => off(winnersRef);
 };
 
 /**

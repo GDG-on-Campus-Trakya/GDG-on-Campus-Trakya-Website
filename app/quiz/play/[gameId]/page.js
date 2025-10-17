@@ -9,6 +9,7 @@ import { logger } from "@/utils/logger";
 import {
   subscribeToGame,
   subscribeToLeaderboard,
+  subscribeToQuestionWinners,
   submitAnswer,
   updatePlayerConnection,
   calculateScore
@@ -22,6 +23,7 @@ export default function PlayGamePage() {
 
   const [game, setGame] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
+  const [questionWinners, setQuestionWinners] = useState({});
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [hasAnswered, setHasAnswered] = useState(false);
@@ -79,9 +81,14 @@ export default function PlayGamePage() {
       }
     });
 
+    const unsubscribeWinners = subscribeToQuestionWinners(gameId, (winnersData) => {
+      setQuestionWinners(winnersData);
+    });
+
     return () => {
       unsubscribeGame();
       unsubscribeLeaderboard();
+      unsubscribeWinners();
     };
   }, [gameId, router, user, playerId, currentQuestion]);
 
@@ -191,16 +198,19 @@ export default function PlayGamePage() {
               {game.currentQuestion + 1}/{game.totalQuestions}
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4">
-            {playerRank && (
-              <div className="text-yellow-400 font-bold text-sm sm:text-base">
-                #{playerRank}
+          {/* Only show score/rank in classic mode */}
+          {game.gameMode !== "kahoot" && (
+            <div className="flex items-center gap-2 sm:gap-4">
+              {playerRank && (
+                <div className="text-yellow-400 font-bold text-sm sm:text-base">
+                  #{playerRank}
+                </div>
+              )}
+              <div className="text-white font-bold text-sm sm:text-xl">
+                {playerScore} <span className="hidden sm:inline">puan</span><span className="sm:hidden">p</span>
               </div>
-            )}
-            <div className="text-white font-bold text-sm sm:text-xl">
-              {playerScore} <span className="hidden sm:inline">puan</span><span className="sm:hidden">p</span>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -289,6 +299,22 @@ export default function PlayGamePage() {
           {/* Question Review State */}
           {game.status === "question_review" && currentQuestion && (
             <div className="space-y-4 sm:space-y-6">
+              {/* Question Winner (Kahoot Mode) */}
+              {game.gameMode === "kahoot" && questionWinners[game.currentQuestion] && (
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl sm:rounded-3xl p-6 sm:p-12 border-4 border-yellow-300 text-center">
+                  <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🏆</div>
+                  <h2 className="text-2xl sm:text-4xl font-bold text-white mb-2">
+                    {questionWinners[game.currentQuestion].userId === user.uid ? "Kazandınız!" : "Kazanan"}
+                  </h2>
+                  <div className="text-xl sm:text-3xl font-bold text-white mb-2">
+                    {questionWinners[game.currentQuestion].name}
+                  </div>
+                  <div className="text-base sm:text-xl text-white/90">
+                    ⚡ En hızlı doğru cevap: {questionWinners[game.currentQuestion].timeSpent.toFixed(2)} saniye
+                  </div>
+                </div>
+              )}
+
               {/* Result */}
               <div className={`bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-6 sm:p-12 border border-white/20 text-center ${
                 selectedAnswer === currentQuestion.correctAnswer
@@ -308,8 +334,8 @@ export default function PlayGamePage() {
                 </p>
               </div>
 
-              {/* Leaderboard Preview */}
-              {leaderboard.length > 0 && (
+              {/* Leaderboard Preview (Classic Mode Only) */}
+              {game.gameMode !== "kahoot" && leaderboard.length > 0 && (
                 <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-white/20">
                   <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 text-center">
                     🏆 İlk 5
@@ -358,18 +384,29 @@ export default function PlayGamePage() {
                 <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
                   Oyun Bitti!
                 </h2>
-                <div className="text-2xl sm:text-3xl font-bold text-purple-400 mb-2">
-                  {playerScore} Puan
-                </div>
-                {playerRank && (
-                  <div className="text-lg sm:text-xl text-gray-300">
-                    Sıralamanız: #{playerRank}
+                {/* Only show score in classic mode */}
+                {game.gameMode !== "kahoot" && (
+                  <>
+                    <div className="text-2xl sm:text-3xl font-bold text-purple-400 mb-2">
+                      {playerScore} Puan
+                    </div>
+                    {playerRank && (
+                      <div className="text-lg sm:text-xl text-gray-300">
+                        Sıralamanız: #{playerRank}
+                      </div>
+                    )}
+                  </>
+                )}
+                {/* Kahoot mode - different message */}
+                {game.gameMode === "kahoot" && (
+                  <div className="text-base sm:text-lg text-gray-300 mt-4">
+                    Teşekkürler! Her soru için kazananlar gösterildi.
                   </div>
                 )}
               </div>
 
-              {/* Final Leaderboard */}
-              {leaderboard.length > 0 && (
+              {/* Final Leaderboard (Classic Mode Only) */}
+              {game.gameMode !== "kahoot" && leaderboard.length > 0 && (
                 <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-white/20">
                   <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 text-center">
                     🏆 Final Sıralaması

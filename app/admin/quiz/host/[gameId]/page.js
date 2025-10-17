@@ -11,9 +11,11 @@ import {
   subscribeToGame,
   subscribeToPlayers,
   subscribeToLeaderboard,
+  subscribeToQuestionWinners,
   nextQuestion,
   updateGameStatus,
   updateLeaderboard,
+  updateQuestionWinner,
   endGame,
   deleteGame,
   allPlayersAnswered
@@ -29,6 +31,7 @@ export default function HostGamePage() {
   const [game, setGame] = useState(null);
   const [players, setPlayers] = useState({});
   const [leaderboard, setLeaderboard] = useState([]);
+  const [questionWinners, setQuestionWinners] = useState({});
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [showResults, setShowResults] = useState(false);
@@ -83,10 +86,15 @@ export default function HostGamePage() {
       setLeaderboard(leaderboardData);
     });
 
+    const unsubscribeWinners = subscribeToQuestionWinners(gameId, (winnersData) => {
+      setQuestionWinners(winnersData);
+    });
+
     return () => {
       unsubscribeGame();
       unsubscribePlayers();
       unsubscribeLeaderboard();
+      unsubscribeWinners();
     };
   }, [gameId, router]);
 
@@ -148,7 +156,16 @@ export default function HostGamePage() {
   const handleShowResults = async () => {
     try {
       await updateGameStatus(gameId, "question_review");
-      await updateLeaderboard(gameId);
+
+      // Update based on game mode
+      if (game.gameMode === "kahoot") {
+        // In Kahoot mode, ONLY show question winner (no leaderboard)
+        await updateQuestionWinner(gameId, game.currentQuestion);
+      } else {
+        // In classic mode, update leaderboard
+        await updateLeaderboard(gameId);
+      }
+
       setShowResults(true);
     } catch (error) {
       logger.error("Error showing results:", error);
@@ -364,6 +381,20 @@ export default function HostGamePage() {
             {/* Results State */}
             {(game.status === "question_review" || showResults) && currentQuestion && (
               <div className="space-y-4 sm:space-y-6">
+                {/* Question Winner (Kahoot Mode) */}
+                {game.gameMode === "kahoot" && questionWinners[game.currentQuestion] && (
+                  <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl sm:rounded-2xl p-6 sm:p-8 border-4 border-yellow-300 text-center">
+                    <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🏆</div>
+                    <h2 className="text-2xl sm:text-4xl font-bold text-white mb-2">Kazanan!</h2>
+                    <div className="text-xl sm:text-3xl font-bold text-white mb-2">
+                      {questionWinners[game.currentQuestion].name}
+                    </div>
+                    <div className="text-base sm:text-xl text-white/90">
+                      ⚡ En hızlı doğru cevap: {questionWinners[game.currentQuestion].timeSpent.toFixed(2)} saniye
+                    </div>
+                  </div>
+                )}
+
                 {/* Correct Answer */}
                 <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-8 border border-white/20">
                   {/* Question Image */}
@@ -433,7 +464,11 @@ export default function HostGamePage() {
               <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-6 sm:p-12 border border-white/20 text-center">
                 <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🎉</div>
                 <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">Oyun Bitti!</h2>
-                <p className="text-base sm:text-xl text-gray-300 mb-6 sm:mb-8">Kazananları görmek için yan paneli kontrol edin</p>
+                <p className="text-base sm:text-xl text-gray-300 mb-6 sm:mb-8">
+                  {game.gameMode === "kahoot"
+                    ? "Her soru için kazananlar gösterildi!"
+                    : "Kazananları görmek için yan paneli kontrol edin"}
+                </p>
                 <button
                   onClick={handleDeleteAndExit}
                   className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-colors font-bold text-base sm:text-xl"
@@ -446,49 +481,51 @@ export default function HostGamePage() {
 
           {/* Sidebar */}
           <div className="space-y-4 sm:space-y-6">
-            {/* Leaderboard */}
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
-              <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">🏆 Sıralama</h3>
-              {leaderboard.length > 0 ? (
-                <div className="space-y-2 sm:space-y-3">
-                  {leaderboard.slice(0, 10).map((player, index) => (
-                    <div
-                      key={player.userId}
-                      className={`p-2 sm:p-3 rounded-lg ${
-                        index === 0
-                          ? "bg-yellow-500/20 border border-yellow-500"
-                          : index === 1
-                          ? "bg-gray-400/20 border border-gray-400"
-                          : index === 2
-                          ? "bg-orange-500/20 border border-orange-500"
-                          : "bg-white/5"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <span className="text-lg sm:text-2xl font-bold text-white">
-                            {index + 1}
-                          </span>
-                          <div>
-                            <div className="text-sm sm:text-base text-white font-semibold truncate max-w-[120px] sm:max-w-none">
-                              {player.name}
-                            </div>
-                            <div className="text-xs text-gray-400">
-                              ✅ {player.correctAnswers} doğru
+            {/* Leaderboard (Classic Mode Only) */}
+            {game.gameMode !== "kahoot" && (
+              <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">🏆 Sıralama</h3>
+                {leaderboard.length > 0 ? (
+                  <div className="space-y-2 sm:space-y-3">
+                    {leaderboard.slice(0, 10).map((player, index) => (
+                      <div
+                        key={player.userId}
+                        className={`p-2 sm:p-3 rounded-lg ${
+                          index === 0
+                            ? "bg-yellow-500/20 border border-yellow-500"
+                            : index === 1
+                            ? "bg-gray-400/20 border border-gray-400"
+                            : index === 2
+                            ? "bg-orange-500/20 border border-orange-500"
+                            : "bg-white/5"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 sm:gap-3">
+                            <span className="text-lg sm:text-2xl font-bold text-white">
+                              {index + 1}
+                            </span>
+                            <div>
+                              <div className="text-sm sm:text-base text-white font-semibold truncate max-w-[120px] sm:max-w-none">
+                                {player.name}
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                ✅ {player.correctAnswers} doğru
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="text-lg sm:text-xl font-bold text-white">
-                          {player.score}
+                          <div className="text-lg sm:text-xl font-bold text-white">
+                            {player.score}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm sm:text-base text-gray-400 text-center">Henüz sıralama yok</p>
-              )}
-            </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm sm:text-base text-gray-400 text-center">Henüz sıralama yok</p>
+                )}
+              </div>
+            )}
 
             {/* Players */}
             <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
