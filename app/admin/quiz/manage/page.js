@@ -263,6 +263,13 @@ export default function ManageQuizzesPage() {
                       🎮 Oyun Başlat
                     </button>
 
+                    <Link
+                      href={`/admin/quiz/edit/${quiz.id}`}
+                      className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors text-sm text-center"
+                    >
+                      ✏️ Düzenle
+                    </Link>
+
                     <button
                       onClick={() => handleToggleActive(quiz.id, quiz.isActive)}
                       className={`w-full sm:w-auto px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm ${

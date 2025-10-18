@@ -296,12 +296,20 @@ export default function DatasetsPage() {
                   </div>
                 )}
 
-                <button
-                  onClick={() => handleDeleteDataset(dataset.id)}
-                  className="w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-sm"
-                >
-                  Sil
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => router.push(`/admin/poll/datasets/edit/${dataset.id}`)}
+                    className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm"
+                  >
+                    Düzenle
+                  </button>
+                  <button
+                    onClick={() => handleDeleteDataset(dataset.id)}
+                    className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-sm"
+                  >
+                    Sil
+                  </button>
+                </div>
               </div>
             ))}
           </div>
