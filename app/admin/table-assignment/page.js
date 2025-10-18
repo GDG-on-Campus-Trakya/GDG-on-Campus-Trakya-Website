@@ -2,7 +2,17 @@
 import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../../firebase";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  collection,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  serverTimestamp,
+  writeBatch
+} from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import {
   Users,
@@ -12,9 +22,8 @@ import {
   UserPlus,
   ArrowLeft,
   Table,
-  CheckCircle,
-  XCircle,
-  Shuffle
+  Shuffle,
+  Edit2
 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -25,9 +34,10 @@ export default function TableAssignmentPage() {
   const [userRole, setUserRole] = useState(null);
   const [tables, setTables] = useState([]);
   const [participants, setParticipants] = useState([]);
-  const [unassignedParticipants, setUnassignedParticipants] = useState([]);
   const [showAddTableModal, setShowAddTableModal] = useState(false);
   const [showAddParticipantModal, setShowAddParticipantModal] = useState(false);
+  const [showEditTableModal, setShowEditTableModal] = useState(false);
+  const [editingTable, setEditingTable] = useState(null);
   const router = useRouter();
 
   // Check admin privileges
@@ -49,57 +59,119 @@ export default function TableAssignmentPage() {
     }
   }, [user, loading, router]);
 
-  // Initialize sample data for testing
+  // Real-time listener for tables
   useEffect(() => {
-    if (userRole) {
-      // Sample tables
-      setTables([
-        { id: 1, name: "Masa 1", capacity: 6, participants: [], isActive: true },
-        { id: 2, name: "Masa 2", capacity: 6, participants: [], isActive: true },
-      ]);
-    }
+    if (!userRole) return;
+
+    const unsubscribe = onSnapshot(
+      collection(db, "tableAssignmentTables"),
+      (snapshot) => {
+        const tablesList = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setTables(tablesList.sort((a, b) => a.name.localeCompare(b.name)));
+      },
+      (error) => {
+        console.error("Error loading tables:", error);
+        toast.error("Masalar yüklenirken hata oluştu!");
+      }
+    );
+
+    return () => unsubscribe();
   }, [userRole]);
 
-  const handleAddTable = (tableName, capacity) => {
-    const newTable = {
-      id: Date.now(),
-      name: tableName,
-      capacity: parseInt(capacity),
-      participants: [],
-      isActive: true,
-    };
-    setTables([...tables, newTable]);
-    setShowAddTableModal(false);
-    toast.success(`${tableName} eklendi!`);
+  // Real-time listener for participants
+  useEffect(() => {
+    if (!userRole) return;
+
+    const unsubscribe = onSnapshot(
+      collection(db, "tableAssignmentParticipants"),
+      (snapshot) => {
+        const participantsList = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setParticipants(participantsList.sort((a, b) => a.name.localeCompare(b.name)));
+      },
+      (error) => {
+        console.error("Error loading participants:", error);
+        toast.error("Katılımcılar yüklenirken hata oluştu!");
+      }
+    );
+
+    return () => unsubscribe();
+  }, [userRole]);
+
+  // Computed values
+  const unassignedParticipants = participants.filter(p => !p.assignedTableId);
+  const assignedCount = participants.filter(p => p.assignedTableId).length;
+
+  const handleAddTable = async (tableName, capacity) => {
+    try {
+      await addDoc(collection(db, "tableAssignmentTables"), {
+        name: tableName,
+        capacity: parseInt(capacity),
+        createdAt: serverTimestamp(),
+        createdBy: user.uid
+      });
+      setShowAddTableModal(false);
+      toast.success(`${tableName} eklendi!`);
+    } catch (error) {
+      console.error("Error adding table:", error);
+      toast.error("Masa eklenirken hata oluştu!");
+    }
   };
 
-  const handleRemoveTable = (tableId) => {
+  const handleEditTable = async (tableName, capacity) => {
+    try {
+      await updateDoc(doc(db, "tableAssignmentTables", editingTable.id), {
+        name: tableName,
+        capacity: parseInt(capacity),
+        updatedAt: serverTimestamp()
+      });
+      setShowEditTableModal(false);
+      setEditingTable(null);
+      toast.success(`${tableName} güncellendi!`);
+    } catch (error) {
+      console.error("Error updating table:", error);
+      toast.error("Masa güncellenirken hata oluştu!");
+    }
+  };
+
+  const handleRemoveTable = async (tableId) => {
     const table = tables.find(t => t.id === tableId);
-    if (table.participants.length > 0) {
-      if (!confirm("Bu masada katılımcılar var. Masayı kaldırırsanız, katılımcılar atanmamış listesine geri dönecek. Devam etmek istiyor musunuz?")) {
+    const assignedToTable = participants.filter(p => p.assignedTableId === tableId);
+
+    if (assignedToTable.length > 0) {
+      if (!confirm("Bu masada katılımcılar var. Masayı kaldırırsanız, katılımcılar atanmamış duruma gelecek. Devam etmek istiyor musunuz?")) {
         return;
       }
-      // Move participants back to unassigned
-      setUnassignedParticipants([...unassignedParticipants, ...table.participants]);
     }
-    setTables(tables.filter(t => t.id !== tableId));
-    toast.info(`${table.name} kaldırıldı`);
+
+    try {
+      const batch = writeBatch(db);
+
+      // Remove table
+      batch.delete(doc(db, "tableAssignmentTables", tableId));
+
+      // Unassign participants from this table
+      assignedToTable.forEach(participant => {
+        batch.update(doc(db, "tableAssignmentParticipants", participant.id), {
+          assignedTableId: null,
+          updatedAt: serverTimestamp()
+        });
+      });
+
+      await batch.commit();
+      toast.info(`${table.name} kaldırıldı`);
+    } catch (error) {
+      console.error("Error removing table:", error);
+      toast.error("Masa kaldırılırken hata oluştu!");
+    }
   };
 
-  const handleToggleTableActive = (tableId) => {
-    setTables(tables.map(t =>
-      t.id === tableId ? { ...t, isActive: !t.isActive } : t
-    ));
-    const table = tables.find(t => t.id === tableId);
-    if (table.isActive) {
-      toast.info(`${table.name} dolu olarak işaretlendi`);
-    } else {
-      toast.success(`${table.name} tekrar aktif`);
-    }
-  };
-
-  const handleAddParticipant = (participantNames) => {
-    // Split by newlines and filter empty lines
+  const handleAddParticipant = async (participantNames) => {
     const names = participantNames
       .split('\n')
       .map(name => name.trim())
@@ -110,161 +182,169 @@ export default function TableAssignmentPage() {
       return;
     }
 
-    const newParticipants = names.map((name, index) => ({
-      id: Date.now() + index,
-      name: name,
-      assignedTable: null,
-    }));
+    try {
+      const batch = writeBatch(db);
 
-    setUnassignedParticipants([...unassignedParticipants, ...newParticipants]);
-    setShowAddParticipantModal(false);
+      names.forEach(name => {
+        const newParticipantRef = doc(collection(db, "tableAssignmentParticipants"));
+        batch.set(newParticipantRef, {
+          name: name,
+          assignedTableId: null,
+          createdAt: serverTimestamp(),
+          createdBy: user.uid
+        });
+      });
 
-    if (names.length === 1) {
-      toast.success(`${names[0]} eklendi!`);
-    } else {
-      toast.success(`${names.length} katılımcı eklendi!`);
+      await batch.commit();
+      setShowAddParticipantModal(false);
+
+      if (names.length === 1) {
+        toast.success(`${names[0]} eklendi!`);
+      } else {
+        toast.success(`${names.length} katılımcı eklendi!`);
+      }
+    } catch (error) {
+      console.error("Error adding participants:", error);
+      toast.error("Katılımcılar eklenirken hata oluştu!");
     }
   };
 
-  const handleRandomAssignment = () => {
+  const handleRandomAssignment = async () => {
     if (unassignedParticipants.length === 0) {
       toast.warning("Atanacak katılımcı yok!");
       return;
     }
 
-    const activeTables = tables.filter(t => t.isActive);
-    if (activeTables.length === 0) {
-      toast.error("Aktif masa yok! Lütfen önce masa ekleyin veya masaları aktif yapın.");
+    if (tables.length === 0) {
+      toast.error("Masa yok! Lütfen önce masa ekleyin.");
       return;
     }
 
-    // Check if there's enough capacity
-    const totalCapacity = activeTables.reduce((sum, t) => sum + (t.capacity - t.participants.length), 0);
-    if (totalCapacity < unassignedParticipants.length) {
-      toast.warning("Tüm katılımcılar için yeterli kapasite yok!");
+    // Calculate total available capacity
+    const tableCapacities = tables.map(t => ({
+      id: t.id,
+      name: t.name,
+      available: t.capacity - participants.filter(p => p.assignedTableId === t.id).length
+    })).filter(t => t.available > 0);
+
+    if (tableCapacities.length === 0) {
+      toast.error("Tüm masalar dolu!");
+      return;
     }
 
-    // Shuffle unassigned participants
-    const shuffled = [...unassignedParticipants].sort(() => Math.random() - 0.5);
-    const updatedTables = [...tables];
-    const remaining = [];
+    const totalCapacity = tableCapacities.reduce((sum, t) => sum + t.available, 0);
+    if (totalCapacity < unassignedParticipants.length) {
+      toast.warning("Tüm katılımcılar için yeterli kapasite yok! Mevcut kapasiteye göre atama yapılacak.");
+    }
 
-    shuffled.forEach(participant => {
-      // Find a table with available capacity
-      const availableTable = updatedTables.find(
-        t => t.isActive && t.participants.length < t.capacity
-      );
+    try {
+      const batch = writeBatch(db);
+      const shuffled = [...unassignedParticipants].sort(() => Math.random() - 0.5);
+      let assigned = 0;
+      let currentTableIndex = 0;
 
-      if (availableTable) {
-        availableTable.participants.push(participant);
-      } else {
-        remaining.push(participant);
-      }
-    });
+      // Distribute participants evenly across tables in round-robin fashion
+      shuffled.forEach(participant => {
+        // Find next available table in round-robin
+        let attempts = 0;
+        while (attempts < tableCapacities.length) {
+          const currentTable = tableCapacities[currentTableIndex % tableCapacities.length];
 
-    setTables(updatedTables);
-    setUnassignedParticipants(remaining);
+          if (currentTable.available > 0) {
+            batch.update(doc(db, "tableAssignmentParticipants", participant.id), {
+              assignedTableId: currentTable.id,
+              updatedAt: serverTimestamp()
+            });
+            currentTable.available--;
+            assigned++;
+            currentTableIndex++;
+            break;
+          }
 
-    toast.success(`${shuffled.length - remaining.length} katılımcı rastgele atandı!`);
+          currentTableIndex++;
+          attempts++;
+        }
+      });
+
+      await batch.commit();
+      toast.success(`${assigned} katılımcı rastgele atandı!`);
+    } catch (error) {
+      console.error("Error during random assignment:", error);
+      toast.error("Atama sırasında hata oluştu!");
+    }
   };
 
-
-  const handleRemoveParticipantFromTable = (tableId, participantId) => {
+  const handleAssignToTable = async (participantId, tableId) => {
     const table = tables.find(t => t.id === tableId);
-    const participant = table.participants.find(p => p.id === participantId);
+    const participant = participants.find(p => p.id === participantId);
+    const assignedToTable = participants.filter(p => p.assignedTableId === tableId);
 
-    const updatedTables = tables.map(t =>
-      t.id === tableId
-        ? { ...t, participants: t.participants.filter(p => p.id !== participantId) }
-        : t
-    );
+    if (assignedToTable.length >= table.capacity) {
+      toast.error(`${table.name} dolu!`);
+      return;
+    }
 
-    setTables(updatedTables);
-    setUnassignedParticipants([...unassignedParticipants, participant]);
-    toast.info(`${participant.name} masadan çıkarıldı`);
+    try {
+      await updateDoc(doc(db, "tableAssignmentParticipants", participantId), {
+        assignedTableId: tableId,
+        updatedAt: serverTimestamp()
+      });
+      toast.success(`${participant.name} ${table.name}'e atandı!`);
+    } catch (error) {
+      console.error("Error assigning participant:", error);
+      toast.error("Atama sırasında hata oluştu!");
+    }
   };
 
-  const handleRemoveUnassignedParticipant = (participantId) => {
-    const participant = unassignedParticipants.find(p => p.id === participantId);
+  const handleUnassignParticipant = async (participantId) => {
+    try {
+      await updateDoc(doc(db, "tableAssignmentParticipants", participantId), {
+        assignedTableId: null,
+        updatedAt: serverTimestamp()
+      });
+      toast.info("Katılımcı masadan çıkarıldı");
+    } catch (error) {
+      console.error("Error unassigning participant:", error);
+      toast.error("Katılımcı çıkarılırken hata oluştu!");
+    }
+  };
+
+  const handleRemoveParticipant = async (participantId) => {
+    const participant = participants.find(p => p.id === participantId);
     if (!confirm(`${participant.name} katılımcısını silmek istediğinizden emin misiniz?`)) {
       return;
     }
-    setUnassignedParticipants(unassignedParticipants.filter(p => p.id !== participantId));
-    toast.info(`${participant.name} silindi`);
+
+    try {
+      await deleteDoc(doc(db, "tableAssignmentParticipants", participantId));
+      toast.info(`${participant.name} silindi`);
+    } catch (error) {
+      console.error("Error deleting participant:", error);
+      toast.error("Katılımcı silinirken hata oluştu!");
+    }
   };
 
-  const handleQuickAddToTable = (tableId, participantName) => {
-    if (!participantName.trim()) return;
-
-    const table = tables.find(t => t.id === tableId);
-
-    if (table.participants.length >= table.capacity) {
-      toast.error(`${table.name} dolu!`);
-      return;
-    }
-
-    if (!table.isActive) {
-      toast.error(`${table.name} aktif değil!`);
-      return;
-    }
-
-    const newParticipant = {
-      id: Date.now(),
-      name: participantName,
-      assignedTable: tableId,
-    };
-
-    const updatedTables = tables.map(t =>
-      t.id === tableId
-        ? { ...t, participants: [...t.participants, newParticipant] }
-        : t
-    );
-
-    setTables(updatedTables);
-    toast.success(`${participantName} ${table.name}'e eklendi!`);
-  };
-
-  const handleClickToAssign = (participantId, tableId) => {
-    const participant = unassignedParticipants.find(p => p.id === participantId);
-    const table = tables.find(t => t.id === tableId);
-
-    if (!participant || !table) return;
-
-    if (table.participants.length >= table.capacity) {
-      toast.error(`${table.name} dolu!`);
-      return;
-    }
-
-    if (!table.isActive) {
-      toast.error(`${table.name} aktif değil!`);
-      return;
-    }
-
-    const updatedTables = tables.map(t =>
-      t.id === tableId
-        ? { ...t, participants: [...t.participants, participant] }
-        : t
-    );
-
-    setTables(updatedTables);
-    setUnassignedParticipants(unassignedParticipants.filter(p => p.id !== participantId));
-    toast.success(`${participant.name} ${table.name}'e atandı!`);
-  };
-
-  const handleReset = () => {
+  const handleReset = async () => {
     if (!confirm("Tüm atamaları sıfırlamak istediğinizden emin misiniz?")) return;
 
-    // Collect all participants from tables
-    const allParticipants = tables.reduce((acc, table) => {
-      return [...acc, ...table.participants];
-    }, []);
+    try {
+      const batch = writeBatch(db);
 
-    // Clear all tables
-    const clearedTables = tables.map(t => ({ ...t, participants: [] }));
+      participants.forEach(participant => {
+        if (participant.assignedTableId) {
+          batch.update(doc(db, "tableAssignmentParticipants", participant.id), {
+            assignedTableId: null,
+            updatedAt: serverTimestamp()
+          });
+        }
+      });
 
-    setTables(clearedTables);
-    setUnassignedParticipants([...unassignedParticipants, ...allParticipants]);
-    toast.success("Tüm atamalar sıfırlandı!");
+      await batch.commit();
+      toast.success("Tüm atamalar sıfırlandı!");
+    } catch (error) {
+      console.error("Error resetting assignments:", error);
+      toast.error("Sıfırlama sırasında hata oluştu!");
+    }
   };
 
   if (loading) {
@@ -309,56 +389,50 @@ export default function TableAssignmentPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-gray-800/70 backdrop-blur-lg rounded-xl p-6 border border-gray-700/50">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
             <div className="flex items-center">
               <Table className="w-8 h-8 text-blue-400" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-400">Toplam Masa</p>
+              <div className="ml-3">
+                <p className="text-sm text-gray-400">Toplam Masa</p>
                 <p className="text-2xl font-bold text-gray-100">{tables.length}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-800/70 backdrop-blur-lg rounded-xl p-6 border border-gray-700/50">
+          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
             <div className="flex items-center">
-              <CheckCircle className="w-8 h-8 text-green-400" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-400">Aktif Masa</p>
-                <p className="text-2xl font-bold text-gray-100">
-                  {tables.filter(t => t.isActive).length}
-                </p>
+              <Users className="w-8 h-8 text-green-400" />
+              <div className="ml-3">
+                <p className="text-sm text-gray-400">Toplam Katılımcı</p>
+                <p className="text-2xl font-bold text-gray-100">{participants.length}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-800/70 backdrop-blur-lg rounded-xl p-6 border border-gray-700/50">
+          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
             <div className="flex items-center">
               <Users className="w-8 h-8 text-purple-400" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-400">Atanan</p>
-                <p className="text-2xl font-bold text-gray-100">
-                  {tables.reduce((sum, t) => sum + t.participants.length, 0)}
-                </p>
+              <div className="ml-3">
+                <p className="text-sm text-gray-400">Atanan</p>
+                <p className="text-2xl font-bold text-gray-100">{assignedCount}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-800/70 backdrop-blur-lg rounded-xl p-6 border border-gray-700/50">
+          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
             <div className="flex items-center">
               <UserPlus className="w-8 h-8 text-yellow-400" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-400">Bekleyen</p>
-                <p className="text-2xl font-bold text-gray-100">
-                  {unassignedParticipants.length}
-                </p>
+              <div className="ml-3">
+                <p className="text-sm text-gray-400">Bekleyen</p>
+                <p className="text-2xl font-bold text-gray-100">{unassignedParticipants.length}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap gap-3 mb-8">
+        <div className="flex flex-wrap gap-3 mb-6">
           <button
             onClick={() => setShowAddTableModal(true)}
             className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -377,9 +451,9 @@ export default function TableAssignmentPage() {
 
           <button
             onClick={handleRandomAssignment}
-            disabled={unassignedParticipants.length === 0}
+            disabled={unassignedParticipants.length === 0 || tables.length === 0}
             className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-              unassignedParticipants.length === 0
+              unassignedParticipants.length === 0 || tables.length === 0
                 ? "bg-gray-600 text-gray-400 cursor-not-allowed"
                 : "bg-purple-600 text-white hover:bg-purple-700"
             }`}
@@ -390,58 +464,69 @@ export default function TableAssignmentPage() {
 
           <button
             onClick={handleReset}
-            className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            disabled={assignedCount === 0}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+              assignedCount === 0
+                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                : "bg-red-600 text-white hover:bg-red-700"
+            }`}
           >
             <RefreshCw className="w-5 h-5" />
             <span>Sıfırla</span>
           </button>
         </div>
 
-        {/* Unassigned Participants */}
+        {/* Unassigned Participants - Manual Assignment Section */}
         {unassignedParticipants.length > 0 && (
-          <div className="bg-yellow-900/30 backdrop-blur-lg rounded-xl p-6 border border-yellow-600/50 mb-8">
-            <h3 className="text-lg font-semibold text-yellow-400 mb-4 flex items-center">
+          <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-600/40 mb-6">
+            <h3 className="text-lg font-semibold text-yellow-400 mb-3 flex items-center">
               <UserPlus className="w-5 h-5 mr-2" />
               Atanmamış Katılımcılar ({unassignedParticipants.length})
             </h3>
             <p className="text-sm text-gray-400 mb-3">
-              Masalara yerleştirmek için "Hızlı Ekle" alanını kullanın veya "Rastgele Ata" butonuna tıklayın
+              Katılımcıya tıklayın ve istediğiniz masayı seçin, ya da "Rastgele Ata" butonunu kullanın
             </p>
-            <div className="flex flex-wrap gap-2">
+
+            {/* Manual Assignment Interface */}
+            <div className="space-y-4">
               {unassignedParticipants.map(participant => (
-                <div
+                <ManualAssignmentRow
                   key={participant.id}
-                  className="bg-gray-800/70 px-3 py-2 rounded-lg text-gray-200 border border-gray-700 flex items-center gap-2 group"
-                >
-                  <span>{participant.name}</span>
-                  <button
-                    onClick={() => handleRemoveUnassignedParticipant(participant.id)}
-                    className="text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                  participant={participant}
+                  tables={tables}
+                  participants={participants}
+                  onAssign={handleAssignToTable}
+                  onRemove={handleRemoveParticipant}
+                />
               ))}
             </div>
           </div>
         )}
 
         {/* Tables Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tables.map(table => (
-            <TableCard
-              key={table.id}
-              table={table}
-              onRemove={handleRemoveTable}
-              onToggleActive={handleToggleTableActive}
-              onRemoveParticipant={handleRemoveParticipantFromTable}
-              onQuickAdd={handleQuickAddToTable}
-            />
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {tables.map(table => {
+            const tableParticipants = participants.filter(p => p.assignedTableId === table.id);
+            return (
+              <TableCard
+                key={table.id}
+                table={table}
+                participants={tableParticipants}
+                unassignedParticipants={unassignedParticipants}
+                onRemove={handleRemoveTable}
+                onEdit={(table) => {
+                  setEditingTable(table);
+                  setShowEditTableModal(true);
+                }}
+                onUnassignParticipant={handleUnassignParticipant}
+                onAssignParticipant={handleAssignToTable}
+              />
+            );
+          })}
 
           {tables.length === 0 && (
             <div className="col-span-full text-center py-12">
-              <div className="bg-gray-800/70 backdrop-blur-lg rounded-xl p-8 border border-gray-700/50">
+              <div className="bg-gray-800 rounded-lg p-8 border border-gray-700">
                 <Table className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-100 mb-2">
                   Henüz masa yok
@@ -465,6 +550,17 @@ export default function TableAssignmentPage() {
           <AddTableModal
             onClose={() => setShowAddTableModal(false)}
             onAdd={handleAddTable}
+          />
+        )}
+
+        {showEditTableModal && editingTable && (
+          <EditTableModal
+            table={editingTable}
+            onClose={() => {
+              setShowEditTableModal(false);
+              setEditingTable(null);
+            }}
+            onEdit={handleEditTable}
           />
         )}
 
@@ -492,50 +588,117 @@ export default function TableAssignmentPage() {
   );
 }
 
-// Table Card Component
-function TableCard({ table, onRemove, onToggleActive, onRemoveParticipant, onQuickAdd }) {
-  const [quickAddName, setQuickAddName] = useState("");
-  const fillPercentage = (table.participants.length / table.capacity) * 100;
-  const isFull = table.participants.length >= table.capacity;
+// Manual Assignment Row Component
+function ManualAssignmentRow({ participant, tables, participants, onAssign, onRemove }) {
+  const [showTableDropdown, setShowTableDropdown] = useState(false);
 
-  const handleQuickAddSubmit = (e) => {
-    e.preventDefault();
-    if (!quickAddName.trim()) return;
-    onQuickAdd(table.id, quickAddName);
-    setQuickAddName("");
-  };
+  const availableTables = tables.map(table => {
+    const assigned = participants.filter(p => p.assignedTableId === table.id).length;
+    return {
+      ...table,
+      available: table.capacity - assigned,
+      isFull: assigned >= table.capacity
+    };
+  });
 
   return (
-    <div className={`bg-gray-800/70 backdrop-blur-lg rounded-xl p-6 border ${
-      table.isActive ? 'border-gray-700/50' : 'border-red-500/50'
-    }`}>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-100">{table.name}</h3>
-        <div className="flex items-center space-x-2">
+    <div className="bg-gray-800 rounded-lg p-3 border border-gray-700 flex items-center justify-between">
+      <div className="flex items-center gap-3 flex-1">
+        <span className="text-gray-200 font-medium">{participant.name}</span>
+
+        <div className="relative">
           <button
-            onClick={() => onToggleActive(table.id)}
-            className={`p-2 rounded-lg transition-colors ${
-              table.isActive
-                ? 'bg-green-600/20 text-green-400 hover:bg-green-600/30'
-                : 'bg-red-600/20 text-red-400 hover:bg-red-600/30'
-            }`}
-            title={table.isActive ? "Dolu olarak işaretle" : "Aktif yap"}
+            onClick={() => setShowTableDropdown(!showTableDropdown)}
+            className="bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center gap-2"
           >
-            {table.isActive ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+            <Plus className="w-4 h-4" />
+            <span>Masaya Ata</span>
+          </button>
+
+          {showTableDropdown && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setShowTableDropdown(false)}
+              />
+              <div className="absolute top-full left-0 mt-1 bg-gray-900 border border-gray-700 rounded-lg shadow-lg min-w-[200px] z-20">
+                {availableTables.length > 0 ? (
+                  availableTables.map(table => (
+                    <button
+                      key={table.id}
+                      onClick={() => {
+                        if (!table.isFull) {
+                          onAssign(participant.id, table.id);
+                          setShowTableDropdown(false);
+                        }
+                      }}
+                      disabled={table.isFull}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center justify-between ${
+                        table.isFull
+                          ? 'text-gray-500 cursor-not-allowed'
+                          : 'text-gray-200 hover:bg-gray-800'
+                      }`}
+                    >
+                      <span>{table.name}</span>
+                      <span className={`text-xs ${table.isFull ? 'text-red-400' : 'text-gray-400'}`}>
+                        {table.available}/{table.capacity}
+                      </span>
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-4 py-2 text-sm text-gray-500">
+                    Masa yok
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <button
+        onClick={() => onRemove(participant.id)}
+        className="text-red-400 hover:text-red-300 transition-colors p-2"
+        title="Katılımcıyı sil"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
+// Table Card Component
+function TableCard({ table, participants, unassignedParticipants, onRemove, onEdit, onUnassignParticipant, onAssignParticipant }) {
+  const [showAssignDropdown, setShowAssignDropdown] = useState(false);
+  const fillPercentage = (participants.length / table.capacity) * 100;
+  const isFull = participants.length >= table.capacity;
+
+  return (
+    <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-lg font-semibold text-gray-100">{table.name}</h3>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onEdit(table)}
+            className="p-2 text-blue-400 hover:bg-blue-600/20 rounded-lg transition-colors"
+            title="Masayı düzenle"
+          >
+            <Edit2 className="w-4 h-4" />
           </button>
           <button
             onClick={() => onRemove(table.id)}
-            className="p-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/30 transition-colors"
+            className="p-2 text-red-400 hover:bg-red-600/20 rounded-lg transition-colors"
+            title="Masayı kaldır"
           >
-            <Trash2 className="w-5 h-5" />
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-3">
         <div className="flex justify-between text-sm text-gray-400 mb-1">
           <span>Doluluk</span>
-          <span>{table.participants.length}/{table.capacity}</span>
+          <span>{participants.length}/{table.capacity}</span>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-2">
           <div
@@ -547,39 +710,70 @@ function TableCard({ table, onRemove, onToggleActive, onRemoveParticipant, onQui
         </div>
       </div>
 
-      {/* Quick Add Input */}
-      {table.isActive && !isFull && (
-        <form onSubmit={handleQuickAddSubmit} className="mb-3">
-          <input
-            type="text"
-            value={quickAddName}
-            onChange={(e) => setQuickAddName(e.target.value)}
-            placeholder="İsim yazıp Enter'a bas..."
-            className="w-full bg-gray-900/50 border border-gray-600/50 rounded-lg px-3 py-2 text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </form>
-      )}
-
-      <div className="space-y-2">
-        {table.participants.length > 0 ? (
-          table.participants.map(participant => (
+      {/* Participants List */}
+      <div className="space-y-2 mb-3 max-h-60 overflow-y-auto">
+        {participants.length > 0 ? (
+          participants.map(participant => (
             <div
               key={participant.id}
               className="flex items-center justify-between bg-gray-900/50 px-3 py-2 rounded-lg"
             >
-              <span className="text-gray-200">{participant.name}</span>
+              <span className="text-gray-200 text-sm">{participant.name}</span>
               <button
-                onClick={() => onRemoveParticipant(table.id, participant.id)}
+                onClick={() => onUnassignParticipant(participant.id)}
                 className="text-red-400 hover:text-red-300 transition-colors"
+                title="Masadan çıkar"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
           ))
         ) : (
-          <p className="text-gray-500 text-center py-4">Henüz kimse yok</p>
+          <p className="text-gray-500 text-center py-4 text-sm">Henüz kimse yok</p>
         )}
       </div>
+
+      {/* Assign Button or Full Indicator */}
+      {isFull ? (
+        <button
+          disabled
+          className="w-full bg-gray-600 text-gray-400 px-3 py-2 rounded-lg cursor-not-allowed text-sm flex items-center justify-center space-x-2"
+        >
+          <span>Kontenjan Doldu</span>
+        </button>
+      ) : unassignedParticipants.length > 0 ? (
+        <div className="relative">
+          <button
+            onClick={() => setShowAssignDropdown(!showAssignDropdown)}
+            className="w-full bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center justify-center space-x-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Yerleştir</span>
+          </button>
+
+          {showAssignDropdown && (
+            <div className="absolute bottom-full left-0 right-0 mb-2 bg-gray-900 border border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto z-10">
+              {unassignedParticipants.slice(0, 10).map(participant => (
+                <button
+                  key={participant.id}
+                  onClick={() => {
+                    onAssignParticipant(participant.id, table.id);
+                    setShowAssignDropdown(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-gray-200 text-sm hover:bg-gray-800 transition-colors"
+                >
+                  {participant.name}
+                </button>
+              ))}
+              {unassignedParticipants.length > 10 && (
+                <div className="px-3 py-2 text-gray-500 text-xs text-center">
+                  +{unassignedParticipants.length - 10} kişi daha
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -718,6 +912,83 @@ function AddParticipantModal({ onClose, onAdd }) {
               className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors"
             >
               Ekle
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// Edit Table Modal
+function EditTableModal({ table, onClose, onEdit }) {
+  const [tableName, setTableName] = useState(table.name);
+  const [capacity, setCapacity] = useState(table.capacity.toString());
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!tableName.trim()) {
+      toast.error("Masa adı gerekli!");
+      return;
+    }
+    if (!capacity || parseInt(capacity) < 1) {
+      toast.error("Geçerli bir kapasite girin!");
+      return;
+    }
+    onEdit(tableName, capacity);
+  };
+
+  return (
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-gray-800 rounded-xl p-6 w-full max-w-md border border-gray-700"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-xl font-bold text-gray-100 mb-4">Masayı Düzenle</h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Masa Adı
+            </label>
+            <input
+              type="text"
+              value={tableName}
+              onChange={(e) => setTableName(e.target.value)}
+              placeholder="Örn: Masa 3"
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Kapasite
+            </label>
+            <input
+              type="number"
+              value={capacity}
+              onChange={(e) => setCapacity(e.target.value)}
+              min="1"
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="flex space-x-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 bg-gray-700 text-gray-200 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              İptal
+            </button>
+            <button
+              type="submit"
+              className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Güncelle
             </button>
           </div>
         </form>
