@@ -25,7 +25,8 @@ import {
   Shuffle,
   Edit2,
   Lock,
-  Unlock
+  Unlock,
+  Search
 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -40,6 +41,7 @@ export default function TableAssignmentPage() {
   const [showAddParticipantModal, setShowAddParticipantModal] = useState(false);
   const [showEditTableModal, setShowEditTableModal] = useState(false);
   const [editingTable, setEditingTable] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
   // Check admin privileges
@@ -108,6 +110,13 @@ export default function TableAssignmentPage() {
   // Computed values
   const unassignedParticipants = participants.filter(p => !p.assignedTableId);
   const assignedCount = participants.filter(p => p.assignedTableId).length;
+
+  // Filter participants based on search query
+  const filteredParticipants = searchQuery.trim()
+    ? participants.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) && p.assignedTableId
+      )
+    : participants;
 
   const handleAddTable = async (tableName, capacity) => {
     try {
@@ -466,49 +475,72 @@ export default function TableAssignmentPage() {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-3 mb-6">
-          <button
-            onClick={() => setShowAddTableModal(true)}
-            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Masa Ekle</span>
-          </button>
+        {/* Search and Action Buttons */}
+        <div className="mb-6 space-y-4">
+          {/* Search Bar */}
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Katılımcı ara (sadece atananlar)..."
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-2.5 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200"
+              >
+                ✕
+              </button>
+            )}
+          </div>
 
-          <button
-            onClick={() => setShowAddParticipantModal(true)}
-            className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-          >
-            <UserPlus className="w-5 h-5" />
-            <span>Katılımcı Ekle</span>
-          </button>
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setShowAddTableModal(true)}
+              className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Masa Ekle</span>
+            </button>
 
-          <button
-            onClick={handleRandomAssignment}
-            disabled={unassignedParticipants.length === 0 || tables.length === 0}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-              unassignedParticipants.length === 0 || tables.length === 0
-                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                : "bg-purple-600 text-white hover:bg-purple-700"
-            }`}
-          >
-            <Shuffle className="w-5 h-5" />
-            <span>Rastgele Ata</span>
-          </button>
+            <button
+              onClick={() => setShowAddParticipantModal(true)}
+              className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <UserPlus className="w-5 h-5" />
+              <span>Katılımcı Ekle</span>
+            </button>
 
-          <button
-            onClick={handleReset}
-            disabled={assignedCount === 0}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-              assignedCount === 0
-                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                : "bg-red-600 text-white hover:bg-red-700"
-            }`}
-          >
-            <RefreshCw className="w-5 h-5" />
-            <span>Sıfırla</span>
-          </button>
+            <button
+              onClick={handleRandomAssignment}
+              disabled={unassignedParticipants.length === 0 || tables.length === 0}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                unassignedParticipants.length === 0 || tables.length === 0
+                  ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                  : "bg-purple-600 text-white hover:bg-purple-700"
+              }`}
+            >
+              <Shuffle className="w-5 h-5" />
+              <span>Rastgele Ata</span>
+            </button>
+
+            <button
+              onClick={handleReset}
+              disabled={assignedCount === 0}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                assignedCount === 0
+                  ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                  : "bg-red-600 text-white hover:bg-red-700"
+              }`}
+            >
+              <RefreshCw className="w-5 h-5" />
+              <span>Sıfırla</span>
+            </button>
+          </div>
         </div>
 
         {/* Unassigned Participants - Manual Assignment Section */}
@@ -538,15 +570,30 @@ export default function TableAssignmentPage() {
           </div>
         )}
 
+        {/* Search Results Info */}
+        {searchQuery && (
+          <div className="mb-4 bg-blue-900/20 border border-blue-600/40 rounded-lg p-3">
+            <p className="text-sm text-blue-300">
+              <Search className="w-4 h-4 inline mr-2" />
+              Arama: "{searchQuery}" - {filteredParticipants.filter(p => p.assignedTableId).length} sonuç bulundu
+            </p>
+          </div>
+        )}
+
         {/* Tables Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {tables.map(table => {
-            const tableParticipants = participants.filter(p => p.assignedTableId === table.id);
+            const tableParticipants = filteredParticipants.filter(p => p.assignedTableId === table.id);
+            // Hide tables with no matching participants when searching
+            if (searchQuery && tableParticipants.length === 0) {
+              return null;
+            }
             return (
               <TableCard
                 key={table.id}
                 table={table}
                 participants={tableParticipants}
+                allParticipants={participants}
                 unassignedParticipants={unassignedParticipants}
                 onRemove={handleRemoveTable}
                 onEdit={(table) => {
@@ -556,6 +603,7 @@ export default function TableAssignmentPage() {
                 onUnassignParticipant={handleUnassignParticipant}
                 onAssignParticipant={handleAssignToTable}
                 onToggleFull={handleToggleTableFull}
+                searchQuery={searchQuery}
               />
             );
           })}
@@ -708,10 +756,12 @@ function ManualAssignmentRow({ participant, tables, participants, onAssign, onRe
 }
 
 // Table Card Component
-function TableCard({ table, participants, unassignedParticipants, onRemove, onEdit, onUnassignParticipant, onAssignParticipant, onToggleFull }) {
+function TableCard({ table, participants, allParticipants, unassignedParticipants, onRemove, onEdit, onUnassignParticipant, onAssignParticipant, onToggleFull, searchQuery }) {
   const [showAssignDropdown, setShowAssignDropdown] = useState(false);
-  const fillPercentage = (participants.length / table.capacity) * 100;
-  const isFullCapacity = participants.length >= table.capacity;
+  // Use all participants for capacity calculation, but filtered participants for display
+  const totalAssigned = allParticipants ? allParticipants.filter(p => p.assignedTableId === table.id).length : participants.length;
+  const fillPercentage = (totalAssigned / table.capacity) * 100;
+  const isFullCapacity = totalAssigned >= table.capacity;
   const isMarkedFull = table.isFull || false;
 
   return (
@@ -753,7 +803,17 @@ function TableCard({ table, participants, unassignedParticipants, onRemove, onEd
       <div className="mb-3">
         <div className="flex justify-between text-sm text-gray-400 mb-1">
           <span>Doluluk {isMarkedFull && <span className="text-orange-400">(Dolu işaretli)</span>}</span>
-          <span>{participants.length}/{table.capacity}</span>
+          <span>
+            {searchQuery && participants.length !== totalAssigned ? (
+              <>
+                <span className="text-blue-400">{participants.length}</span>
+                <span className="text-gray-500">/{totalAssigned}</span>
+                <span>/{table.capacity}</span>
+              </>
+            ) : (
+              <>{totalAssigned}/{table.capacity}</>
+            )}
+          </span>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-2">
           <div
@@ -763,6 +823,11 @@ function TableCard({ table, participants, unassignedParticipants, onRemove, onEd
             style={{ width: `${fillPercentage}%` }}
           />
         </div>
+        {searchQuery && participants.length !== totalAssigned && (
+          <p className="text-xs text-blue-300 mt-1">
+            Aramada {participants.length} kişi gösteriliyor (toplam {totalAssigned})
+          </p>
+        )}
       </div>
 
       {/* Participants List */}
