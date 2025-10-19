@@ -42,9 +42,9 @@ export default function WelcomePage() {
       hoverColor: 'hover:shadow-gray-500/50'
     },
     {
-      name: 'WhatsApp',
+      name: 'Info Session WhatsApp Grubu',
       icon: WhatsAppIcon,
-      url: 'https://chat.whatsapp.com/Eqz1kKViz3dBhVRkZs3P5D?mode=wwc',
+      url: 'https://chat.whatsapp.com/HxT7WrhgVrl4sRngCsWxLy?mode=wwc',
       color: 'from-green-500 to-green-600',
       hoverColor: 'hover:shadow-green-500/50'
     },
