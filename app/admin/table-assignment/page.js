@@ -23,7 +23,9 @@ import {
   ArrowLeft,
   Table,
   Shuffle,
-  Edit2
+  Edit2,
+  Lock,
+  Unlock
 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -112,6 +114,7 @@ export default function TableAssignmentPage() {
       await addDoc(collection(db, "tableAssignmentTables"), {
         name: tableName,
         capacity: parseInt(capacity),
+        isFull: false,
         createdAt: serverTimestamp(),
         createdBy: user.uid
       });
@@ -220,12 +223,15 @@ export default function TableAssignmentPage() {
       return;
     }
 
-    // Calculate total available capacity
-    const tableCapacities = tables.map(t => ({
-      id: t.id,
-      name: t.name,
-      available: t.capacity - participants.filter(p => p.assignedTableId === t.id).length
-    })).filter(t => t.available > 0);
+    // Calculate total available capacity (exclude tables marked as full)
+    const tableCapacities = tables
+      .filter(t => !t.isFull)
+      .map(t => ({
+        id: t.id,
+        name: t.name,
+        available: t.capacity - participants.filter(p => p.assignedTableId === t.id).length
+      }))
+      .filter(t => t.available > 0);
 
     if (tableCapacities.length === 0) {
       toast.error("Tüm masalar dolu!");
@@ -278,6 +284,11 @@ export default function TableAssignmentPage() {
     const table = tables.find(t => t.id === tableId);
     const participant = participants.find(p => p.id === participantId);
     const assignedToTable = participants.filter(p => p.assignedTableId === tableId);
+
+    if (table.isFull) {
+      toast.error(`${table.name} dolu olarak işaretlenmiş!`);
+      return;
+    }
 
     if (assignedToTable.length >= table.capacity) {
       toast.error(`${table.name} dolu!`);
@@ -344,6 +355,24 @@ export default function TableAssignmentPage() {
     } catch (error) {
       console.error("Error resetting assignments:", error);
       toast.error("Sıfırlama sırasında hata oluştu!");
+    }
+  };
+
+  const handleToggleTableFull = async (tableId, currentIsFullStatus) => {
+    try {
+      await updateDoc(doc(db, "tableAssignmentTables", tableId), {
+        isFull: !currentIsFullStatus,
+        updatedAt: serverTimestamp()
+      });
+      const table = tables.find(t => t.id === tableId);
+      if (!currentIsFullStatus) {
+        toast.info(`${table.name} dolu olarak işaretlendi`);
+      } else {
+        toast.info(`${table.name} tekrar müsait`);
+      }
+    } catch (error) {
+      console.error("Error toggling table full status:", error);
+      toast.error("Masa durumu güncellenirken hata oluştu!");
     }
   };
 
@@ -520,6 +549,7 @@ export default function TableAssignmentPage() {
                 }}
                 onUnassignParticipant={handleUnassignParticipant}
                 onAssignParticipant={handleAssignToTable}
+                onToggleFull={handleToggleTableFull}
               />
             );
           })}
@@ -597,7 +627,8 @@ function ManualAssignmentRow({ participant, tables, participants, onAssign, onRe
     return {
       ...table,
       available: table.capacity - assigned,
-      isFull: assigned >= table.capacity
+      isFullCapacity: assigned >= table.capacity,
+      isMarkedFull: table.isFull || false
     };
   });
 
@@ -623,28 +654,31 @@ function ManualAssignmentRow({ participant, tables, participants, onAssign, onRe
               />
               <div className="absolute top-full left-0 mt-1 bg-gray-900 border border-gray-700 rounded-lg shadow-lg min-w-[200px] z-20">
                 {availableTables.length > 0 ? (
-                  availableTables.map(table => (
-                    <button
-                      key={table.id}
-                      onClick={() => {
-                        if (!table.isFull) {
-                          onAssign(participant.id, table.id);
-                          setShowTableDropdown(false);
-                        }
-                      }}
-                      disabled={table.isFull}
-                      className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center justify-between ${
-                        table.isFull
-                          ? 'text-gray-500 cursor-not-allowed'
-                          : 'text-gray-200 hover:bg-gray-800'
-                      }`}
-                    >
-                      <span>{table.name}</span>
-                      <span className={`text-xs ${table.isFull ? 'text-red-400' : 'text-gray-400'}`}>
-                        {table.available}/{table.capacity}
-                      </span>
-                    </button>
-                  ))
+                  availableTables.map(table => {
+                    const isDisabled = table.isFullCapacity || table.isMarkedFull;
+                    return (
+                      <button
+                        key={table.id}
+                        onClick={() => {
+                          if (!isDisabled) {
+                            onAssign(participant.id, table.id);
+                            setShowTableDropdown(false);
+                          }
+                        }}
+                        disabled={isDisabled}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center justify-between ${
+                          isDisabled
+                            ? 'text-gray-500 cursor-not-allowed'
+                            : 'text-gray-200 hover:bg-gray-800'
+                        }`}
+                      >
+                        <span>{table.name} {table.isMarkedFull ? '(Dolu)' : ''}</span>
+                        <span className={`text-xs ${isDisabled ? 'text-red-400' : 'text-gray-400'}`}>
+                          {table.available}/{table.capacity}
+                        </span>
+                      </button>
+                    );
+                  })
                 ) : (
                   <div className="px-4 py-2 text-sm text-gray-500">
                     Masa yok
@@ -668,16 +702,31 @@ function ManualAssignmentRow({ participant, tables, participants, onAssign, onRe
 }
 
 // Table Card Component
-function TableCard({ table, participants, unassignedParticipants, onRemove, onEdit, onUnassignParticipant, onAssignParticipant }) {
+function TableCard({ table, participants, unassignedParticipants, onRemove, onEdit, onUnassignParticipant, onAssignParticipant, onToggleFull }) {
   const [showAssignDropdown, setShowAssignDropdown] = useState(false);
   const fillPercentage = (participants.length / table.capacity) * 100;
-  const isFull = participants.length >= table.capacity;
+  const isFullCapacity = participants.length >= table.capacity;
+  const isMarkedFull = table.isFull || false;
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+    <div className={`bg-gray-800 rounded-lg p-4 border ${isMarkedFull ? 'border-orange-500/50' : 'border-gray-700'}`}>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-lg font-semibold text-gray-100">{table.name}</h3>
+        <h3 className="text-lg font-semibold text-gray-100 flex items-center gap-2">
+          {table.name}
+          {isMarkedFull && <Lock className="w-4 h-4 text-orange-400" />}
+        </h3>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => onToggleFull(table.id, isMarkedFull)}
+            className={`p-2 rounded-lg transition-colors ${
+              isMarkedFull
+                ? 'text-orange-400 hover:bg-orange-600/20'
+                : 'text-gray-400 hover:bg-gray-600/20'
+            }`}
+            title={isMarkedFull ? "Masayı müsait yap" : "Masayı dolu işaretle"}
+          >
+            {isMarkedFull ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+          </button>
           <button
             onClick={() => onEdit(table)}
             className="p-2 text-blue-400 hover:bg-blue-600/20 rounded-lg transition-colors"
@@ -697,13 +746,13 @@ function TableCard({ table, participants, unassignedParticipants, onRemove, onEd
 
       <div className="mb-3">
         <div className="flex justify-between text-sm text-gray-400 mb-1">
-          <span>Doluluk</span>
+          <span>Doluluk {isMarkedFull && <span className="text-orange-400">(Dolu işaretli)</span>}</span>
           <span>{participants.length}/{table.capacity}</span>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-2">
           <div
             className={`h-2 rounded-full transition-all ${
-              isFull ? 'bg-red-500' : fillPercentage > 80 ? 'bg-yellow-500' : 'bg-green-500'
+              isMarkedFull ? 'bg-orange-500' : isFullCapacity ? 'bg-red-500' : fillPercentage > 80 ? 'bg-yellow-500' : 'bg-green-500'
             }`}
             style={{ width: `${fillPercentage}%` }}
           />
@@ -734,7 +783,15 @@ function TableCard({ table, participants, unassignedParticipants, onRemove, onEd
       </div>
 
       {/* Assign Button or Full Indicator */}
-      {isFull ? (
+      {isMarkedFull ? (
+        <button
+          disabled
+          className="w-full bg-orange-600/50 text-orange-200 px-3 py-2 rounded-lg cursor-not-allowed text-sm flex items-center justify-center space-x-2"
+        >
+          <Lock className="w-4 h-4" />
+          <span>Masa Dolu İşaretli</span>
+        </button>
+      ) : isFullCapacity ? (
         <button
           disabled
           className="w-full bg-gray-600 text-gray-400 px-3 py-2 rounded-lg cursor-not-allowed text-sm flex items-center justify-center space-x-2"
