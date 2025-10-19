@@ -248,6 +248,7 @@ export default function TableAssignmentPage() {
       const shuffled = [...unassignedParticipants].sort(() => Math.random() - 0.5);
       let assigned = 0;
       let currentTableIndex = 0;
+      const assignments = []; // Track assignments for notification
 
       // Distribute participants evenly across tables in round-robin fashion
       shuffled.forEach(participant => {
@@ -262,6 +263,7 @@ export default function TableAssignmentPage() {
               updatedAt: serverTimestamp()
             });
             currentTable.available--;
+            assignments.push({ participantName: participant.name, tableName: currentTable.name });
             assigned++;
             currentTableIndex++;
             break;
@@ -273,7 +275,11 @@ export default function TableAssignmentPage() {
       });
 
       await batch.commit();
-      toast.success(`${assigned} katılımcı rastgele atandı!`);
+
+      // Show individual assignments
+      assignments.forEach(({ participantName, tableName }) => {
+        toast.success(`${participantName} ${tableName}'e atandı!`);
+      });
     } catch (error) {
       console.error("Error during random assignment:", error);
       toast.error("Atama sırasında hata oluştu!");
