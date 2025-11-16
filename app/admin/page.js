@@ -357,9 +357,23 @@ export default function AdminPage() {
                   <span className="font-semibold text-lg">Projeler</span>
                 </div>
               </Link>
+
+              <Link
+                href="/admin/file-upload"
+                className="group bg-gradient-to-r from-sky-500 to-blue-500 text-white p-6 rounded-2xl text-center hover:from-sky-600 hover:to-blue-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-300">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <span className="font-semibold text-lg">Dosya Yükleme</span>
+                </div>
+              </Link>
             </>
           )}
-          
+
           {/* Common Access - Tickets */}
           <Link
             href="/admin/tickets"
