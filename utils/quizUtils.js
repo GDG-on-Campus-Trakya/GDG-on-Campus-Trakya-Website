@@ -37,8 +37,18 @@ export const createGame = async (gameData) => {
   const gameId = `game_${Date.now()}_${gameCode}`;
   const gameRef = ref(realtimeDb, `games/${gameId}`);
 
+  const sanitizedQuestions = (gameData.questions || []).map((q, index) => ({
+    id: q.id || `q${index + 1}`,
+    question: q.question,
+    options: q.options,
+    timeLimit: q.timeLimit,
+    imageUrl: q.imageUrl || null,
+    points: q.points,
+  }));
+
   const game = {
     ...gameData,
+    questions: sanitizedQuestions,
     gameCode,
     status: "waiting",
     currentQuestion: -1, // -1 means not started
@@ -133,32 +143,40 @@ export const nextQuestion = async (gameId, questionIndex) => {
 };
 
 /**
- * Submit player answer
+ * Submit player answer (OPTIMIZED: Batched writes for 200+ users)
  * @param {string} gameId - Game ID
  * @param {string} playerId - Player ID
  * @param {number} questionIndex - Question index
  * @param {Object} answerData - Answer details
  */
 export const submitAnswer = async (gameId, playerId, questionIndex, answerData) => {
-  const answerRef = ref(realtimeDb, `games/${gameId}/players/${playerId}/answers/${questionIndex}`);
-  await set(answerRef, {
+  const gameRef = ref(realtimeDb, `games/${gameId}`);
+
+  // OPTIMIZATION: Batch multiple writes into single update
+  const updates = {};
+
+  // Update answer
+  updates[`players/${playerId}/answers/${questionIndex}`] = {
     ...answerData,
     answeredAt: Date.now()
-  });
+  };
 
-  // Update player score
+  // Update score if correct (batch with answer update)
   if (answerData.isCorrect) {
+    // First get current score
     const playerRef = ref(realtimeDb, `games/${gameId}/players/${playerId}`);
     const playerSnapshot = await get(playerRef);
-    const currentScore = playerSnapshot.val().score || 0;
-    await update(playerRef, {
-      score: currentScore + answerData.pointsEarned
-    });
+    const currentScore = playerSnapshot.val()?.score || 0;
+
+    updates[`players/${playerId}/score`] = currentScore + answerData.pointsEarned;
   }
+
+  // Single atomic update (reduces 2 operations to 1)
+  await update(gameRef, updates);
 };
 
 /**
- * Calculate and update leaderboard
+ * Calculate and update leaderboard (OPTIMIZED: Top 50 only for 200+ users)
  * @param {string} gameId - Game ID
  * @returns {Promise<Array>} Updated leaderboard
  */
@@ -169,6 +187,8 @@ export const updateLeaderboard = async (gameId) => {
   if (!snapshot.exists()) return [];
 
   const players = snapshot.val();
+
+  // OPTIMIZATION: Calculate leaderboard with top 50 limit
   const leaderboard = Object.entries(players)
     .map(([id, player]) => {
       const correctAnswers = Object.values(player.answers || {})
@@ -183,6 +203,7 @@ export const updateLeaderboard = async (gameId) => {
       };
     })
     .sort((a, b) => b.score - a.score)
+    .slice(0, 50) // OPTIMIZATION: Only keep top 50 players
     .map((player, index) => ({
       ...player,
       rank: index + 1
@@ -251,12 +272,12 @@ export const allPlayersAnswered = async (gameId, questionIndex) => {
   const playersRef = ref(realtimeDb, `games/${gameId}/players`);
   const snapshot = await get(playersRef);
 
-  if (!snapshot.exists()) return true;
+  if (!snapshot.exists()) return false;
 
   const players = snapshot.val();
   const connectedPlayers = Object.values(players).filter(p => p.isConnected);
 
-  if (connectedPlayers.length === 0) return true;
+  if (connectedPlayers.length === 0) return false;
 
   const answeredCount = connectedPlayers.filter(
     player => player.answers && player.answers[questionIndex]
@@ -465,23 +486,32 @@ export const subscribeToPlayers = (gameId, callback) => {
 };
 
 /**
- * Subscribe to leaderboard updates
+ * Subscribe to leaderboard updates (OPTIMIZED: With caching)
  * @param {string} gameId - Game ID
  * @param {Function} callback - Callback function
  * @returns {Function} Unsubscribe function
  */
 export const subscribeToLeaderboard = (gameId, callback) => {
   const leaderboardRef = ref(realtimeDb, `games/${gameId}/leaderboard`);
+  let lastLength = 0;
+  let lastTopScore = 0;
 
   onValue(leaderboardRef, (snapshot) => {
-    if (snapshot.exists()) {
-      callback(snapshot.val());
-    } else {
-      callback([]);
+    const data = snapshot.exists() ? snapshot.val() : [];
+
+    const currentLength = Array.isArray(data) ? data.length : 0;
+    const currentTopScore = Array.isArray(data) && data[0] ? data[0].score || 0 : 0;
+
+    if (lastLength !== currentLength || lastTopScore !== currentTopScore) {
+      lastLength = currentLength;
+      lastTopScore = currentTopScore;
+      callback(data);
     }
   });
 
-  return () => off(leaderboardRef);
+  return () => {
+    off(leaderboardRef);
+  };
 };
 
 /**

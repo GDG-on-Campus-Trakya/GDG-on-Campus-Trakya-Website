@@ -1,10 +1,11 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../../../../../firebase";
 import { useRouter, useParams } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Image from "next/image";
 import { checkUserRole } from "../../../../../utils/roleUtils";
 import { logger } from "@/utils/logger";
 import {
@@ -35,7 +36,30 @@ export default function HostGamePage() {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [showResults, setShowResults] = useState(false);
-  const [questionStats, setQuestionStats] = useState({});
+
+  const questionStats = useMemo(() => {
+    if (!currentQuestion || !players || !game) {
+      return { totalAnswers: 0, optionCounts: [0, 0, 0, 0], correctCount: 0 };
+    }
+
+    const questionIndex = game.currentQuestion;
+    const stats = {
+      totalAnswers: 0,
+      optionCounts: [0, 0, 0, 0],
+      correctCount: 0
+    };
+
+    Object.values(players).forEach((player) => {
+      if (player.answers && player.answers[questionIndex]) {
+        const answer = player.answers[questionIndex];
+        stats.totalAnswers++;
+        stats.optionCounts[answer.answer] = (stats.optionCounts[answer.answer] || 0) + 1;
+        if (answer.isCorrect) stats.correctCount++;
+      }
+    });
+
+    return stats;
+  }, [players, game?.currentQuestion, currentQuestion?.id]);
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -119,29 +143,6 @@ export default function HostGamePage() {
     return () => clearInterval(interval);
   }, [game, currentQuestion]);
 
-  // Calculate question statistics
-  useEffect(() => {
-    if (!currentQuestion || !players) return;
-
-    const questionIndex = game.currentQuestion;
-    const stats = {
-      totalAnswers: 0,
-      optionCounts: [0, 0, 0, 0],
-      correctCount: 0
-    };
-
-    Object.values(players).forEach((player) => {
-      if (player.answers && player.answers[questionIndex]) {
-        const answer = player.answers[questionIndex];
-        stats.totalAnswers++;
-        stats.optionCounts[answer.answer]++;
-        if (answer.isCorrect) stats.correctCount++;
-      }
-    });
-
-    setQuestionStats(stats);
-  }, [players, game, currentQuestion]);
-
   const handleStartGame = async () => {
     try {
       await nextQuestion(gameId, 0);
@@ -155,16 +156,12 @@ export default function HostGamePage() {
 
   const handleShowResults = async () => {
     try {
-      await updateGameStatus(gameId, "question_review");
-
-      // Update based on game mode
-      if (game.gameMode === "kahoot") {
-        // In Kahoot mode, ONLY show question winner (no leaderboard)
-        await updateQuestionWinner(gameId, game.currentQuestion);
-      } else {
-        // In classic mode, update leaderboard
-        await updateLeaderboard(gameId);
-      }
+      await Promise.all([
+        updateGameStatus(gameId, "question_review"),
+        game.gameMode === "kahoot"
+          ? updateQuestionWinner(gameId, game.currentQuestion)
+          : updateLeaderboard(gameId)
+      ]);
 
       setShowResults(true);
     } catch (error) {
@@ -217,7 +214,10 @@ export default function HostGamePage() {
   };
 
   const playerCount = Object.keys(players).length;
-  const connectedPlayerCount = Object.values(players).filter((p) => p.isConnected).length;
+  const connectedPlayerCount = useMemo(
+    () => Object.values(players).filter((p) => p.isConnected).length,
+    [players]
+  );
 
   if (loading || !game) {
     return (
@@ -327,9 +327,12 @@ export default function HostGamePage() {
                   {/* Question Image */}
                   {currentQuestion.imageUrl && (
                     <div className="mb-4 sm:mb-6">
-                      <img
+                      <Image
                         src={currentQuestion.imageUrl}
                         alt="Question"
+                        width={900}
+                        height={600}
+                        priority
                         className="w-full max-w-2xl mx-auto h-auto rounded-lg"
                       />
                     </div>
@@ -400,9 +403,11 @@ export default function HostGamePage() {
                   {/* Question Image */}
                   {currentQuestion.imageUrl && (
                     <div className="mb-4 sm:mb-6">
-                      <img
+                      <Image
                         src={currentQuestion.imageUrl}
                         alt="Question"
+                        width={900}
+                        height={600}
                         className="w-full max-w-2xl mx-auto h-auto rounded-lg opacity-50"
                       />
                     </div>

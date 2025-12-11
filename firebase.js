@@ -44,4 +44,31 @@ if (typeof window !== 'undefined') {
     .catch((error) => {
       console.error('Auth persistence setup failed:', error);
     });
+
+  // Safari-specific: Monitor Firebase Realtime DB connection state
+  import('firebase/database').then(({ ref, onValue }) => {
+    const connectedRef = ref(realtimeDb, '.info/connected');
+    onValue(connectedRef, (snapshot) => {
+      if (snapshot.val() === false) {
+        console.warn('Firebase Realtime DB disconnected');
+      } else if (process.env.NODE_ENV === 'development') {
+        console.log('Firebase Realtime DB connected');
+      }
+    });
+  });
+
+  // Safari-specific: Handle page visibility changes for better connection management
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      // Page hidden - Safari may throttle connections
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Page hidden - Safari may throttle Firebase connection');
+      }
+    } else {
+      // Page visible - ensure connection is active
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Page visible - Firebase connection should resume');
+      }
+    }
+  });
 }

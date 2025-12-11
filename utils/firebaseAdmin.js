@@ -59,6 +59,7 @@ const initializeFirebaseAdmin = () => {
       firebaseAdmin = admin.initializeApp({
         credential,
         projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || process.env.FIREBASE_DATABASE_URL,
       });
       
       logger.log('✅ Firebase Admin initialized');
@@ -98,6 +99,11 @@ export const getAuth = () => {
 export const getFirestore = () => {
   const app = getFirebaseAdmin();
   return app ? admin.firestore(app) : null;
+};
+
+export const getDatabase = () => {
+  const app = getFirebaseAdmin();
+  return app ? admin.database(app) : null;
 };
 
 export const verifyIdToken = async (idToken) => {

@@ -1,18 +1,17 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../../../../firebase";
 import { useRouter, useParams } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Image from "next/image";
 import { logger } from "@/utils/logger";
 import {
   subscribeToGame,
   subscribeToLeaderboard,
   subscribeToQuestionWinners,
-  submitAnswer,
-  updatePlayerConnection,
-  calculateScore
+  updatePlayerConnection
 } from "../../../../utils/quizUtils";
 
 export default function PlayGamePage() {
@@ -30,8 +29,13 @@ export default function PlayGamePage() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [playerRank, setPlayerRank] = useState(null);
   const [playerScore, setPlayerScore] = useState(0);
+  const [showSyncWarning, setShowSyncWarning] = useState(false);
+  const [localQuestionStartTime, setLocalQuestionStartTime] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [answerResult, setAnswerResult] = useState(null);
 
   const playerId = user ? `player_${user.uid}` : null;
+  const lastQuestionIdRef = useRef(null);
 
   // Subscribe to game updates
   useEffect(() => {
@@ -50,11 +54,13 @@ export default function PlayGamePage() {
       if (gameData.currentQuestion >= 0 && gameData.questions) {
         const newQuestion = gameData.questions[gameData.currentQuestion];
 
-        // Reset answer state when question changes
-        if (currentQuestion?.id !== newQuestion.id) {
+        // Reset answer state when question changes (guard against re-subscribe loops)
+        if (lastQuestionIdRef.current !== newQuestion.id) {
+          lastQuestionIdRef.current = newQuestion.id;
           setCurrentQuestion(newQuestion);
           setSelectedAnswer(null);
           setHasAnswered(false);
+          setAnswerResult(null);
         }
       }
 
@@ -90,7 +96,7 @@ export default function PlayGamePage() {
       unsubscribeLeaderboard();
       unsubscribeWinners();
     };
-  }, [gameId, router, user, playerId, currentQuestion]);
+  }, [gameId, router, user, playerId]);
 
   // Update player connection status
   useEffect(() => {
@@ -110,47 +116,131 @@ export default function PlayGamePage() {
     };
   }, [gameId, playerId, user]);
 
-  // Timer
+  // Timer with iOS Safari fallback
   useEffect(() => {
     if (!game || game.status !== "playing" || !currentQuestion || hasAnswered) return;
 
     const questionStartTime = game.questionStartedAt;
     const timeLimit = currentQuestion.timeLimit;
 
+    // Detect Safari for specific optimizations
+    const isSafari = typeof navigator !== 'undefined' &&
+                     /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+    // Initialize local fallback timestamp if server time not available
+    let effectiveStartTime = questionStartTime;
+    let isSyncPending = false;
+    let isMounted = true;
+
+    if (!questionStartTime || isNaN(questionStartTime)) {
+      // Server timestamp not ready - use local fallback
+      if (!localQuestionStartTime) {
+        const now = Date.now();
+        setLocalQuestionStartTime(now);
+        effectiveStartTime = now;
+      } else {
+        effectiveStartTime = localQuestionStartTime;
+      }
+      isSyncPending = true;
+      setShowSyncWarning(true);
+
+      if (process.env.NODE_ENV === 'development') {
+        logger.warn('questionStartedAt undefined, using local fallback', {
+          gameId,
+          currentQuestion: game.currentQuestion,
+          isSafari
+        });
+      }
+    } else {
+      // Server timestamp available
+      setShowSyncWarning(false);
+      if (localQuestionStartTime !== questionStartTime) {
+        setLocalQuestionStartTime(questionStartTime);
+      }
+    }
+
+    // Safari: Use slower update interval to combat background throttling
+    const updateInterval = isSafari ? 200 : 100;
+
     const interval = setInterval(() => {
-      const elapsed = (Date.now() - questionStartTime) / 1000;
+      if (!isMounted) return;
+
+      const elapsed = (Date.now() - effectiveStartTime) / 1000;
       const remaining = Math.max(0, timeLimit - elapsed);
+
+      // Safety check for NaN
+      if (isNaN(remaining)) {
+        logger.error('Timer calculation resulted in NaN', {
+          elapsed,
+          effectiveStartTime,
+          timeLimit,
+          questionStartTime
+        });
+        setTimeLeft(timeLimit); // Fallback to full time
+        return;
+      }
+
       setTimeLeft(Math.ceil(remaining));
 
       if (remaining <= 0) {
         clearInterval(interval);
       }
-    }, 100);
+    }, updateInterval);
 
-    return () => clearInterval(interval);
-  }, [game, currentQuestion, hasAnswered]);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [game, currentQuestion, hasAnswered, localQuestionStartTime]);
 
   const handleAnswerSelect = async (answerIndex) => {
-    if (hasAnswered || !currentQuestion || !game) return;
+    if (hasAnswered || !currentQuestion || !game || isSubmitting) return;
 
+    setIsSubmitting(true);
     setSelectedAnswer(answerIndex);
     setHasAnswered(true);
+    setAnswerResult(null);
 
-    const questionStartTime = game.questionStartedAt;
-    const timeSpent = (Date.now() - questionStartTime) / 1000;
-    const isCorrect = answerIndex === currentQuestion.correctAnswer;
-    const pointsEarned = calculateScore(currentQuestion.timeLimit, timeSpent, isCorrect);
+    // Safe timestamp calculation with fallback
+    const questionStartTime = game.questionStartedAt || localQuestionStartTime || Date.now();
+    const timeSpent = Math.max(0, (Date.now() - questionStartTime) / 1000);
+
+    // Validate timeSpent to prevent NaN and ensure within limits
+    const safeTimeSpent = isNaN(timeSpent)
+      ? currentQuestion.timeLimit
+      : Math.min(timeSpent, currentQuestion.timeLimit);
 
     try {
-      await submitAnswer(gameId, playerId, game.currentQuestion, {
-        answer: answerIndex,
-        isCorrect,
-        timeSpent,
-        pointsEarned
+      const token = await user.getIdToken();
+
+      const response = await fetch("/api/quiz/submitAnswer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          gameId,
+          playerId,
+          questionIndex: game.currentQuestion,
+          answerIndex,
+          timeSpent: safeTimeSpent
+        })
       });
 
-      if (isCorrect) {
-        toast.success(`Doğru! +${pointsEarned} puan`);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to submit answer");
+      }
+
+      setAnswerResult({
+        isCorrect: !!result.isCorrect,
+        pointsEarned: result.pointsEarned || 0
+      });
+
+      if (result.isCorrect) {
+        toast.success(`Doğru! +${result.pointsEarned} puan`);
       } else {
         toast.error("Yanlış cevap!");
       }
@@ -159,6 +249,9 @@ export default function PlayGamePage() {
       toast.error("Cevap gönderilirken hata oluştu!");
       setHasAnswered(false);
       setSelectedAnswer(null);
+      setAnswerResult(null);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -186,6 +279,27 @@ export default function PlayGamePage() {
   ];
 
   const optionShapes = ["🔴", "🔷", "🟡", "🟢"];
+
+  const hasCorrectAnswer = typeof currentQuestion?.correctAnswer === "number";
+  const correctAnswerText = hasCorrectAnswer && currentQuestion?.options
+    ? currentQuestion.options[currentQuestion.correctAnswer]
+    : null;
+  const derivedResult = hasCorrectAnswer && selectedAnswer !== null
+    ? { isCorrect: selectedAnswer === currentQuestion.correctAnswer }
+    : null;
+  const submissionOutcome = answerResult ?? derivedResult;
+  const isAnswerCorrect = submissionOutcome?.isCorrect ?? null;
+  const resultBorderClass = isAnswerCorrect === true
+    ? "border-green-500"
+    : isAnswerCorrect === false
+      ? "border-red-500"
+      : "border-white/20";
+  const resultIcon = isAnswerCorrect === true ? "🎉" : isAnswerCorrect === false ? "😔" : "ℹ️";
+  const resultTitle = isAnswerCorrect === true
+    ? "Doğru Cevap!"
+    : isAnswerCorrect === false
+      ? "Yanlış Cevap"
+      : "Cevabınız alındı";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
@@ -232,6 +346,16 @@ export default function PlayGamePage() {
           {/* Playing State */}
           {game.status === "playing" && currentQuestion && (
             <div className="space-y-4 sm:space-y-6">
+              {/* Sync Status Indicator */}
+              {showSyncWarning && (
+                <div className="bg-yellow-500/20 border border-yellow-500 rounded-lg p-3 text-center">
+                  <div className="flex items-center justify-center gap-2 text-yellow-200">
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-yellow-400 border-t-transparent"></div>
+                    <span className="text-sm">Sunucu ile senkronize ediliyor...</span>
+                  </div>
+                </div>
+              )}
+
               {/* Timer & Question */}
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-white/20">
                 <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -246,9 +370,12 @@ export default function PlayGamePage() {
                 {/* Question Image */}
                 {currentQuestion.imageUrl && (
                   <div className="mb-4 sm:mb-6">
-                    <img
+                    <Image
                       src={currentQuestion.imageUrl}
                       alt="Question"
+                      width={800}
+                      height={600}
+                      priority
                       className="w-full max-w-xl mx-auto h-auto rounded-lg"
                     />
                   </div>
@@ -277,7 +404,7 @@ export default function PlayGamePage() {
                     <button
                       key={index}
                       onClick={() => handleAnswerSelect(index)}
-                      disabled={hasAnswered || timeLeft <= 0}
+                      disabled={hasAnswered || isSubmitting || (timeLeft <= 0 && !showSyncWarning)}
                       className={`
                         bg-gradient-to-r ${optionColors[index]}
                         p-4 sm:p-8 rounded-xl sm:rounded-2xl text-white font-bold text-base sm:text-xl
@@ -316,21 +443,17 @@ export default function PlayGamePage() {
               )}
 
               {/* Result */}
-              <div className={`bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-6 sm:p-12 border border-white/20 text-center ${
-                selectedAnswer === currentQuestion.correctAnswer
-                  ? "border-green-500"
-                  : "border-red-500"
-              }`}>
+              <div className={`bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-6 sm:p-12 border text-center ${resultBorderClass}`}>
                 <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">
-                  {selectedAnswer === currentQuestion.correctAnswer ? "🎉" : "😔"}
+                  {resultIcon}
                 </div>
                 <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
-                  {selectedAnswer === currentQuestion.correctAnswer
-                    ? "Doğru Cevap!"
-                    : "Yanlış Cevap"}
+                  {resultTitle}
                 </h2>
                 <p className="text-base sm:text-xl text-gray-300">
-                  Doğru cevap: {currentQuestion.options[currentQuestion.correctAnswer]}
+                  {correctAnswerText
+                    ? `Doğru cevap: ${correctAnswerText}`
+                    : "Doğru cevap oyun sırasında gizli tutuluyor."}
                 </p>
               </div>
 
