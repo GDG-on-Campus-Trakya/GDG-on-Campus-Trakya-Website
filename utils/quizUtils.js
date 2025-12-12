@@ -493,20 +493,10 @@ export const subscribeToPlayers = (gameId, callback) => {
  */
 export const subscribeToLeaderboard = (gameId, callback) => {
   const leaderboardRef = ref(realtimeDb, `games/${gameId}/leaderboard`);
-  let lastLength = 0;
-  let lastTopScore = 0;
 
   onValue(leaderboardRef, (snapshot) => {
     const data = snapshot.exists() ? snapshot.val() : [];
-
-    const currentLength = Array.isArray(data) ? data.length : 0;
-    const currentTopScore = Array.isArray(data) && data[0] ? data[0].score || 0 : 0;
-
-    if (lastLength !== currentLength || lastTopScore !== currentTopScore) {
-      lastLength = currentLength;
-      lastTopScore = currentTopScore;
-      callback(data);
-    }
+    callback(data);
   });
 
   return () => {

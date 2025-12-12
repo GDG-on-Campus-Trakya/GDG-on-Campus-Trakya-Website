@@ -211,7 +211,8 @@ export default function PlayGamePage() {
     setAnswerResult(null);
 
     // Safe timestamp calculation with fallback
-    const questionStartTime = game.questionStartedAt || localQuestionStartTime || Date.now();
+    // Use localQuestionStartTime first as it's validated to be non-stale by the timer effect
+    const questionStartTime = localQuestionStartTime || game.questionStartedAt || Date.now();
     const timeSpent = Math.max(0, (Date.now() - questionStartTime) / 1000);
 
     // Validate timeSpent to prevent NaN and ensure within limits
