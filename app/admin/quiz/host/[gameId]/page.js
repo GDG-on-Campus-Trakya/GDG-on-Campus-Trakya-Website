@@ -53,7 +53,13 @@ export default function HostGamePage() {
       if (player.answers && player.answers[questionIndex]) {
         const answer = player.answers[questionIndex];
         stats.totalAnswers++;
-        stats.optionCounts[answer.answer] = (stats.optionCounts[answer.answer] || 0) + 1;
+
+        // Validate answer index is within bounds (0-3 for 4 options)
+        const answerIndex = answer.answer;
+        if (typeof answerIndex === 'number' && answerIndex >= 0 && answerIndex < stats.optionCounts.length) {
+          stats.optionCounts[answerIndex]++;
+        }
+
         if (answer.isCorrect) stats.correctCount++;
       }
     });
@@ -128,6 +134,27 @@ export default function HostGamePage() {
 
     const questionStartTime = game.questionStartedAt;
     const timeLimit = currentQuestion.timeLimit;
+
+    // Validate timestamp is not stale (from previous question)
+    const isStaleTimestamp = questionStartTime &&
+                            !isNaN(questionStartTime) &&
+                            ((Date.now() - questionStartTime) / 1000) > timeLimit;
+
+    if (!questionStartTime || isNaN(questionStartTime) || isStaleTimestamp) {
+      logger.warn('Invalid questionStartedAt on host timer', {
+        questionStartTime,
+        currentQuestion: game.currentQuestion,
+        isStale: isStaleTimestamp
+      });
+      // Set to full time and wait for valid timestamp
+      setTimeLeft(timeLimit);
+      return;
+    }
+
+    // Initialize timer with correct remaining time
+    const initialElapsed = (Date.now() - questionStartTime) / 1000;
+    const initialRemaining = Math.max(0, timeLimit - initialElapsed);
+    setTimeLeft(Math.ceil(initialRemaining));
 
     const interval = setInterval(() => {
       const elapsed = (Date.now() - questionStartTime) / 1000;

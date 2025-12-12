@@ -21,7 +21,8 @@ export const calculateScore = (timeLimit, timeSpent, isCorrect) => {
   if (!isCorrect) return 0;
 
   const MAX_POINTS = 1000;
-  const timeBonus = Math.max(0, (timeLimit - timeSpent) / timeLimit);
+  const safeLimit = Math.max(1, Number(timeLimit) || 0); // Prevent divide by zero
+  const timeBonus = Math.max(0, (safeLimit - timeSpent) / safeLimit);
   const points = Math.round(MAX_POINTS * (0.5 + 0.5 * timeBonus));
 
   return Math.max(500, points); // Minimum 500 points for correct answer
@@ -222,20 +223,35 @@ export const updateLeaderboard = async (gameId) => {
  * @returns {Promise<Object|null>} Winner information
  */
 export const updateQuestionWinner = async (gameId, questionIndex) => {
-  const playersRef = ref(realtimeDb, `games/${gameId}/players`);
-  const snapshot = await get(playersRef);
+  const gameRef = ref(realtimeDb, `games/${gameId}`);
+  const gameSnapshot = await get(gameRef);
 
-  if (!snapshot.exists()) return null;
+  if (!gameSnapshot.exists()) return null;
 
-  const players = snapshot.val();
+  const game = gameSnapshot.val();
+  const players = game.players || {};
+  const question = game.questions?.[questionIndex];
 
-  // Find all players who answered this question correctly
+  if (!question) return null;
+
+  const timeLimit = question.timeLimit;
+
+  // Find all players who answered this question correctly with valid timeSpent
   const correctAnswers = [];
 
   Object.entries(players).forEach(([id, player]) => {
     if (player.answers && player.answers[questionIndex]) {
       const answer = player.answers[questionIndex];
-      if (answer.isCorrect) {
+
+      // Validate timeSpent is a valid number in reasonable range
+      const isValidTime =
+        answer.timeSpent != null &&
+        typeof answer.timeSpent === 'number' &&
+        !isNaN(answer.timeSpent) &&
+        answer.timeSpent >= 0.1 &&  // Minimum human reaction time
+        answer.timeSpent <= timeLimit;  // Maximum = question time limit
+
+      if (answer.isCorrect && isValidTime) {
         correctAnswers.push({
           userId: player.userId,
           name: player.name,
@@ -493,20 +509,10 @@ export const subscribeToPlayers = (gameId, callback) => {
  */
 export const subscribeToLeaderboard = (gameId, callback) => {
   const leaderboardRef = ref(realtimeDb, `games/${gameId}/leaderboard`);
-  let lastLength = 0;
-  let lastTopScore = 0;
 
   onValue(leaderboardRef, (snapshot) => {
     const data = snapshot.exists() ? snapshot.val() : [];
-
-    const currentLength = Array.isArray(data) ? data.length : 0;
-    const currentTopScore = Array.isArray(data) && data[0] ? data[0].score || 0 : 0;
-
-    if (lastLength !== currentLength || lastTopScore !== currentTopScore) {
-      lastLength = currentLength;
-      lastTopScore = currentTopScore;
-      callback(data);
-    }
+    callback(data);
   });
 
   return () => {
