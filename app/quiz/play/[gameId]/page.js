@@ -134,9 +134,14 @@ export default function PlayGamePage() {
     let isSyncPending = false;
     let isMounted = true;
 
-    if (!questionStartTime || isNaN(questionStartTime)) {
-      // Server timestamp not ready - use local fallback
-      if (!localQuestionStartTime) {
+    // Validate server timestamp is not stale (from previous question)
+    const isStaleTimestamp = questionStartTime &&
+                            !isNaN(questionStartTime) &&
+                            ((Date.now() - questionStartTime) / 1000) > timeLimit;
+
+    if (!questionStartTime || isNaN(questionStartTime) || isStaleTimestamp) {
+      // Server timestamp not ready or stale - use local fallback
+      if (!localQuestionStartTime || isStaleTimestamp) {
         const now = Date.now();
         setLocalQuestionStartTime(now);
         effectiveStartTime = now;
@@ -147,14 +152,16 @@ export default function PlayGamePage() {
       setShowSyncWarning(true);
 
       if (process.env.NODE_ENV === 'development') {
-        logger.warn('questionStartedAt undefined, using local fallback', {
+        logger.warn('questionStartedAt invalid, using local fallback', {
           gameId,
           currentQuestion: game.currentQuestion,
-          isSafari
+          isSafari,
+          isStale: isStaleTimestamp,
+          serverTimestamp: questionStartTime
         });
       }
     } else {
-      // Server timestamp available
+      // Server timestamp available and fresh
       setShowSyncWarning(false);
       if (localQuestionStartTime !== questionStartTime) {
         setLocalQuestionStartTime(questionStartTime);
