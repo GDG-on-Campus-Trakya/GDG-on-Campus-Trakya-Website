@@ -61,6 +61,8 @@ export default function PlayGamePage() {
           setSelectedAnswer(null);
           setHasAnswered(false);
           setAnswerResult(null);
+          // Reset timer state to prevent Safari from using stale timestamps
+          setLocalQuestionStartTime(null);
         }
       }
 
