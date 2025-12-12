@@ -28,9 +28,12 @@ export const uploadImage = async (file, folder = "images", prefix = "") => {
     const fileName = generateFileName(file.name, prefix);
     const storageRef = ref(storage, `${folder}/${fileName}`);
 
+    // Ensure content type is properly set - default to image/jpeg for safety
+    const contentType = compressedFile.type || 'image/jpeg';
+
     // Use uploadBytesResumable for better reliability
     const uploadTask = uploadBytesResumable(storageRef, compressedFile, {
-      contentType: compressedFile.type,
+      contentType: contentType,
       customMetadata: {
         uploadedBy: auth.currentUser.uid,
         uploadedAt: new Date().toISOString(),
@@ -45,7 +48,12 @@ export const uploadImage = async (file, folder = "images", prefix = "") => {
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         },
         (error) => {
-          logger.error("Upload error:", error);
+          logger.error("Upload error details:", {
+            code: error.code,
+            message: error.message,
+            customData: error.customData,
+            serverResponse: error.serverResponse
+          });
           reject(error);
         },
         async () => {

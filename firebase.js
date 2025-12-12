@@ -46,15 +46,22 @@ if (typeof window !== 'undefined') {
     });
 
   // Safari-specific: Monitor Firebase Realtime DB connection state
+  // .info/connected is a special path that doesn't require auth
   import('firebase/database').then(({ ref, onValue }) => {
-    const connectedRef = ref(realtimeDb, '.info/connected');
-    onValue(connectedRef, (snapshot) => {
-      if (snapshot.val() === false) {
-        console.warn('Firebase Realtime DB disconnected');
-      } else if (process.env.NODE_ENV === 'development') {
-        console.log('Firebase Realtime DB connected');
-      }
-    });
+    try {
+      const connectedRef = ref(realtimeDb, '.info/connected');
+      onValue(connectedRef, (snapshot) => {
+        // Only log when actually using the database (during game sessions)
+        // Silent otherwise to avoid console noise
+      }, (error) => {
+        // Suppress permission errors for .info/connected - they're expected during auth transitions
+        if (error.code !== 'PERMISSION_DENIED') {
+          console.error('Database connection monitoring error:', error);
+        }
+      });
+    } catch (error) {
+      console.warn('Failed to monitor database connection:', error);
+    }
   });
 
   // Safari-specific: Handle page visibility changes for better connection management

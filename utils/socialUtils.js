@@ -165,7 +165,8 @@ export const socialUtils = {
       const { uploadImage } = await import("./storageUtils");
       
       // Use standardized upload with compression
-      const result = await uploadImage(file, 'posts', `post_${userId}_`);
+      // Path must be posts/{userId}/{filename} to match storage rules
+      const result = await uploadImage(file, `posts/${userId}`, 'post_');
       
       return { 
         success: true, 

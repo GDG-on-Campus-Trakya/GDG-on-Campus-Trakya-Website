@@ -56,16 +56,17 @@ export const compressImage = (file, maxSizeKB = 300, quality = 0.7) => {
           const sizeKB = blob.size / 1024;
           
           if (sizeKB <= maxSizeKB || currentQuality <= 0.1) {
-            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
-              type: outputType,
+            // Ensure content type is explicitly set
+            const fileWithType = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
+              type: outputType || 'image/jpeg',
               lastModified: Date.now(),
             });
-            resolve(compressedFile);
+            resolve(fileWithType);
           } else {
             // More aggressive quality reduction
             compress(currentQuality - 0.15);
           }
-        }, outputType, currentQuality);
+        }, outputType || 'image/jpeg', currentQuality);
       };
       
       compress(quality);
