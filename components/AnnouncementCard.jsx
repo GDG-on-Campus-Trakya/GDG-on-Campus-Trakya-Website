@@ -24,7 +24,7 @@ export default function AnnouncementCard({ announcement }) {
 
   if (announcement.type === "raffle_result") {
     return (
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden max-w-full">
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 via-orange-500/10 to-red-500/10 animate-pulse"></div>
 
@@ -68,7 +68,7 @@ export default function AnnouncementCard({ announcement }) {
               </div>
 
               <div className="bg-gray-800/50 rounded-lg p-4 mb-4">
-                <div className="text-3xl font-bold text-yellow-400 mb-2">
+                <div className="text-3xl font-bold text-yellow-400 mb-2 break-words">
                   {announcement.winnerName || announcement.winner}
                 </div>
                 <div className="flex items-center justify-center text-green-400">

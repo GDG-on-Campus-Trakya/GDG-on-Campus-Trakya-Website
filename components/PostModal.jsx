@@ -236,9 +236,9 @@ export default function PostModal({
       style={{ overscrollBehavior: 'contain' }}
     >
       {/* Mobile Layout - Instagram Style */}
-      <div className="md:hidden w-full h-full flex flex-col">
+      <div className="md:hidden w-full h-full flex flex-col max-w-full overflow-hidden">
         {/* Header - Mobile */}
-        <div className="flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm">
+        <div className="flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm max-w-full">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center overflow-hidden">
               {(() => {
@@ -318,7 +318,7 @@ export default function PostModal({
         </div>
 
         {/* Image Section - Mobile Full Screen */}
-        <div className="flex-1 bg-black flex items-center justify-center">
+        <div className="flex-1 bg-black flex items-center justify-center max-w-full overflow-hidden">
           <Image
             src={post.imageUrl}
             alt={post.description || "Post image"}

@@ -163,7 +163,7 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' vitals.vercel-insights.com va.vercel-scripts.com *.googleapis.com *.firebaseapp.com *.firebasedatabase.app *.cloudfunctions.net apis.google.com accounts.google.com",
               "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
               "font-src 'self' data: blob:",
-              "img-src 'self' data: blob: *.googleapis.com *.googleusercontent.com firebasestorage.googleapis.com storage.googleapis.com",
+              "img-src 'self' data: blob: *.googleapis.com *.googleusercontent.com firebasestorage.googleapis.com storage.googleapis.com pbs.twimg.com *.twimg.com i.ibb.co ibb.co",
               "connect-src 'self' *.googleapis.com *.firebaseapp.com *.firebasedatabase.app *.cloudfunctions.net accounts.google.com vitals.vercel-insights.com va.vercel-scripts.com wss: https:",
               "frame-src 'self' *.firebaseapp.com *.firebasedatabase.app *.cloudfunctions.net *.googleapis.com accounts.google.com",
               "object-src 'none'",

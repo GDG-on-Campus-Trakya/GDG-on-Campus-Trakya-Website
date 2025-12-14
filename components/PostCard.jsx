@@ -101,10 +101,10 @@ export default function PostCard({
   };
 
   return (
-    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg overflow-hidden">
+    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg overflow-hidden max-w-full">
       {/* User Info Header - Instagram Style */}
-      <div className="flex items-center justify-between p-4">
-        <div className="flex items-center space-x-3">
+      <div className="flex items-center justify-between p-4 gap-2">
+        <div className="flex items-center space-x-3 min-w-0 flex-1">
           <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-pink-500">
             {(() => {
               // Öncelik sırası: Firestore profil fotoğrafı > Post'ta kaydedilen foto > Firebase Auth foto
@@ -134,17 +134,17 @@ export default function PostCard({
               }
             })()}
           </div>
-          <div className="flex-1">
-            <div className="flex items-center space-x-2">
-              <h3 className="text-white font-semibold text-sm">
+          <div className="flex-1 min-w-0">
+            <div className="max-w-full">
+              <h3 className="text-white font-semibold text-sm break-words">
                 {postUserProfile?.name ||
                   post.userName ||
                   post.userEmail?.split("@")[0]}
               </h3>
               {post.eventName && (
-                <span className="text-blue-400 text-xs">
+                <p className="text-blue-400 text-xs break-words">
                   • {post.eventName}
-                </span>
+                </p>
               )}
             </div>
             <p className="text-gray-400 text-xs">
@@ -178,7 +178,7 @@ export default function PostCard({
 
       {/* Post Image */}
       <div
-        className="relative cursor-pointer"
+        className="relative cursor-pointer max-w-full overflow-hidden"
         onClick={() => onPostClick && onPostClick(post)}
       >
         <Image
@@ -186,7 +186,7 @@ export default function PostCard({
           alt={post.description || "Post image"}
           width={600}
           height={400}
-          className="w-full h-64 sm:h-80 lg:h-96 object-cover hover:opacity-95 transition-opacity"
+          className="w-full h-64 sm:h-80 lg:h-96 object-cover hover:opacity-95 transition-opacity max-w-full"
           priority={false}
           loading="lazy"
           placeholder="blur"

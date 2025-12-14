@@ -215,7 +215,7 @@ export default function SocialPage() {
 
           {/* Filter Dropdown - Event Based (only for posts) */}
           {currentTab === "posts" && Object.keys(stats.eventGroups).length > 0 && (
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
               <div className="flex items-center gap-2 text-sm text-gray-400">
                 <Filter className="w-4 h-4" />
                 <span>Filtre:</span>
@@ -223,7 +223,7 @@ export default function SocialPage() {
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="flex-1 bg-gray-700/50 border border-gray-600 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer hover:bg-gray-700"
+                className="w-full sm:flex-1 max-w-full bg-gray-700/50 border border-gray-600 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer hover:bg-gray-700"
               >
                 <option value="all">
                   Tüm Etkinlikler ({stats.total} fotoğraf)
