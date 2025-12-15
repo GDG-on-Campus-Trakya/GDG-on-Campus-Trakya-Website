@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion, AnimatePresence } from "framer-motion";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 function SearchParamsHandler({ onQRCodeRedirect, events }) {
   const searchParams = useSearchParams();
@@ -816,21 +817,16 @@ function EventsPageContent() {
                     </div>
                   )}
 
-                  {/* Wrap content in DrawerDescription for accessibility */}
+                  {/* Metadata in DrawerDescription for accessibility (plain text only) */}
                   <DrawerDescription asChild>
                     {drawerLoading ? (
-                      <div className="space-y-4 animate-pulse">
-                        <div className="h-4 bg-gray-700 rounded w-full"></div>
-                        <div className="h-4 bg-gray-700 rounded w-5/6"></div>
-                        <div className="h-4 bg-gray-700 rounded w-4/5"></div>
-                        <div className="space-y-2 mt-4">
-                          <div className="h-3 bg-gray-700 rounded w-full"></div>
-                          <div className="h-3 bg-gray-700 rounded w-full"></div>
-                          <div className="h-3 bg-gray-700 rounded w-3/4"></div>
-                        </div>
+                      <div className="space-y-3 animate-pulse">
+                        <div className="h-4 bg-gray-700 rounded w-2/3"></div>
+                        <div className="h-4 bg-gray-700 rounded w-1/2"></div>
+                        <div className="h-4 bg-gray-700 rounded w-3/5"></div>
                       </div>
                     ) : (
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         <div className="text-lg text-gray-400">
                           {getDayLabel(selectedEvent.date)}, {selectedEvent.time}
                         </div>
@@ -840,9 +836,6 @@ function EventsPageContent() {
                         <div className="text-lg text-gray-400">
                           <strong>Lokasyon:</strong> {selectedEvent.location}
                         </div>
-                        <div className="text-lg text-white">
-                          {selectedEvent.description}
-                        </div>
                       </div>
                     )}
                   </DrawerDescription>
@@ -850,8 +843,27 @@ function EventsPageContent() {
               )}
             </DrawerHeader>
 
-            {selectedEvent && (
-              <div className="space-y-6">
+            {/* Markdown Description - OUTSIDE DrawerHeader for proper rendering */}
+            {selectedEvent && !drawerLoading && (
+              <div className="px-6 space-y-6">
+                {/* Event Description with Markdown Support */}
+                <div className="pt-4 border-t border-gray-700/50">
+                  <div className="prose prose-invert prose-sm max-w-none
+                                [&>*]:mb-3 [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg
+                                [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5
+                                [&>a]:text-blue-400 [&>a]:hover:text-blue-300
+                                [&>code]:bg-gray-800/60 [&>code]:px-1.5 [&>code]:py-0.5 [&>code]:rounded
+                                [&>blockquote]:border-l-4 [&>blockquote]:border-blue-500 [&>blockquote]:pl-4 [&>blockquote]:text-gray-300">
+                    <MarkdownRenderer content={selectedEvent.description} />
+                  </div>
+                </div>
+
+                {/* Sponsors and File URL Sections */}
+              </div>
+            )}
+
+            {selectedEvent && !drawerLoading && (
+              <div className="px-6 space-y-6">
                 {/* Sponsors Section */}
                 {selectedEvent.sponsors &&
                   selectedEvent.sponsors.length > 0 && (

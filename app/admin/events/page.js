@@ -24,6 +24,7 @@ import { v4 as uuidv4 } from "uuid";
 import Link from "next/link";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 export default function AdminEventsPage() {
   const [user, loading] = useAuthState(auth);
@@ -40,6 +41,7 @@ export default function AdminEventsPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("current"); // 'current' or 'archive'
+  const [showPreview, setShowPreview] = useState(false);
   const [formData, setFormData] = useState({
     id: "", // TODO: bunu sonra revize etmeliyiz ama çok da gerek yok
     name: "",
@@ -671,19 +673,122 @@ export default function AdminEventsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-200 mb-2">
-              Açıklama *
-            </label>
-            <textarea
-              name="description"
-              placeholder="Etkinlik açıklamasını girin..."
-              value={formData.description}
-              onChange={handleChange}
-              required
-              rows={4}
-              className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-200 placeholder-gray-500 resize-none"
-            />
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-200">
+                Açıklama *
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowPreview(!showPreview)}
+                className="text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200"
+              >
+                {showPreview ? "Düzenle" : "Önizleme"}
+              </button>
+            </div>
+            {showPreview ? (
+              <div className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl min-h-[120px] focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300">
+                <MarkdownRenderer content={formData.description} />
+              </div>
+            ) : (
+              <textarea
+                name="description"
+                placeholder="Etkinlik açıklamasını girin... (Markdown destekli)"
+                value={formData.description}
+                onChange={handleChange}
+                required
+                rows={4}
+                className="w-full px-4 py-3 bg-gray-700/60 backdrop-blur-sm border-2 border-transparent rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-gray-700/80 transition-all duration-300 text-gray-200 placeholder-gray-500 resize-none"
+              />
+            )}
           </div>
+
+          {/* Markdown Help Guide */}
+          <details className="group">
+            <summary className="cursor-pointer select-none list-none">
+              <div className="flex items-center space-x-2 text-sm text-gray-400 hover:text-gray-300 transition-colors duration-200">
+                <span className="inline-block w-4 h-4 group-open:rotate-90 transition-transform duration-200">
+                  ▶
+                </span>
+                <span className="font-medium">Markdown Formatını Nasıl Kullanacağım?</span>
+              </div>
+            </summary>
+            <div className="mt-4 p-4 bg-gray-800/60 rounded-2xl border border-gray-700/50 space-y-4">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-300 mb-3">Temel Formatlar</h4>
+                <div className="space-y-2 text-sm text-gray-400">
+                  <p><code className="bg-gray-900/80 px-2 py-1 rounded">**kalın metin**</code> → <strong>kalın metin</strong></p>
+                  <p><code className="bg-gray-900/80 px-2 py-1 rounded">*italik metin*</code> → <em>italik metin</em></p>
+                  <p><code className="bg-gray-900/80 px-2 py-1 rounded">~~çizili metin~~</code> → <s>çizili metin</s></p>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold text-gray-300 mb-3">Başlıklar</h4>
+                <div className="space-y-2 text-sm text-gray-400 font-mono">
+                  <p><code className="bg-gray-900/80 px-2 py-1 rounded"># Büyük Başlık</code></p>
+                  <p><code className="bg-gray-900/80 px-2 py-1 rounded">## Orta Başlık</code></p>
+                  <p><code className="bg-gray-900/80 px-2 py-1 rounded">### Küçük Başlık</code></p>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold text-gray-300 mb-3">Linkler</h4>
+                <div className="space-y-2 text-sm text-gray-400">
+                  <p><code className="bg-gray-900/80 px-2 py-1 rounded">[Metin](https://example.com)</code></p>
+                  <p className="text-gray-500 text-xs">Kare parantez içine gösterilecek metni, normal parantez içine de URL'yi yazın.</p>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold text-gray-300 mb-3">Kod</h4>
+                <div className="space-y-2 text-sm text-gray-400">
+                  <p><code className="bg-gray-900/80 px-2 py-1 rounded">`inline kod`</code> → inline kod</p>
+                  <p className="text-gray-500 text-xs">Kod bloğu için üç backtick (`) kullanın:</p>
+                  <div className="bg-gray-900/80 p-2 rounded font-mono text-xs text-cyan-400">
+                    ```<br/>
+                    kodunuz burada<br/>
+                    ```
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold text-gray-300 mb-3">Listeler</h4>
+                <div className="space-y-3 text-sm text-gray-400">
+                  <div>
+                    <p className="text-gray-300 mb-1">Maddeli Liste:</p>
+                    <div className="bg-gray-900/80 p-2 rounded font-mono text-xs">
+                      - Madde 1<br/>
+                      - Madde 2<br/>
+                      - Madde 3
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-gray-300 mb-1">Numaralı Liste:</p>
+                    <div className="bg-gray-900/80 p-2 rounded font-mono text-xs">
+                      1. Madde 1<br/>
+                      2. Madde 2<br/>
+                      3. Madde 3
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold text-gray-300 mb-3">Dikkat Kutusu (Bloktur)</h4>
+                <div className="space-y-2 text-sm text-gray-400">
+                  <p><code className="bg-gray-900/80 px-2 py-1 rounded">&gt; Önemli bilgi</code></p>
+                  <p className="text-gray-500 text-xs">Başına &gt; koyduğunuz satırlar dikkat kutusu olarak gösterilir.</p>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-gray-700/50">
+                <p className="text-xs text-gray-500">
+                  💡 <strong>İpucu:</strong> Sağ üstteki "Önizleme" butonunu kullanarak yazarken nasıl görüneceğini görebilirsiniz!
+                </p>
+              </div>
+            </div>
+          </details>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
@@ -968,9 +1073,12 @@ export default function AdminEventsPage() {
                                 {event.category}
                               </span>
                             </div>
-                            <p className="text-gray-300 mb-3 line-clamp-2">
-                              {event.description}
-                            </p>
+                            <div className="text-gray-300 mb-3 line-clamp-2">
+                              <MarkdownRenderer
+                                content={event.description}
+                                className="[&>*]:mb-0 [&>*]:leading-tight"
+                              />
+                            </div>
                             <div className="flex flex-wrap gap-3 text-sm text-gray-400">
                               <div className="flex items-center">
                                 <svg
