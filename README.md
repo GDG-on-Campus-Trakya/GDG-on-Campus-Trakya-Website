@@ -61,7 +61,7 @@ Katkıda bulunmak isterseniz:
 ## 📧 İletişim
 Sorularınız ya da geri bildirimleriniz için bize ulaşabilirsiniz:
 - **[Instagram](https://www.instagram.com/gdgoncampustu/)**
-- **[LinkedIn](https://www.linkedin.com/company/gdscedirne/posts/?feedView=all)**
+
 
 
 
