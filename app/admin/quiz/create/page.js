@@ -27,7 +27,7 @@ export default function CreateQuizPage() {
   const [questions, setQuestions] = useState([
     {
       question: "",
-      options: ["", "", "", ""],
+      options: ["", ""],
       correctAnswer: 0,
       timeLimit: 20,
       points: 1000,
@@ -65,7 +65,7 @@ export default function CreateQuizPage() {
       ...questions,
       {
         question: "",
-        options: ["", "", "", ""],
+        options: ["", ""],
         correctAnswer: 0,
         timeLimit: 20,
         points: 1000,
@@ -92,6 +92,37 @@ export default function CreateQuizPage() {
   const updateOption = (qIndex, oIndex, value) => {
     const newQuestions = [...questions];
     newQuestions[qIndex].options[oIndex] = value;
+    setQuestions(newQuestions);
+  };
+
+  const addOption = (qIndex) => {
+    const newQuestions = [...questions];
+    if (newQuestions[qIndex].options.length >= 4) {
+      toast.error("Maksimum 4 seçenek ekleyebilirsiniz!");
+      return;
+    }
+    newQuestions[qIndex].options.push("");
+    setQuestions(newQuestions);
+  };
+
+  const removeOption = (qIndex, oIndex) => {
+    const newQuestions = [...questions];
+    if (newQuestions[qIndex].options.length <= 2) {
+      toast.error("En az 2 seçenek olmalı!");
+      return;
+    }
+
+    // Critical: Handle correctAnswer index adjustments
+    if (newQuestions[qIndex].correctAnswer === oIndex) {
+      // Removing the correct answer - reset to first option
+      newQuestions[qIndex].correctAnswer = 0;
+      toast.warning("Doğru cevap ilk seçenek olarak ayarlandı!");
+    } else if (newQuestions[qIndex].correctAnswer > oIndex) {
+      // Removing option before correct answer - decrement index
+      newQuestions[qIndex].correctAnswer--;
+    }
+
+    newQuestions[qIndex].options.splice(oIndex, 1);
     setQuestions(newQuestions);
   };
 
@@ -163,12 +194,12 @@ export default function CreateQuizPage() {
         // Validate each question
         for (let i = 0; i < json.questions.length; i++) {
           const q = json.questions[i];
-          if (!q.question || !q.options || q.options.length !== 4) {
-            toast.error(`Soru ${i + 1} geçersiz format!`);
+          if (!q.question || !q.options || q.options.length < 2 || q.options.length > 4) {
+            toast.error(`Soru ${i + 1} geçersiz format! (2-4 seçenek gerekli)`);
             return;
           }
-          if (q.correctAnswer === undefined || q.correctAnswer < 0 || q.correctAnswer > 3) {
-            toast.error(`Soru ${i + 1}: correctAnswer 0-3 arası olmalı!`);
+          if (q.correctAnswer === undefined || q.correctAnswer < 0 || q.correctAnswer >= q.options.length) {
+            toast.error(`Soru ${i + 1}: correctAnswer 0-${q.options.length - 1} arası olmalı!`);
             return;
           }
         }
@@ -242,9 +273,21 @@ export default function CreateQuizPage() {
         return false;
       }
 
+      // Validate option count range
+      if (q.options.length < 2 || q.options.length > 4) {
+        toast.error(`Soru ${i + 1}: 2-4 arası seçenek olmalı!`);
+        return false;
+      }
+
       const emptyOptions = q.options.filter((opt) => !opt.trim());
       if (emptyOptions.length > 0) {
         toast.error(`Soru ${i + 1}: Tüm seçenekler doldurulmalı!`);
+        return false;
+      }
+
+      // Validate correctAnswer is within bounds
+      if (q.correctAnswer < 0 || q.correctAnswer >= q.options.length) {
+        toast.error(`Soru ${i + 1}: Geçersiz doğru cevap indeksi!`);
         return false;
       }
 
@@ -508,15 +551,17 @@ export default function CreateQuizPage() {
                 </div>
 
                 <div>
-                  <label className="block text-white mb-2 text-sm sm:text-base">Seçenekler *</label>
+                  <label className="block text-white mb-2 text-sm sm:text-base">
+                    Seçenekler * (2-4 seçenek)
+                  </label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
                     {q.options.map((opt, oIndex) => (
-                      <div key={oIndex} className="relative">
+                      <div key={oIndex} className="relative flex gap-2">
                         <input
                           type="text"
                           value={opt}
                           onChange={(e) => updateOption(qIndex, oIndex, e.target.value)}
-                          className={`w-full px-3 sm:px-4 py-2 pr-10 bg-white/5 border rounded-lg text-white focus:outline-none text-sm sm:text-base ${
+                          className={`flex-1 px-3 sm:px-4 py-2 pr-10 bg-white/5 border rounded-lg text-white focus:outline-none text-sm sm:text-base ${
                             q.correctAnswer === oIndex
                               ? "border-green-500 bg-green-500/10"
                               : "border-white/20"
@@ -524,6 +569,8 @@ export default function CreateQuizPage() {
                           placeholder={`Seçenek ${oIndex + 1}`}
                           required
                         />
+
+                        {/* Mark Correct Button */}
                         <button
                           type="button"
                           onClick={() => updateQuestion(qIndex, "correctAnswer", oIndex)}
@@ -536,11 +583,35 @@ export default function CreateQuizPage() {
                         >
                           {q.correctAnswer === oIndex && "✓"}
                         </button>
+
+                        {/* Remove Option Button (only if > 2 options) */}
+                        {q.options.length > 2 && (
+                          <button
+                            type="button"
+                            onClick={() => removeOption(qIndex, oIndex)}
+                            className="px-2 py-2 bg-red-500/80 hover:bg-red-600 text-white rounded-lg transition-colors text-xs"
+                            title="Seçeneği kaldır"
+                          >
+                            ×
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>
+
+                  {/* Add Option Button */}
+                  {q.options.length < 4 && (
+                    <button
+                      type="button"
+                      onClick={() => addOption(qIndex)}
+                      className="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
+                    >
+                      + Seçenek Ekle
+                    </button>
+                  )}
+
                   <p className="text-xs text-gray-400 mt-2">
-                    Doğru cevabı seçmek için sağdaki butona tıklayın
+                    Doğru cevabı seçmek için sağdaki butona tıklayın. En az 2, en fazla 4 seçenek ekleyebilirsiniz.
                   </p>
                 </div>
 

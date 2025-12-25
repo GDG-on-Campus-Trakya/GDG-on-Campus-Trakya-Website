@@ -88,6 +88,11 @@ export async function POST(request) {
       return NextResponse.json({ error: "Invalid answer" }, { status: 400 });
     }
 
+    // Validate answer index is within bounds of available options
+    if (selectedAnswerIndex < 0 || selectedAnswerIndex >= question.options.length) {
+      return NextResponse.json({ error: "Geçersiz cevap indeksi" }, { status: 400 });
+    }
+
     const isCorrect = selectedAnswerIndex === question.correctAnswer;
     const safeTimeSpent = clampNumber(timeSpent, 0, Number(question.timeLimit) || 0);
     const pointsEarned = calculateServerScore(question.timeLimit, safeTimeSpent, isCorrect);

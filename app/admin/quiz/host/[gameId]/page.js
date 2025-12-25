@@ -39,13 +39,15 @@ export default function HostGamePage() {
 
   const questionStats = useMemo(() => {
     if (!currentQuestion || !players || !game) {
-      return { totalAnswers: 0, optionCounts: [0, 0, 0, 0], correctCount: 0 };
+      return { totalAnswers: 0, optionCounts: [], correctCount: 0 };
     }
 
     const questionIndex = game.currentQuestion;
+    const optionsCount = currentQuestion.options?.length || 0;
+
     const stats = {
       totalAnswers: 0,
-      optionCounts: [0, 0, 0, 0],
+      optionCounts: new Array(optionsCount).fill(0),
       correctCount: 0
     };
 
@@ -54,9 +56,9 @@ export default function HostGamePage() {
         const answer = player.answers[questionIndex];
         stats.totalAnswers++;
 
-        // Validate answer index is within bounds (0-3 for 4 options)
+        // Validate answer index is within bounds
         const answerIndex = answer.answer;
-        if (typeof answerIndex === 'number' && answerIndex >= 0 && answerIndex < stats.optionCounts.length) {
+        if (typeof answerIndex === 'number' && answerIndex >= 0 && answerIndex < optionsCount) {
           stats.optionCounts[answerIndex]++;
         }
 
@@ -65,7 +67,7 @@ export default function HostGamePage() {
     });
 
     return stats;
-  }, [players, game?.currentQuestion, currentQuestion?.id]);
+  }, [players, game?.currentQuestion, currentQuestion?.id, currentQuestion?.options]);
 
   useEffect(() => {
     const checkAccess = async () => {
