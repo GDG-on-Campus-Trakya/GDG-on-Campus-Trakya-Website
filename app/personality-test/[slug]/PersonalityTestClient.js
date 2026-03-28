@@ -1,28 +1,33 @@
 "use client";
 import { useState, useEffect } from "react";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../../firebase";
-import { useParams } from "next/navigation";
+import { generateSlug } from "../../../lib/slug";
 import Link from "next/link";
 
-export default function PersonalityTestPage() {
-  const params = useParams();
-  const testId = params.testId;
-
-  const [testData, setTestData] = useState(null);
+export default function PersonalityTestClient({ slug, initialTestData = null }) {
+  const [testData, setTestData] = useState(initialTestData);
   const [answers, setAnswers] = useState({});
   const [showResult, setShowResult] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialTestData);
 
   useEffect(() => {
+    if (initialTestData) return;
+    if (!slug) {
+      setLoading(false);
+      return;
+    }
+
     const fetchTest = async () => {
       try {
-        const testDoc = await getDoc(doc(db, "personality_tests", testId));
-
-        if (testDoc.exists()) {
-          setTestData({ id: testDoc.id, ...testDoc.data() });
+        const snapshot = await getDocs(collection(db, "personality_tests"));
+        const matchingDoc = snapshot.docs.find((d) => {
+          return generateSlug(d.data().title || "") === slug;
+        });
+        if (matchingDoc) {
+          setTestData({ id: matchingDoc.id, ...matchingDoc.data() });
         } else {
-          console.error("Test not found");
+          console.error("Test not found for slug:", slug);
         }
       } catch (error) {
         console.error("Error fetching test:", error);
@@ -32,7 +37,7 @@ export default function PersonalityTestPage() {
     };
 
     fetchTest();
-  }, [testId]);
+  }, [slug, initialTestData]);
 
   const handleOptionSelect = (questionIndex, option) => {
     setAnswers({
@@ -53,14 +58,12 @@ export default function PersonalityTestPage() {
   const getResult = () => {
     const scores = {};
 
-    // Calculate scores from all answers
     Object.values(answers).forEach(answer => {
       Object.entries(answer.points).forEach(([app, points]) => {
         scores[app] = (scores[app] || 0) + points;
       });
     });
 
-    // Find the app with highest score
     let maxScore = 0;
     let resultKey = Object.keys(testData.results)[0];
 

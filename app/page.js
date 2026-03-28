@@ -101,13 +101,21 @@ export default function LandingPage() {
               >
                 Etkinlikleri Keşfet
               </motion.button>
-              <motion.button 
+              <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => window.location.href = '/about'}
                 className="block w-full sm:w-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 lg:py-4 bg-transparent border-2 border-blue-600 hover:bg-blue-600/10 rounded-lg shadow-lg text-white font-medium text-sm sm:text-base lg:text-lg transition duration-300 text-center"
               >
                 Bizi Tanı
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => window.location.href = '/personality-test'}
+                className="block w-full sm:w-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 lg:py-4 bg-transparent border-2 border-purple-500 hover:bg-purple-500/10 rounded-lg shadow-lg text-white font-medium text-sm sm:text-base lg:text-lg transition duration-300 text-center"
+              >
+                Kişilik Testleri
               </motion.button>
             </motion.div>
           </motion.div>

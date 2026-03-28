@@ -245,6 +245,14 @@ function NavbarContent() {
             Projeler
           </motion.span>
         </Link>
+        <Link href="/personality-test" prefetch={false}>
+          <motion.span
+            whileHover={{ scale: 1.1, color: "#A78BFA" }}
+            className="hover:text-purple-400 transition cursor-pointer"
+          >
+            Kişilik Testleri
+          </motion.span>
+        </Link>
         {user && (
           <Link href="/game" prefetch={false}>
             <motion.span
@@ -445,6 +453,21 @@ function NavbarContent() {
                 }}
               >
                 Projeler
+              </motion.div>
+              <motion.div
+                whileHover={{ backgroundColor: "#374151" }}
+                className="block w-full text-left py-3 px-4 hover:bg-gray-700 transition-colors rounded touch-manipulation text-purple-300"
+                onClick={() => {
+                  setMenuOpen(false);
+                  router.push('/personality-test');
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  setMenuOpen(false);
+                  router.push('/personality-test');
+                }}
+              >
+                Kişilik Testleri
               </motion.div>
               {user && (
                 <motion.div
